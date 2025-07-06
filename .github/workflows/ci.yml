@@ -26,18 +26,44 @@ jobs:
         with:
           bun-version: latest
           
-      - name: Install root dependencies
+      - name: Install root dependencies (atomic-core)
         run: bun install --frozen-lockfile
         
-      - name: Install atomic-core dependencies
+      - name: Install atomic-core dependencies (atomic-core)
         run: bun install --frozen-lockfile
         working-directory: packages/atomic-core
         
-      - name: Run type check
+      - name: Run type check (atomic-core)
         run: bun run typecheck
         working-directory: packages/atomic-core
         
-      - name: Run tests
+      - name: Run tests (atomic-core)
         run: bun test
         working-directory: packages/atomic-core
+        continue-on-error: true # Continue even if no tests are found yet 
+
+      - name: Install atomic-fhirschema dependencies (atomic-fhirschema)
+        run: bun install --frozen-lockfile
+        working-directory: packages/atomic-fhirschema
+        
+      - name: Run type check (atomic-fhirschema)
+        run: bun run typecheck
+        working-directory: packages/atomic-fhirschema
+        
+      - name: Run tests (atomic-fhirschema)
+        run: bun test
+        working-directory: packages/atomic-fhirschema
+        continue-on-error: true # Continue even if no tests are found yet 
+
+      - name: Install atomic-fhirpath dependencies (atomic-fhirpath)
+        run: bun install --frozen-lockfile
+        working-directory: packages/atomic-fhirpath
+        
+      - name: Run type check (atomic-fhirpath)
+        run: bun run typecheck
+        working-directory: packages/atomic-fhirpath
+        
+      - name: Run tests (atomic-fhirpath)
+        run: bun test
+        working-directory: packages/atomic-fhirpath
         continue-on-error: true # Continue even if no tests are found yet 

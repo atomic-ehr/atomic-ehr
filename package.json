@@ -4,7 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "cd packages/atomic-core && bun test"
+    "test:fhirschema": "cd packages/atomic-fhirschema && bun test",
+    "test:fhirpath": "cd packages/atomic-fhirpath && bun test",
+    "test:atomic-core": "cd packages/atomic-core && bun test",
+    "test": "bun test:atomic-core && bun test:fhirschema && bun test:fhirpath"
   },
   "devDependencies": {
     "@types/bun": "latest"
