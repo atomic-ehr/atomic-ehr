@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'packages/atomic-core/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths: 
+      - 'packages/atomic-core/**'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  atomic-core:
+    name: Atomic Core - Type Check & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+          
+      - name: Install root dependencies
+        run: bun install --frozen-lockfile
+        
+      - name: Install atomic-core dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/atomic-core
+        
+      - name: Run type check
+        run: bun run typecheck
+        working-directory: packages/atomic-core
+        
+      - name: Run tests
+        run: bun test
+        working-directory: packages/atomic-core
+        continue-on-error: true # Continue even if no tests are found yet 

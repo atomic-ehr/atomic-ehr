@@ -1,0 +1,15 @@
+{
+  "name": "@atomic-ehr/core",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "typecheck": "bun --bun tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
