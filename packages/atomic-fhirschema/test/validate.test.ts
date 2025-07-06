@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { validate, validateSchemas, ValidationResult, ValidationError } from "../src/validate";
+import { validate, validateSchemas, type ValidationResult, type ValidationError } from "../src/validate";
 
 // Test context with schema definitions
 const ctx = {
@@ -54,13 +54,13 @@ function matchErrors(data: any, expectedErrors: Partial<ValidationError>[]): Val
   // Check each error matches the pattern
   for (let i = 0; i < expectedErrors.length; i++) {
     const error = result.errors[i];
-    const expected = expectedErrors[i];
+    const expected = expectedErrors[i] || {};
     
-    if (expected.type) expect(error.type).toBe(expected.type);
-    if (expected.path) expect(error.path).toEqual(expected.path);
-    if (expected.message) expect(error.message).toBe(expected.message);
-    if (expected.value !== undefined) expect(error.value).toEqual(expected.value);
-    if (expected.expected !== undefined) expect(error.expected).toEqual(expected.expected);
+    if (expected.type) expect(error?.type).toBe(expected.type);
+    if (expected.path) expect(error?.path).toEqual(expected.path);
+    if (expected.message) expect(error?.message).toBe(expected.message);
+    if (expected.value !== undefined) expect(error?.value).toEqual(expected.value);
+    if (expected.expected !== undefined) expect(error?.expected).toEqual(expected.expected);
   }
   
   return result;
@@ -76,13 +76,13 @@ function matchSchema(schema: any, data: any, expectedErrors: Partial<ValidationE
   // Check each error matches the pattern
   for (let i = 0; i < expectedErrors.length; i++) {
     const error = result.errors[i];
-    const expected = expectedErrors[i];
+    const expected = expectedErrors[i] || {};
     
-    if (expected.type) expect(error.type).toBe(expected.type);
-    if (expected.path) expect(error.path).toEqual(expected.path);
-    if (expected.message) expect(error.message).toBe(expected.message);
-    if (expected.value !== undefined) expect(error.value).toEqual(expected.value);
-    if (expected.expected !== undefined) expect(error.expected).toEqual(expected.expected);
+    if (expected.type) expect(error?.type).toBe(expected.type);
+    if (expected.path) expect(error?.path).toEqual(expected.path);
+    if (expected.message) expect(error?.message).toBe(expected.message);
+    if (expected.value !== undefined) expect(error?.value).toEqual(expected.value);
+    if (expected.expected !== undefined) expect(error?.expected).toEqual(expected.expected);
   }
   
   return result;

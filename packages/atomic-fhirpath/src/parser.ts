@@ -2,31 +2,166 @@ import { CharStream, CommonTokenStream, BaseErrorListener, AbstractParseTreeVisi
 import { fhirpathLexer } from './generated/fhirpathLexer.js';
 import { fhirpathParser } from './generated/fhirpathParser.js';
 import * as ParserContext from './generated/fhirpathParser.js';
-import type { 
-  ASTNode, 
-  ParseResult,
-  StringLiteralNode,
-  NumberLiteralNode,
-  BooleanLiteralNode,
-  DateLiteralNode,
-  DateTimeLiteralNode,
-  TimeLiteralNode,
-  NullLiteralNode,
-  IdentifierNode,
-  BinaryOperationNode,
-  UnaryOperationNode,
-  InvocationNode,
-  IndexerNode,
-  FunctionNode,
-  LambdaNode,
-  TypeOperationNode,
-  QuantityNode,
-  ExternalConstantNode,
-  ThisInvocationNode,
-  IndexInvocationNode,
-  TotalInvocationNode
-} from './types.js';
-import { eq } from './functions.js';
+import { FunctionsTable, compileInvocation, compileBinaryOperation, compileMemberInvocation } from './functions.js';
+
+export type ASTNode = 
+  | LiteralNode
+  | IdentifierNode
+  | BinaryOperationNode
+  | UnaryOperationNode
+  | InvocationNode
+  | IndexerNode
+  | FunctionNode
+  | LambdaNode
+  | TypeOperationNode
+  | QuantityNode
+  | ExternalConstantNode
+  | ThisInvocationNode
+  | IndexInvocationNode
+  | TotalInvocationNode;
+
+export interface BaseNode {
+  type: string;
+  location?: {
+    start: number;
+    end: number;
+  };
+  eval: (ctx: any, data: any) => any;
+}
+
+// Literal values
+export type LiteralNode = 
+  | StringLiteralNode
+  | NumberLiteralNode
+  | BooleanLiteralNode
+  | DateLiteralNode
+  | DateTimeLiteralNode
+  | TimeLiteralNode
+  | NullLiteralNode;
+
+export interface StringLiteralNode extends BaseNode {
+  type: 'StringLiteral';
+  value: string;
+}
+
+export interface NumberLiteralNode extends BaseNode {
+  type: 'NumberLiteral';
+  value: number;
+}
+
+export interface BooleanLiteralNode extends BaseNode {
+  type: 'BooleanLiteral';
+  value: boolean;
+}
+
+export interface DateLiteralNode extends BaseNode {
+  type: 'DateLiteral';
+  value: string;
+}
+
+export interface DateTimeLiteralNode extends BaseNode {
+  type: 'DateTimeLiteral';
+  value: string;
+}
+
+export interface TimeLiteralNode extends BaseNode {
+  type: 'TimeLiteral';
+  value: string;
+}
+
+export interface NullLiteralNode extends BaseNode {
+  type: 'NullLiteral';
+}
+
+// Identifier
+export interface IdentifierNode extends BaseNode {
+  type: 'Identifier';
+  name: string;
+}
+
+// Binary operations
+export interface BinaryOperationNode extends BaseNode {
+  type: 'BinaryOperation';
+  operator: string;
+  left: ASTNode;
+  right: ASTNode;
+}
+
+// Unary operations
+export interface UnaryOperationNode extends BaseNode {
+  type: 'UnaryOperation';
+  operator: string;
+  operand: ASTNode;
+}
+
+// Invocation (member access)
+export interface InvocationNode extends BaseNode {
+  type: 'Invocation';
+  target: ASTNode;
+  member: string;
+}
+
+// Indexer
+export interface IndexerNode extends BaseNode {
+  type: 'Indexer';
+  target: ASTNode;
+  index: ASTNode;
+}
+
+// Function call
+export interface FunctionNode extends BaseNode {
+  type: 'Function';
+  name: string;
+  parameters: ASTNode[];
+}
+
+// Lambda expression
+export interface LambdaNode extends BaseNode {
+  type: 'Lambda';
+  parameter?: string;
+  body: ASTNode;
+}
+
+// Type operations (is, as)
+export interface TypeOperationNode extends BaseNode {
+  type: 'TypeOperation';
+  operator: 'is' | 'as';
+  left: ASTNode;
+  right: string;
+}
+
+// Quantity with unit
+export interface QuantityNode extends BaseNode {
+  type: 'Quantity';
+  value: number;
+  unit?: string;
+}
+
+// External constant
+export interface ExternalConstantNode extends BaseNode {
+  type: 'ExternalConstant';
+  name: string;
+}
+
+// Special invocation types
+export interface ThisInvocationNode extends BaseNode {
+  type: 'ThisInvocation';
+}
+
+export interface IndexInvocationNode extends BaseNode {
+  type: 'IndexInvocation';
+}
+
+export interface TotalInvocationNode extends BaseNode {
+  type: 'TotalInvocation';
+}
+
+// Parser result
+export interface ParseResult {
+  ast: ASTNode;
+  errors: string[];
+} 
+type BinaryOperationContext = ParserContext.AdditiveExpressionContext | ParserContext.MultiplicativeExpressionContext | ParserContext.InequalityExpressionContext | ParserContext.EqualityExpressionContext | ParserContext.ImpliesExpressionContext | ParserContext.OrExpressionContext | ParserContext.AndExpressionContext | ParserContext.MembershipExpressionContext;
 
 // Custom error listener to collect parsing errors
 class FHIRPathErrorListener extends BaseErrorListener {
@@ -48,12 +183,20 @@ class FHIRPathErrorListener extends BaseErrorListener {
   }
 }
 
+const NULL_LITERAL = { type: 'NullLiteral' } as NullLiteralNode;
+
 // FHIRPath AST Builder Visitor
 export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
+
+  context: any;
+  constructor(context: any) {
+    super();
+    this.context = context;
+  }
   
   visitEntireExpression(ctx: ParserContext.EntireExpressionContext): ASTNode {
     const result = this.visit(ctx.expression());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    return result || NULL_LITERAL;
   }
 
   // Expression visitors
@@ -76,8 +219,8 @@ export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
     
     return {
       type: 'Indexer',
-      target: target || { type: 'NullLiteral' } as NullLiteralNode,
-      index: index || { type: 'NullLiteral' } as NullLiteralNode
+      target: target || NULL_LITERAL,
+      index: index || NULL_LITERAL
     } as IndexerNode;
   }
 
@@ -88,223 +231,95 @@ export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
     return {
       type: 'UnaryOperation',
       operator,
-      operand: operand || { type: 'NullLiteral' } as NullLiteralNode
+      operand: operand || NULL_LITERAL
     } as UnaryOperationNode;
   }
 
   visitAdditiveExpression(ctx: ParserContext.AdditiveExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    const operator = ctx.getChild(1)?.getText() || '';
-    
-    return {
-      type: 'BinaryOperation',
-      operator,
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode
-    } as BinaryOperationNode;
+    return this.visitBinaryOperation(ctx);
   }
 
 
   visitMultiplicativeExpression(ctx: ParserContext.MultiplicativeExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    const operator = ctx.getChild(1)?.getText() || '';
-
-    const opFunctions = {
-        '=': (left: any, right: any) => left === right,
-        '!=': (left: any, right: any) => left !== right,
-        '<': (left: any, right: any) => left < right,
-        '<=': (left: any, right: any) => left <= right,
-        '>': (left: any, right: any) => left > right,
-        '>=': (left: any, right: any) => left >= right,
-    }
-    
-    
-    return {
-      type: 'BinaryOperation',
-      operator,
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode,
-      eval: opFunctions[operator as keyof typeof opFunctions]
-    } as BinaryOperationNode;
-  }
-
-  visitUnionExpression(ctx: ParserContext.UnionExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    
-    return {
-      type: 'BinaryOperation',
-      operator: '|',
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode
-    } as BinaryOperationNode;
-  }
-
-  visitOrExpression(ctx: ParserContext.OrExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    const operator = ctx.getChild(1)?.getText() || '';
-    
-    return {
-      type: 'BinaryOperation',
-      operator,
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode
-    } as BinaryOperationNode;
-  }
-
-  visitAndExpression(ctx: ParserContext.AndExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    
-    return {
-      type: 'BinaryOperation',
-      operator: 'and',
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode
-    } as BinaryOperationNode;
-  }
-
-  visitMembershipExpression(ctx: ParserContext.MembershipExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    const operator = ctx.getChild(1)?.getText() || '';
-    
-    return {
-      type: 'BinaryOperation',
-      operator,
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode
-    } as BinaryOperationNode;
+    return this.visitBinaryOperation(ctx);
   }
 
   visitInequalityExpression(ctx: ParserContext.InequalityExpressionContext): ASTNode {
+    return this.visitBinaryOperation(ctx);
+  }
+
+  visitEqualityExpression(ctx: ParserContext.EqualityExpressionContext): ASTNode {
+    return this.visitBinaryOperation(ctx);
+  }
+
+  visitImpliesExpression(ctx: ParserContext.ImpliesExpressionContext): ASTNode {
+    return this.visitBinaryOperation(ctx);
+  }
+
+  visitUnionExpression(ctx: ParserContext.UnionExpressionContext): ASTNode {
+    return this.visitBinaryOperation(ctx);
+  }
+
+  visitOrExpression(ctx: ParserContext.OrExpressionContext): ASTNode {
+    return this.visitBinaryOperation(ctx);
+  }
+
+  visitAndExpression(ctx: ParserContext.AndExpressionContext): ASTNode {
+    return this.visitBinaryOperation(ctx);
+  }
+
+  visitMembershipExpression(ctx: ParserContext.MembershipExpressionContext): ASTNode {
+    return this.visitBinaryOperation(ctx);
+  }
+
+  visitBinaryOperation(ctx: BinaryOperationContext): ASTNode {
     const leftCtx = ctx.expression(0);
     const rightCtx = ctx.expression(1);
     const left = leftCtx ? this.visit(leftCtx) : null;
     const right = rightCtx ? this.visit(rightCtx) : null;
     const operator = ctx.getChild(1)?.getText() || '';
 
-    const opFunctions = {
-        '=': (left: any, right: any) => left === right,
-        '!=': (left: any, right: any) => left !== right,
-        '<': (left: any, right: any) => left < right,
-        '<=': (left: any, right: any) => left <= right,
-        '>': (left: any, right: any) => left > right,
-        '>=': (left: any, right: any) => left >= right,
-    }
     return {
       type: 'BinaryOperation',
       operator,
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode,
-      eval: opFunctions[operator as keyof typeof opFunctions]
+      left: left || NULL_LITERAL,
+      right: right || NULL_LITERAL,
+      eval: compileBinaryOperation(ctx, operator, left || undefined, right || undefined)
     } as BinaryOperationNode;
-  }
+  } 
 
   visitInvocationExpression(ctx: ParserContext.InvocationExpressionContext): ASTNode {
     const target = this.visit(ctx.expression());
     const invocation = this.visit(ctx.invocation());
     
-    const fnTable = {
-        'where':  {
-          build: (target: ASTNode, parameters: ASTNode[]) => {
-            return (ctx:any, data: any) => {
-              let node = target?.eval(ctx, data);
-              return node.filter((item: any) => {
-                let result = parameters?.[0]?.eval(ctx, item);
-                return result?.[0];
-              });
-            }   
-          }
-        }
-    }
     // Handle different types of invocations
     if (invocation?.type === 'Function') {
       const func = invocation as FunctionNode;
-      let fn = fnTable[func.name as keyof typeof fnTable];
+      let compileFunction = FunctionsTable[func.name as keyof typeof FunctionsTable] || this.context.functions[func.name];
+      if (!compileFunction) {
+        throw new Error(`Function ${func.name} not found`);
+      }
       return {
         type: 'Function',
         name: func.name,
         parameters: [target, ...func.parameters].filter(Boolean),
-        eval: fn.build ? fn.build(target!,func.parameters) : (fn.eval || (() => {throw new Error(`Function ${func.name} not implemented`)}))
+        eval: compileFunction(this.context, target, func.parameters)
       } as FunctionNode;
     } else if (invocation?.type === 'Identifier') {
       const id = invocation as IdentifierNode;
       return {
         type: 'Invocation',
-        target: target || { type: 'NullLiteral' } as NullLiteralNode,
+        target: target || NULL_LITERAL,
         member: id.name,
-        eval: (ctx:any, data: any) =>{
-            let node = target?.eval(ctx, data);
-            if(node === null || node === undefined){
-                return null;
-            }
-            if(Array.isArray(node)){
-                return node.map((item: any) => item[id.name]);
-            }
-            return node[id.name];
-        }
+        eval: compileInvocation(this.context, id.name, target!)
       } as InvocationNode;
     }
-    
-    return invocation || { type: 'NullLiteral' } as NullLiteralNode;
-  }
-
-  visitEqualityExpression(ctx: ParserContext.EqualityExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    const operator = ctx.getChild(1)?.getText() || '';
-    
-    const opFunctions = {
-        '=': (ctx: any, data: any) => {
-          let leftNode = left?.eval(ctx, data);
-          let rightNode = right?.eval(ctx, data);
-          return eq(leftNode, rightNode);
-        }
-    }
-    return {
-      type: 'BinaryOperation',
-      operator,
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode,
-      eval: opFunctions[operator as keyof typeof opFunctions]
-    } as BinaryOperationNode;
-  }
-
-  visitImpliesExpression(ctx: ParserContext.ImpliesExpressionContext): ASTNode {
-    const leftCtx = ctx.expression(0);
-    const rightCtx = ctx.expression(1);
-    const left = leftCtx ? this.visit(leftCtx) : null;
-    const right = rightCtx ? this.visit(rightCtx) : null;
-    
-    return {
-      type: 'BinaryOperation',
-      operator: 'implies',
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
-      right: right || { type: 'NullLiteral' } as NullLiteralNode
-    } as BinaryOperationNode;
+    throw new Error(`Invalid invocation: ${invocation}`);
   }
 
   visitTermExpression(ctx: ParserContext.TermExpressionContext): ASTNode {
     const result = this.visit(ctx.term());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    return result || NULL_LITERAL;
   }
 
   visitTypeExpression(ctx: ParserContext.TypeExpressionContext): ASTNode {
@@ -315,7 +330,7 @@ export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
     return {
       type: 'TypeOperation',
       operator,
-      left: left || { type: 'NullLiteral' } as NullLiteralNode,
+      left: left || NULL_LITERAL,
       right
     } as TypeOperationNode;
   }
@@ -323,27 +338,27 @@ export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
   // Term visitors
   visitInvocationTerm(ctx: ParserContext.InvocationTermContext): ASTNode {
     const result = this.visit(ctx.invocation());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    return result || NULL_LITERAL;
   }
 
   visitLiteralTerm(ctx: ParserContext.LiteralTermContext): ASTNode {
     const result = this.visit(ctx.literal());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    return result || NULL_LITERAL;
   }
 
   visitExternalConstantTerm(ctx: ParserContext.ExternalConstantTermContext): ASTNode {
     const result = this.visit(ctx.externalConstant());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    return result || NULL_LITERAL;
   }
 
   visitParenthesizedTerm(ctx: ParserContext.ParenthesizedTermContext): ASTNode {
     const result = this.visit(ctx.expression());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    return result || NULL_LITERAL;
   }
 
   // Literal visitors
   visitNullLiteral(ctx: ParserContext.NullLiteralContext): ASTNode {
-    return { type: 'NullLiteral' } as NullLiteralNode;
+    return NULL_LITERAL;
   }
 
   visitBooleanLiteral(ctx: ParserContext.BooleanLiteralContext): ASTNode {
@@ -367,66 +382,69 @@ export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
     return { type: 'NumberLiteral', value, eval: ()=> value } as NumberLiteralNode;
   }
 
+  parseDateLiteral(value: string): string {
+    return value;
+  }
+
   visitDateLiteral(ctx: ParserContext.DateLiteralContext): ASTNode {
-    const value = ctx.getText().slice(1); // Remove @
-    return { type: 'DateLiteral', value } as DateLiteralNode;
+    const value = this.parseDateLiteral(ctx.getText().slice(1)); // Remove @
+    return { type: 'DateLiteral', value, eval: ()=> value } as DateLiteralNode;
+  }
+
+  parseDateTimeLiteral(value: string): string {
+    return value;
   }
 
   visitDateTimeLiteral(ctx: ParserContext.DateTimeLiteralContext): ASTNode {
-    const value = ctx.getText().slice(1); // Remove @
-    return { type: 'DateTimeLiteral', value } as DateTimeLiteralNode;
+    const value = this.parseDateTimeLiteral(ctx.getText().slice(1)); // Remove @
+    return { type: 'DateTimeLiteral', value, eval: ()=> value } as DateTimeLiteralNode;
+  }
+
+  parseTimeLiteral(value: string): string {
+    return value;
   }
 
   visitTimeLiteral(ctx: ParserContext.TimeLiteralContext): ASTNode {
-    const value = ctx.getText().slice(1); // Remove @
-    return { type: 'TimeLiteral', value } as TimeLiteralNode;
+    const value = this.parseTimeLiteral(ctx.getText().slice(1)); // Remove @
+    return { type: 'TimeLiteral', value, eval: ()=> value } as TimeLiteralNode;
+  }
+
+  parseQuantityLiteral(value: string): number {
+    return parseFloat(value);
   }
 
   visitQuantityLiteral(ctx: ParserContext.QuantityLiteralContext): ASTNode {
-    const result = this.visit(ctx.quantity());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    const value = this.parseQuantityLiteral(ctx.getText().slice(1)); // Remove @
+    return { 
+      type: 'Quantity', 
+      value: value, 
+      eval: ()=> {return {value: value, unit:undefined}}
+    } as QuantityNode;
+  }
+
+  getExternalConstant(name: string): string {
+    return this.context.constants[name];
   }
 
   visitExternalConstant(ctx: ParserContext.ExternalConstantContext): ASTNode {
     const name = ctx.identifier()?.getText() || ctx.STRING()?.getText()?.slice(1, -1) || '';
-    return { type: 'ExternalConstant', name } as ExternalConstantNode;
+    const value = this.getExternalConstant(name);
+    return { type: 'ExternalConstant', name, value, eval: ()=> value } as ExternalConstantNode;
   }
 
   // Invocation visitors
   visitMemberInvocation(ctx: ParserContext.MemberInvocationContext): ASTNode {
     const name = ctx.identifier().getText();
-    let evaluate = (ctx:any, data: any) => {};
-    if (name[0]?.toUpperCase() == name[0]){
-        evaluate = (ctx:any, data: any) => {
-            if (data.resourceType === name){
-                return data;
-            }
-            return null;
-        }
-    } else {
-        evaluate = (ctx:any, data: any) =>{
-          if(data === null || data === undefined){
-            return null;
-          }
-          return (Array.isArray(data) ? data : [data]).reduce((acc: any, item: any) => {
-              if(item[name]){
-                  acc.push(item[name]);
-              }
-              return acc;
-          }, []);
-        }
-
-    }
     return { 
         type: 'Identifier', 
         name,
-        eval: evaluate
+        eval: compileMemberInvocation(this.context, name)
     } as IdentifierNode;
   }
 
   visitFunctionInvocation(ctx: ParserContext.FunctionInvocationContext): ASTNode {
     const result = this.visit(ctx.function());
-    return result || { type: 'NullLiteral' } as NullLiteralNode;
+    return result || NULL_LITERAL;
   }
 
   visitThisInvocation(ctx: ParserContext.ThisInvocationContext): ASTNode {
@@ -455,15 +473,16 @@ export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
     } as FunctionNode;
   }
 
+  parseQuantity(textValue: string, unit: string | undefined): number {
+    const value = parseFloat(textValue);
+    return value;
+  }
+
   visitQuantity(ctx: ParserContext.QuantityContext): ASTNode {
-    const value = parseFloat(ctx.NUMBER().getText());
     const unit = ctx.unit()?.getText();
-    
-    return {
-      type: 'Quantity',
-      value,
-      unit
-    } as QuantityNode;
+    const textValue = ctx.NUMBER().getText();
+    const value = this.parseQuantity(textValue, unit);
+    return { type: 'Quantity', value, unit, eval: ()=> {return {value: value, unit:unit}}} as QuantityNode;
   }
 
   visitIdentifier(ctx: ParserContext.IdentifierContext): ASTNode {
@@ -473,7 +492,7 @@ export class FHIRPathASTBuilder extends AbstractParseTreeVisitor<ASTNode> {
 }
 
 // Main parser function
-export function parseFHIRPath(input: string): ParseResult {
+export function parse_fhirpath(ctx: any, input: string): ParseResult {
   const errorListener = new FHIRPathErrorListener();
   
   // Create lexer
@@ -490,7 +509,7 @@ export function parseFHIRPath(input: string): ParseResult {
   
   // Parse and build AST
   const tree = parser.entireExpression();
-  const visitor = new FHIRPathASTBuilder();
+  const visitor = new FHIRPathASTBuilder(ctx);
   
   try {
     const ast = visitor.visit(tree);
@@ -509,13 +528,13 @@ export function parseFHIRPath(input: string): ParseResult {
 let cache: {[key: string]: ParseResult} = {};
 
 export function fhirpath(ctx:any, fhirpath: string, data?: any){
-    let ast = cache[fhirpath] || parseFHIRPath(fhirpath);
+    let ast = cache[fhirpath] || parse_fhirpath(ctx, fhirpath);
     cache[fhirpath] = ast;
     try{
         let result = ast.ast.eval(ctx, data);
         return result;
-    }catch(e){
-        console.error('ERROR', ast.ast);
+    }catch(e: any){
+        console.error('ERROR:',e.message, ast.ast);
         return null;
     }
 }

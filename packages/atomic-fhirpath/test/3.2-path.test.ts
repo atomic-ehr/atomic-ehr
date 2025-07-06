@@ -69,10 +69,16 @@ describe('3.2 Paths with choice types', () => {
   // The original tests use different FHIR models (r4, r5, stu3, dstu2)
   // This functionality needs to be implemented
 
-  it('Observation.code.coding.code (loinc)', () => {
+  it('Observation.code.coding.code', () => {
     const result = fhirpath(ctx, 'Observation.code.coding.code', subject);
     expect(result).toEqual(['123', '456']);
   });
+
+  it('Observation.code.coding.where.code (loinc)', () => {
+    const result = fhirpath(ctx, "Observation.code.coding.where(system = 'loinc').code", subject);
+    expect(result).toEqual(['123']);
+  });
+
 
   it('Observation.code.coding.where.code (snomed)', () => {
     const result = fhirpath(ctx, "Observation.code.coding.where(system = 'loinc').code", subject);

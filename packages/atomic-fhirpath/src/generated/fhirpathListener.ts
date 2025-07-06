@@ -1,6 +1,6 @@
 // Generated from fhirpath.g4 by ANTLR 4.13.1
 
-import { ErrorNode, ParseTreeListener, ParserRuleContext, TerminalNode } from "antlr4ng";
+import { ErrorNode, type ParseTreeListener, ParserRuleContext, TerminalNode } from "antlr4ng";
 
 
 import { EntireExpressionContext } from "./fhirpathParser.js";
