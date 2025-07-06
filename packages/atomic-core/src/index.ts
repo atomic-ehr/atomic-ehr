@@ -3,7 +3,7 @@ export * from "./repository";
 export * from "./auth";
 export * from "./terminology";
 export * from "./service";
-export * from "./logger";
+// Logger types are now exported from telemetry.ts
 export * from "./fhirpath";
 export * from "./context";
 export * from "./config";

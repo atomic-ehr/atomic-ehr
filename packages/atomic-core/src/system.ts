@@ -1,7 +1,7 @@
 import type { AtomicRepository, AtomicRepositoryConfig } from "./repository";
 import type { AtomicFhirTerminology, AtomicFhirTerminologyConfig } from "./terminology";
 import type { AtomicService, AtomicServiceConfig } from "./service";
-import type { AtomicLogger, AtomicLoggerConfig } from "./logger";
+import type { LogAttributes } from "./telemetry";
 import type { AtomicFhirpath, AtomicFhirpathConfig, FhirpathContext, FhirpathResult } from "./fhirpath";
 import type { AtomicContext } from "./context";
 import type { AtomicConfig } from "./config";
@@ -10,51 +10,30 @@ import type { AtomicTelemetry, AtomicTelemetryConfig } from "./telemetry";
 import type { AtomicFhirRegistry, AtomicFhirRegistryConfig, AtomicFhirResolutionOptions } from "./registry";
 import type { AtomicValidator, AtomicValidationOptions, AtomicValidationOutcome } from "./validation";
 
-export class AtomicSystem {
-  private config: AtomicConfig;
-  loggers: AtomicLogger[] = [];
-
+export class AtomicSystem implements AtomicContext {
+  config: AtomicConfig;
+  telemetry?: AtomicTelemetry;
+  registry?: AtomicFhirRegistry;
   constructor(config: AtomicConfig) {
     this.config = config;
   }
-
   async init(): Promise<void> {
-    this.config.logger?.forEach(async loggerConfig => {
-        try {
-            const loggerInstance = new loggerConfig.engine(this as unknown as AtomicContext, loggerConfig);
-            await loggerInstance.init();
-            this.loggers.push(loggerInstance);
-        } catch (error) {
-            console.error('Error initializing logger', loggerConfig, error);
-        }
-    });
+    if (this.config.telemetry) {
+      this.telemetry = new this.config.telemetry.engine(
+        this as unknown as AtomicContext,
+        this.config.telemetry
+      );
+      await this.telemetry.init();
+    }
+
+    if (this.config.registry) {
+      this.registry = new this.config.registry.engine(
+        this as unknown as AtomicContext,
+        this.config.registry
+      );
+      await this.registry.init();
+    }
   }
-
-  log(message: string): void {
-    this.loggers.forEach(logger => logger.log(message));
-  }
-
-  info(message: string): void {
-    this.loggers.forEach(logger => logger.info(message));
-  }
-
-  warn(message: string): void {
-    this.loggers.forEach(logger => logger.warn(message));
-  }
-
-  error(message: string): void {
-    this.loggers.forEach(logger => logger.error(message));
-  }
-
-  debug(message: string): void {
-    this.loggers.forEach(logger => logger.debug(message));
-  }
-
-  trace(message: string): void {
-    this.loggers.forEach(logger => logger.trace(message));
-  }
-
-
 }
 
 

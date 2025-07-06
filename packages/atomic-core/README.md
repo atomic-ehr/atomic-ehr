@@ -189,3 +189,142 @@ Atomic Core is designed to be extended. Common extension points include:
 ## Support
 
 [Support information would go here]
+
+## Features
+
+### OpenTelemetry-Compatible Structured Logging
+
+The logging system is fully compatible with the [OpenTelemetry Logs API specification](https://opentelemetry.io/docs/specs/otel/logs/api/#emit-a-logrecord), providing structured logging with attributes, trace correlation, and configurable log levels.
+
+#### Key Features
+
+- **OpenTelemetry Compatibility**: Full compliance with OpenTelemetry Logs API specification
+- **Structured Logging**: Rich attributes and context for better observability
+- **Trace Correlation**: Automatic correlation with distributed tracing
+- **Configurable Levels**: Support for all standard log levels (trace, debug, info, warn, error, fatal)
+- **Instrumentation Scope**: Proper identification of log sources
+- **Performance Optimized**: Built-in `enabled()` checks to avoid expensive operations
+
+#### Basic Usage
+
+```typescript
+import { AtomicSystem, AtomicConfig } from '@atomic-ehr/core';
+
+// Configure logging
+const config: AtomicConfig = {
+  logger: [{ 
+    engine: ConsoleLogger,
+    level: 'info' // Optional: filter logs by level
+  }],
+  // ... other configuration
+};
+
+const system = new AtomicSystem(config);
+await system.init();
+
+// Simple logging
+system.info("User logged in", { 
+  userId: "123", 
+  sessionId: "abc-123" 
+});
+
+// Error logging with context
+system.error("Database connection failed", {
+  error: "ECONNREFUSED",
+  host: "localhost",
+  port: 5432,
+  operation: "user-fetch"
+});
+```
+
+#### OpenTelemetry-Compatible API
+
+The logging system implements the full OpenTelemetry Logs API:
+
+```typescript
+// Using the Logger interface directly
+const logger = system.loggers[0];
+
+// Check if logging is enabled (performance optimization)
+if (logger.enabled(9)) { // INFO level
+  logger.emit({
+    timestamp: Date.now() * 1000000,
+    observedTimestamp: Date.now() * 1000000,
+    severityNumber: 9,
+    severityText: "INFO",
+    body: "Custom log record",
+    attributes: { 
+      userId: "123",
+      operation: "data-processing"
+    },
+    eventName: "user.data.processed"
+  });
+}
+```
+
+#### LoggerProvider Pattern
+
+For advanced usage, you can implement the LoggerProvider pattern:
+
+```typescript
+import { AtomicLoggerProvider, InstrumentationScope } from '@atomic-ehr/core';
+
+class CustomLoggerProvider extends AtomicLoggerProvider {
+  protected createLogger(instrumentationScope: InstrumentationScope): AtomicLogger {
+    return new CustomLogger(this.context, this.config, instrumentationScope);
+  }
+}
+```
+
+#### Custom Logger Implementation
+
+```typescript
+import { AtomicLogger, LogRecord, InstrumentationScope } from '@atomic-ehr/core';
+
+class CustomLogger extends AtomicLogger {
+  constructor(context: AtomicContext, config: AtomicLoggerConfig, instrumentationScope: InstrumentationScope) {
+    super(context, config, instrumentationScope);
+  }
+
+  emit(record: LogRecord): void {
+    // Custom log processing logic
+    console.log(JSON.stringify({
+      timestamp: record.timestamp,
+      level: record.severityText,
+      message: record.body,
+      attributes: record.attributes,
+      scope: record.instrumentationScope?.name,
+      traceId: record.traceId,
+      spanId: record.spanId
+    }));
+  }
+}
+```
+
+#### Log Levels and Severity Numbers
+
+Following OpenTelemetry standards:
+
+| Level | Severity Number | Description |
+|-------|----------------|-------------|
+| trace | 1 | Detailed debugging information |
+| debug | 5 | Debug-level messages |
+| info  | 9 | Informational messages |
+| warn  | 13 | Warning messages |
+| error | 17 | Error conditions |
+| fatal | 21 | Fatal error conditions |
+
+#### Trace Correlation
+
+When tracing is enabled, logs are automatically correlated with spans:
+
+```typescript
+// Logs will include traceId and spanId when available
+system.info("Processing user request", {
+  userId: "123",
+  operation: "profile-update"
+});
+// Output includes: traceId, spanId, traceFlags
+```
+
+This OpenTelemetry-compatible logging system provides a foundation for comprehensive observability in distributed healthcare systems, enabling better monitoring, debugging, and compliance tracking.

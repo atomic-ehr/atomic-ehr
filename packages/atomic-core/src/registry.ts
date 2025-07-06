@@ -5,16 +5,18 @@ export interface AtomicFhirResolutionOptions {
 }
 
 export interface AtomicFhirRegistryConfig {
-    engine: typeof AtomicFhirRegistry;
+    engine: new (context: AtomicContext, config: AtomicFhirRegistryConfig) => AtomicFhirRegistry;
     packages?: string[];
 }
 
-export class AtomicFhirRegistry {
+export abstract class AtomicFhirRegistry {
     context: AtomicContext;
     constructor(context: AtomicContext, config: AtomicFhirRegistryConfig) {
         this.context = context;
     }
-    resolve(resolutionContext: AtomicFhirResolutionOptions, canonical: string): Promise<AtomicCanonicalResource> {
-        throw new Error('Not implemented');
-    }
+
+    abstract init(): Promise<void>;
+    abstract listPackages(): Promise<string[]>;
+    abstract getPackage(packageName: string): Promise<string>;
+    abstract resolve(resolutionContext: AtomicFhirResolutionOptions, canonical: string): Promise<AtomicCanonicalResource>;
 } 
