@@ -3,6 +3,12 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "workspaces": [ 
+    "packages/atomic-core",
+    "packages/atomic-fhirschema",
+    "packages/atomic-fhirpath",
+    "packages/atomic-simple"
+  ],
   "scripts": {
     "test:fhirschema": "cd packages/atomic-fhirschema && bun test",
     "test:fhirpath": "cd packages/atomic-fhirpath && bun test",

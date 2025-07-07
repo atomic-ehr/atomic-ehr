@@ -2,12 +2,12 @@ import type { AtomicContext } from "./context";
 import type { AtomicResource } from "./resource";
 
 
-export interface AtomicRepositoryConfig {
+export interface AtomicResourceRepositoryConfig {
     schema?: string;
     type?: string;
     resourceType?: string;
     resourceDefinition?: string;
-    engine: typeof AtomicRepository;
+    engine: typeof AtomicResourceRepository;
     disableHistory?: boolean;
     definition?: string;
     [key: string]: any;
@@ -18,8 +18,6 @@ export interface AtomicError {
     code: string;
     message: string;
 }
-
-
 
 export interface AtomicReadOptions {
     resourceType: string;
@@ -129,17 +127,17 @@ export type AtomicBulkDeleteResult =
     | { status: 'not-found'; resources: AtomicResource[] }
     | { status: 'error'; error: AtomicError };
 
-export class AtomicRepository {
+export class AtomicResourceRepository {
     context: AtomicContext;
-    config: AtomicRepositoryConfig;
-    constructor(context: AtomicContext, config: AtomicRepositoryConfig) {
+    config: AtomicResourceRepositoryConfig;
+    constructor(context: AtomicContext, config: AtomicResourceRepositoryConfig) {
         this.context = context;
         this.config = config;
     }
     init(): Promise<void> {
         return Promise.resolve();
     }
-    destroy(context: AtomicContext, config: AtomicRepositoryConfig): Promise<void> {
+    destroy(context: AtomicContext, config: AtomicResourceRepositoryConfig): Promise<void> {
         throw new Error('Method not implemented.');
     }
     read(options: AtomicReadOptions): Promise<AtomicReadResult> {

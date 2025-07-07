@@ -1,10 +1,10 @@
-# AtomicFHIR Registry System
+# AtomicKnowledgeRepository
 
-The AtomicFHIR Registry system provides a pluggable architecture for resolving FHIR canonical resources (like StructureDefinitions, ValueSets, CodeSystems, etc.) from various sources. This system enables applications to resolve FHIR resources by their canonical URLs without needing to know the specific storage mechanism.
+The AtomicKnowledgeRepository provides a pluggable architecture for resolving FHIR canonical resources (like StructureDefinitions, ValueSets, CodeSystems, etc.) from various sources. This system enables applications to resolve FHIR resources by their canonical URLs without needing to know the specific storage mechanism.
 
 ## Overview
 
-The registry pattern allows the AtomicFHIR system to:
+The registry pattern allows the AtomicKnowledgeRepository to:
 - Resolve FHIR resources by canonical URLs
 - Support multiple registry implementations (npm packages, file system, remote servers, etc.)
 - Cache resolved resources for performance
@@ -13,9 +13,9 @@ The registry pattern allows the AtomicFHIR system to:
 
 ## Architecture
 
-### Core Interface: `AtomicFhirRegistry`
+### Core Interface: `AtomicKnowledgeRepository`
 
-The `AtomicFhirRegistry` is an abstract base class that defines the contract for all registry implementations:
+The `AtomicKnowledgeRepository` is an abstract base class that defines the contract for all registry implementations:
 
 ```typescript
 abstract class AtomicFhirRegistry {
@@ -56,7 +56,7 @@ The `NodeModulesRegistry` is a concrete implementation that uses npm/bun package
 ### Configuration
 
 ```typescript
-interface NodeModulesRegistryConfig extends AtomicFhirRegistryConfig {
+interface NPMKnowledgeRepositoryConfig extends AtomicKnowledgeRepositoryConfig {
     registryUrl: string;        // NPM registry URL (e.g., "https://fs.get-ig.org/pkgs/")
     workingDirectory: string;   // Directory for package installation
     packages?: string[];        // List of packages to install
@@ -67,7 +67,7 @@ interface NodeModulesRegistryConfig extends AtomicFhirRegistryConfig {
 
 ```typescript
 import { AtomicSystem } from "atomic-core";
-import { NodeModulesRegistry } from "atomic-core/registry/node-modules-registry";
+import { NPMKnowlegeRepository } from "atomic-core/registry/npm-knowledge-repository";
 
 const system = new AtomicSystem({
     registry: {
@@ -85,10 +85,7 @@ const system = new AtomicSystem({
 await system.init();
 
 // Resolve a StructureDefinition
-const patientStructDef = await system.registry.resolve(
-    {}, 
-    "http://hl7.org/fhir/StructureDefinition/Patient"
-);
+const patientStructDef = await system.registry.resolve( {package: "hl7.fhir.r4.core"}, "http://hl7.org/fhir/StructureDefinition/Patient");
 
 if (patientStructDef.status === 'success') {
     console.log('Patient StructureDefinition:', patientStructDef.resource);

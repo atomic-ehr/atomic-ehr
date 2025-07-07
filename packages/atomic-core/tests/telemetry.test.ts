@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { BasicAtomicTelemetry, type AtomicTelemetryConfig } from "../src/telemetry";
-import { type AtomicContext } from "../src/context";
-import type { AtomicConfig } from "../src/config";
+import { type AtomicContext, type AtomicConfig } from "../src/context";
 import { AtomicSystem } from "../src/system";
 import type { LogAttributes, LogLevel } from "../src/telemetry";
 

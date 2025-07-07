@@ -10,13 +10,68 @@
         "typescript": "^5",
       },
     },
+    "packages/atomic-core": {
+      "name": "@atomic-ehr/core",
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/atomic-fhirpath": {
+      "name": "@atomic-ehr/fhirpath",
+      "dependencies": {
+        "antlr4ng": "^3.0.4",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "antlr4ng-cli": "^2.0.0",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/atomic-fhirschema": {
+      "name": "@atomic-ehr/fhirschema",
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/atomic-simple": {
+      "name": "@atomic-ehr/atomic-simple",
+      "dependencies": {
+        "@atomic-ehr/core": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
   },
   "packages": {
+    "@atomic-ehr/atomic-simple": ["@atomic-ehr/atomic-simple@workspace:packages/atomic-simple"],
+
+    "@atomic-ehr/core": ["@atomic-ehr/core@workspace:packages/atomic-core"],
+
+    "@atomic-ehr/fhirpath": ["@atomic-ehr/fhirpath@workspace:packages/atomic-fhirpath"],
+
+    "@atomic-ehr/fhirschema": ["@atomic-ehr/fhirschema@workspace:packages/atomic-fhirschema"],
+
     "@types/bun": ["@types/bun@1.2.18", "", { "dependencies": { "bun-types": "1.2.18" } }, "sha512-Xf6RaWVheyemaThV0kUfaAUvCNokFr+bH8Jxp+tTZfx7dAPA8z9ePnP9S9+Vspzuxxx9JRAXhnyccRj3GyCMdQ=="],
 
     "@types/node": ["@types/node@24.0.10", "", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-ENHwaH+JIRTDIEEbDK6QSQntAYGtbvdDXnMXnZaZ6k13Du1dPMmprkEHIL7ok2Wl2aZevetwTAb5S+7yIF+enA=="],
 
     "@types/react": ["@types/react@19.1.8", "", { "dependencies": { "csstype": "^3.0.2" } }, "sha512-AwAfQ2Wa5bCx9WP8nZL2uMZWod7J7/JSplxbTmBQ5ms6QpqNYm672H0Vu9ZVKVngQ+ii4R/byguVEUZQyeg44g=="],
+
+    "antlr4ng": ["antlr4ng@3.0.16", "", {}, "sha512-DQuJkC7kX3xunfF4K2KsWTSvoxxslv+FQp/WHQZTJSsH2Ec3QfFmrxC3Nky2ok9yglXn6nHM4zUaVDxcN5f6kA=="],
+
+    "antlr4ng-cli": ["antlr4ng-cli@2.0.0", "", { "bin": { "antlr4ng": "index.js" } }, "sha512-oAt5OSSYhRQn1PgahtpAP4Vp3BApCoCqlzX7Q8ZUWWls4hX59ryYuu0t7Hwrnfk796OxP/vgIJaqxdltd/oEvQ=="],
 
     "bun-types": ["bun-types@1.2.18", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-04+Eha5NP7Z0A9YgDAzMk5PHR16ZuLVa83b26kH5+cp1qZW4F6FmAURngE7INf4tKOvCE69vYvDEwoNl1tGiWw=="],
 
