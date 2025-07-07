@@ -1,8 +1,8 @@
-import { parseFHIRPath } from './src/parser.js';
+import { parse_fhirpath } from './src/parser.js';
 
 
 function evaluate(fhirpath: string, data: any){
-    let ast = parseFHIRPath(fhirpath);
+    let ast = parse_fhirpath({},fhirpath);
     try{
         return ast.ast.eval(null, data);
     }catch(e){

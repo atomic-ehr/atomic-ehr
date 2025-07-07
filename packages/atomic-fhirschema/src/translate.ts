@@ -234,7 +234,10 @@ function parsePath(element: ElementDefinition): PathElement[] {
   
   // Update the last element in path
   if (pathSegments.length > 0) {
-    pathSegments[pathSegments.length - 1] = { ...pathSegments[pathSegments.length - 1], ...pathElementData };
+    const lastElement = pathSegments[pathSegments.length - 1];
+    if (lastElement) {
+      pathSegments[pathSegments.length - 1] = { ...lastElement, ...pathElementData };
+    }
   }
   
   return pathSegments;
@@ -246,10 +249,12 @@ function getCommonPath(previousPath: PathElement[], currentPath: PathElement[]):
   const minLength = Math.min(previousPath.length, currentPath.length);
   
   for (let i = 0; i < minLength; i++) {
-    if (previousPath[i].el !== currentPath[i].el) {
+    const prevElement = previousPath[i];
+    const currElement = currentPath[i];
+    if (!prevElement || !currElement || prevElement.el !== currElement.el) {
       break;
     }
-    result.push(previousPath[i]);
+    result.push(prevElement);
   }
   
   return result;
@@ -262,20 +267,25 @@ function enrichPath(previousPath: PathElement[], currentPath: PathElement[]): Pa
   
   let i = 0;
   for (; i < minLength; i++) {
-    if (previousPath[i].el !== currentPath[i].el) {
+    const prevElement = previousPath[i];
+    const currElement = currentPath[i];
+    if (!prevElement || !currElement || prevElement.el !== currElement.el) {
       break;
     }
     enrichedPath.push({
-      ...(previousPath[i].slicing && { slicing: previousPath[i].slicing }),
-      ...(previousPath[i].sliceName && { sliceName: previousPath[i].sliceName }),
-      ...(previousPath[i].slice && { slice: previousPath[i].slice }),
-      ...currentPath[i]
+      ...(prevElement.slicing && { slicing: prevElement.slicing }),
+      ...(prevElement.sliceName && { sliceName: prevElement.sliceName }),
+      ...(prevElement.slice && { slice: prevElement.slice }),
+      ...currElement
     });
   }
   
   // Add remaining elements from currentPath
   for (; i < currentPath.length; i++) {
-    enrichedPath.push(currentPath[i]);
+    const currElement = currentPath[i];
+    if (currElement) {
+      enrichedPath.push(currElement);
+    }
   }
   
   return enrichedPath;
@@ -299,16 +309,18 @@ function calculateExits(previousCount: number, commonPathCount: number, previous
   
   for (let i = previousCount; i > commonPathCount; i--) {
     const pathElement = previousPath[i - 1];
-    if (pathElement.sliceName) {
-      exits.push(createExitSliceAction(pathElement));
+    if (pathElement) {
+      if (pathElement.sliceName) {
+        exits.push(createExitSliceAction(pathElement));
+      }
+      exits.push({ type: 'exit', el: pathElement.el });
     }
-    exits.push({ type: 'exit', el: pathElement.el });
   }
   
   if (commonPathCount > 0) {
     const previousElement = previousPath[commonPathCount - 1];
     const newElement = newPath[commonPathCount - 1];
-    if (sliceChanged(previousElement, newElement)) {
+    if (previousElement && sliceChanged(previousElement, newElement)) {
       exits.push(createExitSliceAction(previousElement));
     }
   }
@@ -321,9 +333,11 @@ function calculateEnters(commonPathCount: number, newCount: number, exits: Actio
   
   for (let i = commonPathCount; i < newCount; i++) {
     const pathElement = newPath[i];
-    enters.push({ type: 'enter', el: pathElement.el });
-    if (pathElement.sliceName) {
-      enters.push({ type: 'enter-slice', sliceName: pathElement.sliceName });
+    if (pathElement) {
+      enters.push({ type: 'enter', el: pathElement.el });
+      if (pathElement.sliceName) {
+        enters.push({ type: 'enter-slice', sliceName: pathElement.sliceName });
+      }
     }
   }
   
@@ -357,7 +371,10 @@ function popAndUpdate<T>(stack: T[], updateFn: (parentValue: T, currentValue: T)
   const parentValue = remainingStack[remainingStack.length - 1];
   const baseStack = remainingStack.slice(0, -1);
   
-  return [...baseStack, updateFn(parentValue, currentValue)];
+  if (parentValue !== undefined && currentValue !== undefined) {
+    return [...baseStack, updateFn(parentValue, currentValue)];
+  }
+  return stack;
 }
 
 function buildMatchForSlice(slicing: Slicing, sliceSchema: any): Record<string, any> {
@@ -375,7 +392,10 @@ function buildMatchForSlice(slicing: Slicing, sliceSchema: any): Record<string, 
         const nestedPath = ['elements'];
         for (let i = 0; i < pathSegments.length; i++) {
           if (i > 0) nestedPath.push('elements');
-          nestedPath.push(pathSegments[i]);
+          const segment = pathSegments[i];
+          if (segment) {
+            nestedPath.push(segment);
+          }
         }
         const patternValue = getNestedValue(sliceSchema, [...nestedPath, 'pattern']);
         return setNestedValue(matchCriteria, pathSegments, patternValue?.value);
@@ -463,6 +483,8 @@ function applyActions(valueStack: any[], actions: Action[], elementData: any): a
   
   for (let i = 0; i < actions.length; i++) {
     const action = actions[i];
+    if (!action) continue;
+    
     const nextAction = actions[i + 1];
     // If next action is enter, we need empty value for intermediate path elements
     const currentValue = nextAction?.type === 'enter' ? {} : elementData;
@@ -883,13 +905,18 @@ function setNestedValue(obj: any, path: string[], value: any): any {
   
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i];
+    if (!key) continue;
+    
     if (!(key in current)) {
       current[key] = {};
     }
     current = current[key];
   }
   
-  current[path[path.length - 1]] = value;
+  const finalKey = path[path.length - 1];
+  if (finalKey) {
+    current[finalKey] = value;
+  }
   return result;
 }
 
