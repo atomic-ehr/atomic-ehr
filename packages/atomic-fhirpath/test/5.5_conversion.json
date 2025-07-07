@@ -1,0 +1,116 @@
+{
+  "resourceType": "Functions",
+  "attrempty": [],
+  "attrtrue": true,
+  "attrfalse": false,
+  "intstr": "101",
+  "decstr": "101.99",
+  "attrdec": 101.99,
+  "datetime": "2019-02-06T19:17-05:00",
+  "time": "T19:15",
+  "attrsingle": [
+    1
+  ],
+  "collWithNullsAndTrue": [
+    null,
+    true,
+    null
+  ],
+  "_collWithNullsAndTrue": [
+    {
+      "id": "nullId"
+    },
+    {
+      "id": "trueId"
+    },
+    {
+      "id": "lastNullId"
+    }
+  ],
+  "coll1": [
+    {
+      "coll2": [
+        {
+          "attr": 1
+        },
+        {
+          "attr": 2
+        },
+        {
+          "attr": 3
+        }
+      ]
+    },
+    {
+      "coll2": [
+        {
+          "attr": 4
+        },
+        {
+          "attr": 5
+        }
+      ]
+    },
+    {
+      "colltrue": [
+        {
+          "attr": true
+        },
+        {
+          "attr": true
+        },
+        {
+          "attr": true
+        }
+      ]
+    },
+    {
+      "collwithfalse": [
+        {
+          "attr": false
+        },
+        {
+          "attr": true
+        }
+      ]
+    },
+    {
+      "collfalse": [
+        {
+          "attr": false
+        },
+        {
+          "attr": false
+        }
+      ]
+    },
+    {
+      "mixed": [
+        {
+          "attr": true
+        },
+        {
+          "attr": false
+        },
+        {
+          "attr": "test string"
+        },
+        {
+          "attr": 999
+        },
+        {
+          "attr": 3.14159
+        },
+        {
+          "attr": "@2015-02-04T14:34:28Z"
+        },
+        {
+          "attr": "@T14:34:28+09:00"
+        },
+        {
+          "attr": "4 days"
+        }
+      ]
+    }
+  ]
+}

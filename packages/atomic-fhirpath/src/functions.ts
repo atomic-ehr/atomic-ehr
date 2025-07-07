@@ -1,4 +1,4 @@
-import type { ASTNode } from "./parser";
+import type { ASTNode } from ".";
 
 interface evalFunction {
     (ctx: any, data: any): any;

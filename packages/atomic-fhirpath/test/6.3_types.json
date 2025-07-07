@@ -1,0 +1,19 @@
+{
+  "coll": [
+    {
+      "a": 1,
+      "b": 2,
+      "c": 3
+    }
+  ],
+  "mixedTypeVals": [
+    "string",
+    1,
+    1.01,
+    {
+      "a": 1
+    },
+    true,
+    false
+  ]
+}

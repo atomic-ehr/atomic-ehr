@@ -1,0 +1,12 @@
+{
+  "resourceType": "Functions",
+  "str": [
+    {
+      "attr": "test string",
+      "attr2": "\\s\\s\\s",
+      "date": "11/30/1972",
+      "dateRange": "11/01/1972 - 11/30/1972",
+      "empty": []
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "resourceType": "Functions",
+  "collWithNull1": [
+    null,
+    1,
+    2
+  ],
+  "_collWithNull1": [
+    {
+      "id": "nullId"
+    }
+  ],
+  "collWithNull2": [
+    1,
+    2
+  ],
+  "_collWithNull2": [
+    null,
+    null,
+    {
+      "id": "nullId"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { parse_fhirpath } from './src/parser.js';
+import { parse_fhirpath } from './src/index.js';
 
 
 function evaluate(fhirpath: string, data: any){
