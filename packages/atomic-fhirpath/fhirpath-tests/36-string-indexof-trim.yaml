@@ -1,0 +1,263 @@
+name: "String indexOf and trim Functions"
+description: "Tests for indexOf(), lastIndexOf(), and trim() string manipulation functions"
+tests:
+  # indexOf() tests
+  - name: "indexOf basic usage"
+    description: "Find first occurrence of substring"
+    difficulty: "basic"
+    categories: ["functions", "string", "indexOf"]
+    expression: "'Hello World'.indexOf('World')"
+    expected: [6]
+    
+  - name: "indexOf at beginning"
+    description: "Find substring at start of string"
+    difficulty: "basic"
+    categories: ["functions", "string", "indexOf"]
+    expression: "'FHIRPath'.indexOf('FHIR')"
+    expected: [0]
+    
+  - name: "indexOf not found"
+    description: "indexOf returns -1 when substring not found"
+    difficulty: "basic"
+    categories: ["functions", "string", "indexOf"]
+    expression: "'Hello World'.indexOf('xyz')"
+    expected: [-1]
+    
+  - name: "indexOf case sensitive"
+    description: "indexOf is case sensitive"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "indexOf", "case-sensitivity"]
+    expression: "'Hello World'.indexOf('world')"
+    expected: [-1]
+    
+  - name: "indexOf with empty string"
+    description: "indexOf with empty search string"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "indexOf", "edge-cases"]
+    expression: "'Hello'.indexOf('')"
+    expected: [0]
+    
+  - name: "indexOf repeated substring"
+    description: "indexOf finds first occurrence only"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "indexOf"]
+    expression: "'ababab'.indexOf('ab')"
+    expected: [0]
+    
+  - name: "indexOf with special characters"
+    description: "indexOf with special characters"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "indexOf", "special-chars"]
+    expression: "'user@example.com'.indexOf('@')"
+    expected: [4]
+    
+  - name: "indexOf in path expression"
+    description: "Using indexOf in path navigation"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "indexOf", "path-navigation"]
+    expression: "emails.where(value.indexOf('@') > 0)"
+    expected: [
+      {"value": "john@example.com", "primary": true},
+      {"value": "j.doe@work.com", "primary": false}
+    ]
+    fixture:
+      resourceType: "Patient"
+      emails:
+        - value: "john@example.com"
+          primary: true
+        - value: "invalid-email"
+          primary: false
+        - value: "j.doe@work.com"
+          primary: false
+          
+  # lastIndexOf() tests
+  - name: "lastIndexOf basic usage"
+    description: "Find last occurrence of substring"
+    difficulty: "basic"
+    categories: ["functions", "string", "lastIndexOf"]
+    expression: "'ababab'.lastIndexOf('ab')"
+    expected: [4]
+    
+  - name: "lastIndexOf single occurrence"
+    description: "lastIndexOf with single occurrence"
+    difficulty: "basic"
+    categories: ["functions", "string", "lastIndexOf"]
+    expression: "'Hello World'.lastIndexOf('World')"
+    expected: [6]
+    
+  - name: "lastIndexOf not found"
+    description: "lastIndexOf returns -1 when not found"
+    difficulty: "basic"
+    categories: ["functions", "string", "lastIndexOf"]
+    expression: "'Hello'.lastIndexOf('xyz')"
+    expected: [-1]
+    
+  - name: "lastIndexOf file extension"
+    description: "Find file extension using lastIndexOf"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "lastIndexOf", "real-world"]
+    expression: "'document.pdf.backup'.lastIndexOf('.')"
+    expected: [12]
+    
+  # trim() tests
+  - name: "trim leading and trailing spaces"
+    description: "Remove whitespace from both ends"
+    difficulty: "basic"
+    categories: ["functions", "string", "trim"]
+    expression: "'  Hello World  '.trim()"
+    expected: ["Hello World"]
+    
+  - name: "trim only leading spaces"
+    description: "Remove leading whitespace"
+    difficulty: "basic"
+    categories: ["functions", "string", "trim"]
+    expression: "'   Hello'.trim()"
+    expected: ["Hello"]
+    
+  - name: "trim only trailing spaces"
+    description: "Remove trailing whitespace"
+    difficulty: "basic"
+    categories: ["functions", "string", "trim"]
+    expression: "'World   '.trim()"
+    expected: ["World"]
+    
+  - name: "trim with tabs and newlines"
+    description: "Trim various whitespace characters"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "trim", "whitespace"]
+    expression: "'\t\n  Hello  \n\t'.trim()"
+    expected: ["Hello"]
+    
+  - name: "trim empty string"
+    description: "Trim on empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "trim", "edge-cases"]
+    expression: "''.trim()"
+    expected: [""]
+    
+  - name: "trim all whitespace"
+    description: "Trim string that is all whitespace"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "trim", "edge-cases"]
+    expression: "'   \t\n   '.trim()"
+    expected: [""]
+    
+  - name: "trim no whitespace"
+    description: "Trim string with no whitespace"
+    difficulty: "basic"
+    categories: ["functions", "string", "trim"]
+    expression: "'NoSpaces'.trim()"
+    expected: ["NoSpaces"]
+    
+  # Complex scenarios
+  - name: "Extract domain from email"
+    description: "Use indexOf to extract email domain"
+    difficulty: "advanced"
+    categories: ["functions", "string", "indexOf", "substring", "real-world"]
+    expression: "email.substring(email.indexOf('@') + 1)"
+    expected: ["example.com"]
+    fixture:
+      resourceType: "ContactPoint"
+      email: "user@example.com"
+      
+  - name: "Extract file name without extension"
+    description: "Use lastIndexOf to remove file extension"
+    difficulty: "advanced"
+    categories: ["functions", "string", "lastIndexOf", "substring", "real-world"]
+    expression: "filename.substring(0, filename.lastIndexOf('.'))"
+    expected: ["report_2024"]
+    fixture:
+      resourceType: "DocumentReference"
+      filename: "report_2024.pdf"
+      
+  - name: "Clean and validate input"
+    description: "Trim and check for valid content"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "trim", "validation", "real-world"]
+    expression: "inputs.select(trim()).where(length() > 0)"
+    expected: ["John", "Doe", "12345"]
+    fixture:
+      resourceType: "Form"
+      inputs:
+        - "  John  "
+        - "Doe"
+        - "   "
+        - " 12345 "
+        - ""
+        
+  - name: "Parse structured data"
+    description: "Parse key-value pairs using indexOf"
+    difficulty: "advanced"
+    categories: ["functions", "string", "indexOf", "parsing", "real-world"]
+    expression: "parameters.select({key: substring(0, indexOf('=')), value: substring(indexOf('=') + 1)})"
+    expected: [
+      {"key": "name", "value": "John"},
+      {"key": "age", "value": "30"},
+      {"key": "city", "value": "Boston"}
+    ]
+    fixture:
+      resourceType: "Configuration"
+      parameters:
+        - "name=John"
+        - "age=30"
+        - "city=Boston"
+        
+  - name: "URL path extraction"
+    description: "Extract path components using indexOf"
+    difficulty: "advanced"
+    categories: ["functions", "string", "indexOf", "lastIndexOf", "real-world"]
+    expression: "url.substring(url.indexOf('://') + 3).substring(indexOf('/') + 1)"
+    expected: ["fhir/Patient/123"]
+    fixture:
+      resourceType: "Reference"
+      url: "https://example.com/fhir/Patient/123"
+      
+  # Error cases
+  - name: "indexOf on non-string"
+    description: "indexOf on non-string value"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "indexOf", "errors"]
+    expression: "123.indexOf('2')"
+    error:
+      type: "semantic"
+      message: "indexOf() requires string input"
+      
+  - name: "trim on non-string"
+    description: "trim on non-string value"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "trim", "errors"]
+    expression: "true.trim()"
+    error:
+      type: "semantic"
+      message: "trim() requires string input"
+      
+  - name: "indexOf with non-string parameter"
+    description: "indexOf with non-string search parameter"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "indexOf", "errors"]
+    expression: "'Hello'.indexOf(123)"
+    error:
+      type: "semantic"
+      message: "indexOf() requires string parameter"
+      
+  # Edge cases
+  - name: "indexOf with null"
+    description: "indexOf on null/empty"
+    difficulty: "advanced"
+    categories: ["functions", "string", "indexOf", "null-handling"]
+    expression: "{}.indexOf('test')"
+    expected: []
+    
+  - name: "trim with null"
+    description: "trim on null/empty"
+    difficulty: "advanced"
+    categories: ["functions", "string", "trim", "null-handling"]
+    expression: "{}.trim()"
+    expected: []
+    
+  - name: "indexOf overlapping pattern"
+    description: "indexOf with overlapping occurrences"
+    difficulty: "advanced"
+    categories: ["functions", "string", "indexOf", "edge-cases"]
+    expression: "'aaaa'.indexOf('aa')"
+    expected: [0]

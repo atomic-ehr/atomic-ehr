@@ -1,9 +1,0 @@
-{
-  "resourceType": "Parameters",
-  "parameter": [
-    {
-      "name": "someName",
-      "valueInteger64": "12345678901234567890"
-    }
-  ]
-}

@@ -1,0 +1,442 @@
+name: "Comparison Operators"
+description: "Tests for FHIRPath comparison operators including =, !=, <, <=, >, and >="
+
+tests:
+  # Equality operator (=)
+  - name: "Equality operator with integers"
+    description: "Test equality operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "equality"]
+    expression: "age = 30"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Equality operator with strings"
+    description: "Test equality operator with string values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "equality"]
+    expression: "name = 'John Doe'"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "Equality operator with booleans"
+    description: "Test equality operator with boolean values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "equality"]
+    expression: "active = true"
+    expected: [true]
+    fixture:
+      active: true
+
+  - name: "Equality operator with dates"
+    description: "Test equality operator with date values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "equality"]
+    expression: "birthDate = @1990-01-01"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  - name: "Equality operator with decimals"
+    description: "Test equality operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "equality"]
+    expression: "weight = 70.5"
+    expected: [true]
+    fixture:
+      weight: 70.5
+
+  - name: "Equality operator case sensitivity"
+    description: "Test equality operator is case sensitive for strings"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "equality"]
+    expression: "name = 'john doe'"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "Equality operator with null values"
+    description: "Test equality operator with null values"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "equality"]
+    expression: "middleName = {}"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  # Inequality operator (!=)
+  - name: "Inequality operator with integers"
+    description: "Test inequality operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "inequality"]
+    expression: "age != 25"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Inequality operator with strings"
+    description: "Test inequality operator with string values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "inequality"]
+    expression: "name != 'Jane Doe'"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "Inequality operator false case"
+    description: "Test inequality operator returning false"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "inequality"]
+    expression: "age != 30"
+    expected: [false]
+    fixture:
+      age: 30
+
+  - name: "Inequality operator with null"
+    description: "Test inequality operator with null values"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "inequality"]
+    expression: "middleName != {}"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  # Less than operator (<)
+  - name: "Less than operator with integers"
+    description: "Test less than operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "less"]
+    expression: "age < 35"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Less than operator with decimals"
+    description: "Test less than operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "less"]
+    expression: "weight < 80.0"
+    expected: [true]
+    fixture:
+      weight: 70.5
+
+  - name: "Less than operator with dates"
+    description: "Test less than operator with date values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "less"]
+    expression: "birthDate < @2000-01-01"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  - name: "Less than operator with strings"
+    description: "Test less than operator with string values (lexicographic)"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "less"]
+    expression: "name < 'John Zoe'"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "Less than operator false case"
+    description: "Test less than operator returning false"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "less"]
+    expression: "age < 25"
+    expected: [false]
+    fixture:
+      age: 30
+
+  # Less than or equal operator (<=)
+  - name: "Less than or equal operator - less case"
+    description: "Test less than or equal operator with smaller value"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "lessEqual"]
+    expression: "age <= 35"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Less than or equal operator - equal case"
+    description: "Test less than or equal operator with equal value"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "lessEqual"]
+    expression: "age <= 30"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Less than or equal operator false case"
+    description: "Test less than or equal operator returning false"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "lessEqual"]
+    expression: "age <= 25"
+    expected: [false]
+    fixture:
+      age: 30
+
+  # Greater than operator (>)
+  - name: "Greater than operator with integers"
+    description: "Test greater than operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "greater"]
+    expression: "age > 25"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Greater than operator with decimals"
+    description: "Test greater than operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "greater"]
+    expression: "weight > 60.0"
+    expected: [true]
+    fixture:
+      weight: 70.5
+
+  - name: "Greater than operator with dates"
+    description: "Test greater than operator with date values"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "greater"]
+    expression: "birthDate > @1980-01-01"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  - name: "Greater than operator false case"
+    description: "Test greater than operator returning false"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "greater"]
+    expression: "age > 35"
+    expected: [false]
+    fixture:
+      age: 30
+
+  # Greater than or equal operator (>=)
+  - name: "Greater than or equal operator - greater case"
+    description: "Test greater than or equal operator with larger value"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "greaterEqual"]
+    expression: "age >= 25"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Greater than or equal operator - equal case"
+    description: "Test greater than or equal operator with equal value"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "greaterEqual"]
+    expression: "age >= 30"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Greater than or equal operator false case"
+    description: "Test greater than or equal operator returning false"
+    difficulty: "basic"
+    categories: ["operators", "comparison", "greaterEqual"]
+    expression: "age >= 35"
+    expected: [false]
+    fixture:
+      age: 30
+
+  # Comparison operators with collections
+  - name: "Equality operator with collections"
+    description: "Test equality operator applied to collections"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "collection"]
+    expression: "ages = 30"
+    expected: [false, true, false]
+    fixture:
+      ages: [25, 30, 35]
+
+  - name: "Less than operator with collections"
+    description: "Test less than operator applied to collections"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "collection"]
+    expression: "ages < 30"
+    expected: [true, false, false]
+    fixture:
+      ages: [25, 30, 35]
+
+  - name: "Greater than operator with collections"
+    description: "Test greater than operator applied to collections"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "collection"]
+    expression: "ages > 30"
+    expected: [false, false, true]
+    fixture:
+      ages: [25, 30, 35]
+
+  # Complex comparison scenarios
+  - name: "Chained comparison operators"
+    description: "Test chained comparison operators"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "chained"]
+    expression: "age >= 18 and age <= 65"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Comparison with calculated values"
+    description: "Test comparison with calculated values"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "calculated"]
+    expression: "weight / (height * height) > 25"
+    expected: [false]
+    fixture:
+      weight: 70
+      height: 1.8
+
+  - name: "Date range comparison"
+    description: "Test date range comparison"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "range"]
+    expression: "eventDate >= @2020-01-01 and eventDate <= @2020-12-31"
+    expected: [true]
+    fixture:
+      eventDate: "@2020-06-15"
+
+  - name: "String comparison with contains"
+    description: "Test string comparison combined with contains"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "string"]
+    expression: "name.contains('John') and name != 'John'"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  # Type-specific comparisons
+  - name: "Quantity comparison"
+    description: "Test comparison with quantity values"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "quantity"]
+    expression: "weight > 60 'kg'"
+    expected: [true]
+    fixture:
+      weight: "70 'kg'"
+
+  - name: "Time comparison"
+    description: "Test comparison with time values"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "time"]
+    expression: "appointmentTime >= @T09:00:00"
+    expected: [true]
+    fixture:
+      appointmentTime: "@T14:30:00"
+
+  - name: "DateTime timezone comparison"
+    description: "Test comparison with datetime values in different timezones"
+    difficulty: "advanced"
+    categories: ["operators", "comparison", "timezone"]
+    expression: "@2020-01-01T10:00:00+01:00 = @2020-01-01T09:00:00Z"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  # Edge cases and error scenarios
+  - name: "Comparison with mixed types"
+    description: "Test comparison with mixed data types"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "error"]
+    expression: "age = '30'"
+    error:
+      type: "semantic"
+      message: "Cannot compare different types"
+    fixture:
+      age: 30
+
+  - name: "Comparison with empty collections"
+    description: "Test comparison with empty collections"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "empty"]
+    expression: "nonexistent = 30"
+    expected: []
+    fixture:
+      age: 30
+
+  - name: "Null comparison semantics"
+    description: "Test null comparison semantics"
+    difficulty: "advanced"
+    categories: ["operators", "comparison", "null"]
+    expression: "middleName = middleName"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  # Real-world comparison scenarios
+  - name: "Age-based eligibility check"
+    description: "Test age-based eligibility using comparison"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "realworld"]
+    expression: "patients.where(age >= 18 and age <= 65)"
+    expected: [{"name": "John Doe", "age": 30}, {"name": "Jane Smith", "age": 45}]
+    fixture:
+      patients:
+        - name: "John Doe"
+          age: 30
+        - name: "Minor"
+          age: 16
+        - name: "Jane Smith"
+          age: 45
+        - name: "Senior"
+          age: 70
+
+  - name: "Lab value range checking"
+    description: "Test lab value range checking with comparisons"
+    difficulty: "intermediate"
+    categories: ["operators", "comparison", "realworld"]
+    expression: "labResults.where(value < normalRange.low or value > normalRange.high)"
+    expected: [{"test": "Glucose", "value": 150, "normalRange": {"low": 70, "high": 140}}]
+    fixture:
+      labResults:
+        - test: "Cholesterol"
+          value: 180
+          normalRange:
+            low: 150
+            high: 200
+        - test: "Glucose"
+          value: 150
+          normalRange:
+            low: 70
+            high: 140
+
+  - name: "Priority-based sorting"
+    description: "Test priority-based sorting using comparisons"
+    difficulty: "advanced"
+    categories: ["operators", "comparison", "realworld"]
+    expression: "tasks.where(priority >= 8).select(name)"
+    expected: ["Critical Task", "Urgent Task"]
+    fixture:
+      tasks:
+        - name: "Regular Task"
+          priority: 5
+        - name: "Critical Task"
+          priority: 10
+        - name: "Low Priority"
+          priority: 2
+        - name: "Urgent Task"
+          priority: 8
+
+  # Operator precedence with comparisons
+  - name: "Comparison operator precedence"
+    description: "Test comparison operator precedence with arithmetic"
+    difficulty: "advanced"
+    categories: ["operators", "comparison", "precedence"]
+    expression: "value + 10 > 20"
+    expected: [true]
+    fixture:
+      value: 15
+
+  - name: "Comparison with logical operators"
+    description: "Test comparison combined with logical operators"
+    difficulty: "advanced"
+    categories: ["operators", "comparison", "logical"]
+    expression: "age > 18 and weight < 100 or height > 180"
+    expected: [true]
+    fixture:
+      age: 30
+      weight: 70
+      height: 175

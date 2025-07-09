@@ -1,0 +1,222 @@
+name: "Path Navigation"
+description: "Tests for FHIRPath path navigation including simple paths, chained paths, and collection navigation"
+
+tests:
+  # Simple Path Navigation
+  - name: "Simple property access"
+    description: "Access a simple property"
+    difficulty: "basic"
+    categories: ["navigation", "property"]
+    expression: "name"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+      age: 30
+
+  - name: "Simple property access with resourceType"
+    description: "Access property with explicit resource type"
+    difficulty: "basic"
+    categories: ["navigation", "property"]
+    expression: "Patient.name"
+    expected: ["John Doe"]
+    fixture:
+      resourceType: "Patient"
+      name: "John Doe"
+      age: 30
+
+  - name: "Non-existent property"
+    description: "Access non-existent property returns empty collection"
+    difficulty: "basic"
+    categories: ["navigation", "property"]
+    expression: "nonexistent"
+    expected: []
+    fixture:
+      name: "John Doe"
+      age: 30
+
+  # Chained Path Navigation
+  - name: "Chained property access"
+    description: "Access nested property using chained paths"
+    difficulty: "basic"
+    categories: ["navigation", "chained"]
+    expression: "name.given"
+    expected: ["John", "William"]
+    fixture:
+      name:
+        given: ["John", "William"]
+        family: "Doe"
+      age: 30
+
+  - name: "Deep chained property access"
+    description: "Access deeply nested property"
+    difficulty: "intermediate"
+    categories: ["navigation", "chained"]
+    expression: "contact.name.given"
+    expected: ["Jane"]
+    fixture:
+      name: "John Doe"
+      contact:
+        name:
+          given: ["Jane"]
+          family: "Smith"
+        relationship: "spouse"
+
+  # Collection Navigation
+  - name: "Collection property access"
+    description: "Access property from collection returns all values"
+    difficulty: "basic"
+    categories: ["navigation", "collection"]
+    expression: "name.given"
+    expected: ["John", "William", "Bob"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Bob"]
+          family: "Smith"
+
+  - name: "Mixed collection access"
+    description: "Access property from mixed collection (some have property, some don't)"
+    difficulty: "intermediate"
+    categories: ["navigation", "collection"]
+    expression: "name.prefix"
+    expected: ["Dr."]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          prefix: ["Dr."]
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "Empty collection navigation"
+    description: "Navigate through empty collection"
+    difficulty: "basic"
+    categories: ["navigation", "collection"]
+    expression: "name.given"
+    expected: []
+    fixture:
+      name: []
+      age: 30
+
+  # Array Indexing
+  - name: "Array index access - first element"
+    description: "Access first element of array using index"
+    difficulty: "basic"
+    categories: ["navigation", "indexing"]
+    expression: "name[0].given"
+    expected: ["John", "William"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Bob"]
+          family: "Smith"
+
+  - name: "Array index access - second element"
+    description: "Access second element of array using index"
+    difficulty: "basic"
+    categories: ["navigation", "indexing"]
+    expression: "name[1].given"
+    expected: ["Bob"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Bob"]
+          family: "Smith"
+
+  - name: "Array index access - out of bounds"
+    description: "Access array element out of bounds returns empty"
+    difficulty: "basic"
+    categories: ["navigation", "indexing"]
+    expression: "name[5].given"
+    expected: []
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Bob"]
+          family: "Smith"
+
+  - name: "Nested array index access"
+    description: "Access nested array element using index"
+    difficulty: "intermediate"
+    categories: ["navigation", "indexing"]
+    expression: "name[0].given[1]"
+    expected: ["William"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Bob"]
+          family: "Smith"
+
+  # Special identifiers
+  - name: "Escaped identifier with backticks"
+    description: "Access property using escaped identifier"
+    difficulty: "basic"
+    categories: ["navigation", "identifier"]
+    expression: "`given`"
+    expected: ["John", "William"]
+    fixture:
+      given: ["John", "William"]
+      family: "Doe"
+
+  - name: "Escaped identifier in chain"
+    description: "Use escaped identifier in chained path"
+    difficulty: "basic"
+    categories: ["navigation", "identifier"]
+    expression: "name.`given`"
+    expected: ["John", "William"]
+    fixture:
+      name:
+        given: ["John", "William"]
+        family: "Doe"
+
+  - name: "Reserved keyword as identifier"
+    description: "Access property that is a reserved keyword"
+    difficulty: "intermediate"
+    categories: ["navigation", "identifier"]
+    expression: "`class`"
+    expected: ["inpatient"]
+    fixture:
+      class: "inpatient"
+      status: "active"
+
+  # Complex Navigation Scenarios
+  - name: "Navigation through optional properties"
+    description: "Navigate through properties that may not exist"
+    difficulty: "intermediate"
+    categories: ["navigation", "optional"]
+    expression: "extension.url"
+    expected: ["http://example.org/fhir/extension"]
+    fixture:
+      name: "John Doe"
+      extension:
+        url: "http://example.org/fhir/extension"
+        valueString: "test"
+
+  - name: "Navigation with null intermediate"
+    description: "Navigate through null intermediate property"
+    difficulty: "intermediate"
+    categories: ["navigation", "null"]
+    expression: "contact.name.given"
+    expected: []
+    fixture:
+      name: "John Doe"
+      contact: null
+
+  - name: "Multiple equivalent expressions"
+    description: "Test equivalent ways to express the same navigation"
+    difficulty: "basic"
+    categories: ["navigation", "equivalent"]
+    expressions:
+      - "name.given"
+      - "`name`.`given`"
+      - "name.`given`"
+    expected: ["John", "William"]
+    fixture:
+      name:
+        given: ["John", "William"]
+        family: "Doe"

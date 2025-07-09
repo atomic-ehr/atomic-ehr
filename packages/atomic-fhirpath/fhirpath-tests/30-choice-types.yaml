@@ -1,0 +1,251 @@
+name: "Choice Types"
+description: "Tests for FHIR choice type handling (value[x] pattern)"
+tests:
+  # Basic choice type access
+  - name: "Choice type - direct access"
+    description: "Access choice type by specific name"
+    difficulty: "basic"
+    categories: ["fhir", "choice-types"]
+    expression: "valueString"
+    fixture:
+      resourceType: "Observation"
+      valueString: "positive"
+    expected: ["positive"]
+    
+  - name: "Choice type - alternative type"
+    expression: "valueQuantity.value"
+    fixture:
+      resourceType: "Observation"
+      valueQuantity: {value: 98.6, unit: "F", system: "http://unitsofmeasure.org"}
+    expected: [98.6]
+    
+  - name: "Choice type - polymorphic access"
+    expression: "value"
+    fixture:
+      resourceType: "Observation"
+      valueString: "normal"
+    expected: ["normal"]
+    
+  - name: "Choice type - exists check"
+    expression: "value.exists()"
+    fixture:
+      resourceType: "Observation"
+      valueCodeableConcept: {text: "Present"}
+    expected: [true]
+    
+  # Multiple choice type options
+  - name: "Choice type - check which type"
+    description: "Determine which choice type is present"
+    expression: "value is String"
+    fixture:
+      resourceType: "Observation"
+      valueString: "test"
+    expected: [true]
+    
+  - name: "Choice type - wrong type check"
+    expression: "value is Quantity"
+    fixture:
+      resourceType: "Observation"
+      valueString: "test"
+    expected: [false]
+    
+  - name: "Choice type - type navigation"
+    expression: "value.ofType(Quantity).value"
+    fixture:
+      resourceType: "Observation"
+      valueQuantity: {value: 120, unit: "mmHg"}
+    expected: [120]
+    
+  # Complex choice scenarios
+  - name: "Multiple observations - different types"
+    description: "Handle collection with different choice types"
+    difficulty: "intermediate"
+    expression: "entry.resource.value"
+    fixture:
+      resourceType: "Bundle"
+      entry: [
+        {resource: {resourceType: "Observation", valueString: "normal"}},
+        {resource: {resourceType: "Observation", valueQuantity: {value: 98.6}}},
+        {resource: {resourceType: "Observation", valueBoolean: true}}
+      ]
+    expected: ["normal", {value: 98.6}, true]
+    
+  - name: "Filter by choice type"
+    expression: "entry.resource.where(value is Quantity)"
+    fixture:
+      resourceType: "Bundle"
+      entry: [
+        {resource: {resourceType: "Observation", valueString: "text"}},
+        {resource: {resourceType: "Observation", valueQuantity: {value: 10}}},
+        {resource: {resourceType: "Observation", valueQuantity: {value: 20}}}
+      ]
+    expected: [
+      {resourceType: "Observation", valueQuantity: {value: 10}},
+      {resourceType: "Observation", valueQuantity: {value: 20}}
+    ]
+    
+  # Onset[x] pattern
+  - name: "Onset choice - DateTime"
+    expression: "onset"
+    fixture:
+      resourceType: "Condition"
+      onsetDateTime: "2023-01-15"
+    expected: ["2023-01-15"]
+    
+  - name: "Onset choice - Age"
+    expression: "onset.value"
+    fixture:
+      resourceType: "Condition"
+      onsetAge: {value: 45, unit: "years"}
+    expected: [45]
+    
+  - name: "Onset choice - Period"
+    expression: "onset.start"
+    fixture:
+      resourceType: "Condition"
+      onsetPeriod: {start: "2023-01-01", end: "2023-01-31"}
+    expected: ["2023-01-01"]
+    
+  # Effective[x] pattern
+  - name: "Effective choice - instant vs period"
+    expression: "effective is Period"
+    fixture:
+      resourceType: "Observation"
+      effectivePeriod: {start: "2023-01-01T10:00:00Z"}
+    expected: [true]
+    
+  - name: "Effective choice - extract value"
+    expression: "iif(effective is Period, effective.start, effective)"
+    fixture:
+      resourceType: "Observation"
+      effectiveDateTime: "2023-01-15T10:00:00Z"
+    expected: ["2023-01-15T10:00:00Z"]
+    
+  # Medication[x] pattern
+  - name: "Medication choice - CodeableConcept"
+    expression: "medication.coding.first().code"
+    fixture:
+      resourceType: "MedicationRequest"
+      medicationCodeableConcept: {
+        coding: [{system: "http://snomed.info/sct", code: "123456"}]
+      }
+    expected: ["123456"]
+    
+  - name: "Medication choice - Reference"
+    expression: "medication.reference"
+    fixture:
+      resourceType: "MedicationRequest"
+      medicationReference: {reference: "Medication/123"}
+    expected: ["Medication/123"]
+    
+  # Complex navigation with choice types
+  - name: "Nested choice type access"
+    description: "Navigate through nested resources with choice types"
+    difficulty: "advanced"
+    expression: "component.where(value is Quantity).value.value"
+    fixture:
+      resourceType: "Observation"
+      component: [
+        {code: {text: "Systolic"}, valueQuantity: {value: 120, unit: "mmHg"}},
+        {code: {text: "Diastolic"}, valueQuantity: {value: 80, unit: "mmHg"}},
+        {code: {text: "Position"}, valueString: "sitting"}
+      ]
+    expected: [120, 80]
+    
+  - name: "Choice type in extension"
+    expression: "extension.where(url = 'value').value"
+    fixture:
+      extension: [
+        {url: "value", valueString: "extended"},
+        {url: "other", valueBoolean: true}
+      ]
+    expected: ["extended"]
+    
+  # Type conversion with choice types
+  - name: "Convert choice value"
+    expression: "value.toString()"
+    fixture:
+      resourceType: "Observation"
+      valueBoolean: true
+    expected: ["true"]
+    
+  - name: "Choice type with as operator"
+    expression: "value as Quantity"
+    fixture:
+      resourceType: "Observation"
+      valueQuantity: {value: 37, unit: "C"}
+    expected: [{value: 37, unit: "C"}]
+    
+  # Real-world patterns
+  - name: "Blood pressure components"
+    expression: "component.select({code: code.text, value: value.value, unit: value.unit})"
+    fixture:
+      resourceType: "Observation"
+      code: {text: "Blood Pressure"}
+      component: [
+        {
+          code: {text: "Systolic"},
+          valueQuantity: {value: 120, unit: "mmHg"}
+        },
+        {
+          code: {text: "Diastolic"},
+          valueQuantity: {value: 80, unit: "mmHg"}
+        }
+      ]
+    expected: [
+      {code: "Systolic", value: 120, unit: "mmHg"},
+      {code: "Diastolic", value: 80, unit: "mmHg"}
+    ]
+    
+  - name: "Dosage timing"
+    expression: "dosageInstruction.timing.repeat.bounds"
+    fixture:
+      resourceType: "MedicationRequest"
+      dosageInstruction: [{
+        timing: {
+          repeat: {
+            boundsPeriod: {start: "2023-01-01", end: "2023-01-31"}
+          }
+        }
+      }]
+    expected: [{start: "2023-01-01", end: "2023-01-31"}]
+    
+  # Edge cases
+  - name: "Choice type - both forms error"
+    description: "Resource with multiple choice values (invalid)"
+    expression: "value"
+    fixture:
+      resourceType: "Observation"
+      valueString: "text"
+      valueQuantity: {value: 10}
+    error:
+      type: "semantic"
+      message: "Multiple choice type values present"
+      
+  - name: "Empty choice access"
+    expression: "value.exists()"
+    fixture:
+      resourceType: "Observation"
+      status: "final"
+    expected: [false]
+    
+  - name: "Choice type comparison"
+    expression: "value = 'normal'"
+    fixture:
+      resourceType: "Observation"
+      valueString: "normal"
+    expected: [true]
+    
+  - name: "Polymorphic where clause"
+    expression: "observations.where(value > 100 or value = 'high')"
+    fixture:
+      observations: [
+        {valueQuantity: {value: 120}},
+        {valueString: "high"},
+        {valueQuantity: {value: 80}},
+        {valueString: "normal"}
+      ]
+    expected: [
+      {valueQuantity: {value: 120}},
+      {valueString: "high"}
+    ]

@@ -1,0 +1,331 @@
+name: "Date/Time Functions"
+description: "Tests for FHIRPath date/time functions including now(), today(), and timeOfDay()"
+
+tests:
+  # now() function
+  - name: "now() returns current datetime"
+    description: "Test now() function returns current datetime"
+    difficulty: "basic"
+    categories: ["functions", "datetime", "now"]
+    expression: "now().type().name"
+    expected: ["DateTime"]
+    fixture:
+      dummy: true
+
+  - name: "now() in comparison"
+    description: "Test now() function in date comparison"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "now"]
+    expression: "birthDate < now()"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  - name: "now() consistency within expression"
+    description: "Test now() returns same value within single expression"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "now"]
+    expression: "now() = now()"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "now() with time arithmetic"
+    description: "Test now() function with time arithmetic"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "now"]
+    expression: "(now() - birthDate).value > 25 'years'"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  # today() function
+  - name: "today() returns current date"
+    description: "Test today() function returns current date"
+    difficulty: "basic"
+    categories: ["functions", "datetime", "today"]
+    expression: "today().type().name"
+    expected: ["Date"]
+    fixture:
+      dummy: true
+
+  - name: "today() in comparison"
+    description: "Test today() function in date comparison"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "today"]
+    expression: "birthDate < today()"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  - name: "today() consistency within expression"
+    description: "Test today() returns same value within single expression"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "today"]
+    expression: "today() = today()"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "today() vs specific date"
+    description: "Test today() comparison with specific date"
+    difficulty: "basic"
+    categories: ["functions", "datetime", "today"]
+    expression: "today() >= @2020-01-01"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  # timeOfDay() function
+  - name: "timeOfDay() returns current time"
+    description: "Test timeOfDay() function returns current time"
+    difficulty: "basic"
+    categories: ["functions", "datetime", "timeOfDay"]
+    expression: "timeOfDay().type().name"
+    expected: ["Time"]
+    fixture:
+      dummy: true
+
+  - name: "timeOfDay() consistency within expression"
+    description: "Test timeOfDay() returns same value within single expression"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "timeOfDay"]
+    expression: "timeOfDay() = timeOfDay()"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "timeOfDay() comparison"
+    description: "Test timeOfDay() in time comparison"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "timeOfDay"]
+    expression: "timeOfDay() >= @T00:00:00"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "timeOfDay() business hours check"
+    description: "Test timeOfDay() for business hours check"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "timeOfDay"]
+    expression: "timeOfDay() >= @T09:00:00 and timeOfDay() <= @T17:00:00"
+    expected: [true, false]
+    fixture:
+      dummy: true
+
+  # Date/Time comparisons and operations
+  - name: "DateTime comparison with timezone"
+    description: "Test datetime comparison handling timezones"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "timezone"]
+    expression: "@2019-02-03T01:00Z = @2019-02-02T21:00-04:00"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "DateTime inequality with timezone"
+    description: "Test datetime inequality with different timezones"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "timezone"]
+    expression: "@2019-02-03T02:00Z = @2019-02-02T21:00-04:00"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "Date arithmetic with age calculation"
+    description: "Test date arithmetic for age calculation"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "arithmetic"]
+    expression: "(today() - birthDate).value.div(365.25).floor()"
+    expected: [33]
+    fixture:
+      birthDate: "@1990-06-15"
+
+  - name: "Date range checking"
+    description: "Test date range checking"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "range"]
+    expression: "effectiveDate >= @2020-01-01 and effectiveDate <= @2020-12-31"
+    expected: [true]
+    fixture:
+      effectiveDate: "@2020-06-15"
+
+  # Date/Time with collections
+  - name: "Date functions on collections"
+    description: "Test date functions applied to collections"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "collection"]
+    expression: "appointments.where(date >= today())"
+    expected: [{"date": "@2025-12-01", "type": "checkup"}]
+    fixture:
+      appointments:
+        - date: "@2020-06-15"
+          type: "consultation"
+        - date: "@2025-12-01"
+          type: "checkup"
+
+  - name: "Latest date selection"
+    description: "Test selecting latest date from collection"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "collection"]
+    expression: "dates.select($this).where($this = dates.max())"
+    expected: ["@2023-12-25"]
+    fixture:
+      dates: ["@2022-01-01", "@2023-12-25", "@2021-06-15"]
+
+  - name: "Date sorting and filtering"
+    description: "Test date sorting and filtering"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "sorting"]
+    expression: "events.where(date < today()).select(date).distinct().count()"
+    expected: [2]
+    fixture:
+      events:
+        - date: "@2020-01-01"
+          type: "start"
+        - date: "@2020-01-01"
+          type: "duplicate"
+        - date: "@2021-06-15"
+          type: "milestone"
+        - date: "@2030-01-01"
+          type: "future"
+
+  # Date/Time precision and formatting
+  - name: "Date precision comparison"
+    description: "Test date precision in comparisons"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "precision"]
+    expression: "@2020-01 <= @2020-01-15"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "DateTime precision comparison"
+    description: "Test datetime precision in comparisons"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "precision"]
+    expression: "@2020-01-01T10:30 >= @2020-01-01T10:30:00"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "Time precision comparison"
+    description: "Test time precision in comparisons"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "precision"]
+    expression: "@T10:30 = @T10:30:00"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  # Real-world scenarios
+  - name: "Appointment scheduling"
+    description: "Test appointment scheduling logic"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "realworld"]
+    expression: "appointments.where(dateTime > now() and dateTime < (now() + 7 'days'))"
+    expected: [{"dateTime": "@2025-07-10T14:00:00", "provider": "Dr. Smith"}]
+    fixture:
+      appointments:
+        - dateTime: "@2025-07-05T09:00:00"
+          provider: "Dr. Jones"
+        - dateTime: "@2025-07-10T14:00:00"
+          provider: "Dr. Smith"
+        - dateTime: "@2025-07-20T16:00:00"
+          provider: "Dr. Brown"
+
+  - name: "Medication expiry check"
+    description: "Test medication expiry date checking"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "realworld"]
+    expression: "medications.where(expiryDate <= today() + 30 'days').name"
+    expected: ["Aspirin"]
+    fixture:
+      medications:
+        - name: "Aspirin"
+          expiryDate: "@2025-07-15"
+        - name: "Vitamin D"
+          expiryDate: "@2026-01-01"
+
+  - name: "Age-based medication dosing"
+    description: "Test age-based medication dosing calculation"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "realworld"]
+    expression: "iif((today() - birthDate).value.div(365.25) >= 18, adultDose, pediatricDose)"
+    expected: ["500mg"]
+    fixture:
+      birthDate: "@1990-01-01"
+      adultDose: "500mg"
+      pediatricDose: "250mg"
+
+  - name: "Working hours validation"
+    description: "Test working hours validation"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "realworld"]
+    expression: "appointments.all(timeOfDay() >= @T08:00:00 and timeOfDay() <= @T18:00:00)"
+    expected: [false]
+    fixture:
+      appointments:
+        - dateTime: "@2025-07-08T09:00:00"
+        - dateTime: "@2025-07-08T14:30:00"
+        - dateTime: "@2025-07-08T19:00:00"
+
+  # Date/Time with environment variables
+  - name: "Environment variable now comparison"
+    description: "Test comparison with %now environment variable"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "environment"]
+    expression: "lastUpdated < %now"
+    expected: [true]
+    fixture:
+      lastUpdated: "@2020-01-01"
+
+  # Edge cases and error handling
+  - name: "Invalid date format handling"
+    description: "Test handling of invalid date format"
+    difficulty: "intermediate"
+    categories: ["functions", "datetime", "error"]
+    expression: "@invalid-date"
+    error:
+      type: "syntax"
+      message: "Invalid date format"
+    fixture:
+      dummy: true
+
+  - name: "Date arithmetic overflow"
+    description: "Test date arithmetic overflow handling"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "error"]
+    expression: "@9999-12-31 + 1 'year'"
+    error:
+      type: "semantic"
+      message: "Date arithmetic overflow"
+    fixture:
+      dummy: true
+
+  - name: "Time zone conversion"
+    description: "Test time zone conversion scenarios"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "timezone"]
+    expression: "@2020-01-01T00:00:00-05:00 = @2020-01-01T05:00:00Z"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  # Complex date/time expressions
+  - name: "Multi-condition date filtering"
+    description: "Test complex multi-condition date filtering"
+    difficulty: "advanced"
+    categories: ["functions", "datetime", "complex"]
+    expression: "events.where((startDate <= today()) and (endDate.empty() or endDate >= today()))"
+    expected: [{"name": "Current Event", "startDate": "@2024-01-01"}]
+    fixture:
+      events:
+        - name: "Past Event"
+          startDate: "@2020-01-01"
+          endDate: "@2020-12-31"
+        - name: "Current Event"
+          startDate: "@2024-01-01"
+        - name: "Future Event"
+          startDate: "@2026-01-01"
+          endDate: "@2026-12-31"

@@ -1,0 +1,253 @@
+name: "Math Boundary and Precision Functions"
+description: "Tests for lowBoundary(), highBoundary(), precision(), and round(precision) functions"
+tests:
+  # lowBoundary() tests
+  - name: "lowBoundary of integer"
+    description: "Get lower boundary of integer value"
+    difficulty: "basic"
+    categories: ["functions", "math", "boundary"]
+    expression: "42.lowBoundary()"
+    expected: [42]
+    
+  - name: "lowBoundary of decimal"
+    description: "Get lower boundary of decimal value"
+    difficulty: "basic"
+    categories: ["functions", "math", "boundary"]
+    expression: "3.14159.lowBoundary()"
+    expected: [3.141585]
+    
+  - name: "lowBoundary with significant digits"
+    description: "Lower boundary considering precision"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "boundary", "precision"]
+    expression: "1.95.lowBoundary()"
+    expected: [1.945]
+    
+  - name: "lowBoundary of quantity"
+    description: "Get lower boundary of quantity value"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "boundary", "quantities"]
+    expression: "(25.5 'mg').lowBoundary()"
+    expected: [{"value": 25.45, "unit": "mg"}]
+    
+  - name: "lowBoundary with path expression"
+    description: "Using lowBoundary in calculations"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "boundary", "path-navigation"]
+    expression: "measurements.value.lowBoundary()"
+    expected: [95.5, 120.5, 78.5]
+    fixture:
+      resourceType: "Observation"
+      measurements:
+        - value: 96
+          unit: "mg/dL"
+        - value: 121
+          unit: "mg/dL"
+        - value: 79
+          unit: "mg/dL"
+          
+  # highBoundary() tests
+  - name: "highBoundary of integer"
+    description: "Get upper boundary of integer value"
+    difficulty: "basic"
+    categories: ["functions", "math", "boundary"]
+    expression: "42.highBoundary()"
+    expected: [42]
+    
+  - name: "highBoundary of decimal"
+    description: "Get upper boundary of decimal value"
+    difficulty: "basic"
+    categories: ["functions", "math", "boundary"]
+    expression: "3.14159.highBoundary()"
+    expected: [3.141595]
+    
+  - name: "highBoundary with significant digits"
+    description: "Upper boundary considering precision"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "boundary", "precision"]
+    expression: "1.95.highBoundary()"
+    expected: [1.955]
+    
+  - name: "highBoundary of quantity"
+    description: "Get upper boundary of quantity value"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "boundary", "quantities"]
+    expression: "(25.5 'mg').highBoundary()"
+    expected: [{"value": 25.55, "unit": "mg"}]
+    
+  # precision() tests
+  - name: "precision of integer"
+    description: "Get precision of integer (infinite precision)"
+    difficulty: "basic"
+    categories: ["functions", "math", "precision"]
+    expression: "42.precision()"
+    expected: [8]  # Implementation specific - max precision
+    
+  - name: "precision of decimal"
+    description: "Get precision of decimal number"
+    difficulty: "basic"
+    categories: ["functions", "math", "precision"]
+    expression: "3.14.precision()"
+    expected: [3]
+    
+  - name: "precision of trailing zeros"
+    description: "Precision includes significant trailing zeros"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "precision"]
+    expression: "1.200.precision()"
+    expected: [4]
+    
+  - name: "precision of scientific notation"
+    description: "Precision of number in scientific notation"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "precision"]
+    expression: "1.23e-4.precision()"
+    expected: [3]
+    
+  - name: "precision of quantity"
+    description: "Get precision of quantity value"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "precision", "quantities"]
+    expression: "(25.50 'mg').precision()"
+    expected: [4]
+    
+  # round(precision) tests
+  - name: "round with precision parameter"
+    description: "Round to specific decimal places"
+    difficulty: "basic"
+    categories: ["functions", "math", "round", "precision"]
+    expression: "3.14159.round(2)"
+    expected: [3.14]
+    
+  - name: "round to integer with precision 0"
+    description: "Round to whole number"
+    difficulty: "basic"
+    categories: ["functions", "math", "round", "precision"]
+    expression: "5.678.round(0)"
+    expected: [6]
+    
+  - name: "round negative precision"
+    description: "Round to tens, hundreds, etc."
+    difficulty: "intermediate"
+    categories: ["functions", "math", "round", "precision"]
+    expression: "12345.round(-2)"
+    expected: [12300]
+    
+  - name: "round with higher precision than value"
+    description: "Precision parameter exceeds decimal places"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "round", "precision", "edge-cases"]
+    expression: "3.14.round(5)"
+    expected: [3.14]
+    
+  - name: "round quantity with precision"
+    description: "Round quantity value to precision"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "round", "precision", "quantities"]
+    expression: "(25.5678 'mg').round(2)"
+    expected: [{"value": 25.57, "unit": "mg"}]
+    
+  # Complex scenarios
+  - name: "Boundary checking for measurements"
+    description: "Check if values are within boundaries"
+    difficulty: "advanced"
+    categories: ["functions", "math", "boundary", "real-world"]
+    expression: "value >= reference.lowBoundary() and value <= reference.highBoundary()"
+    expected: [true]
+    fixture:
+      resourceType: "Observation"
+      value: 98.5
+      reference: 98.6
+      
+  - name: "Precision-aware comparison"
+    description: "Compare values considering their precision"
+    difficulty: "advanced"
+    categories: ["functions", "math", "precision", "comparison"]
+    expression: "(measured.round(reference.precision()) = reference)"
+    expected: [true]
+    fixture:
+      resourceType: "Result"
+      measured: 5.12345
+      reference: 5.12
+      
+  - name: "Statistical rounding with boundaries"
+    description: "Round collection values based on precision"
+    difficulty: "advanced"
+    categories: ["functions", "math", "round", "boundary", "collections"]
+    expression: "values.select(round(2))"
+    expected: [95.46, 120.78, 87.23, 102.55]
+    fixture:
+      resourceType: "DataSet"
+      values: [95.456, 120.782, 87.234, 102.549]
+      
+  - name: "Measurement uncertainty range"
+    description: "Calculate uncertainty range using boundaries"
+    difficulty: "advanced"
+    categories: ["functions", "math", "boundary", "real-world", "medical"]
+    expression: "(value.highBoundary() - value.lowBoundary()) / 2"
+    expected: [0.05]
+    fixture:
+      resourceType: "Measurement"
+      value: 10.5
+      unit: "mmol/L"
+      
+  - name: "Precision preservation in calculations"
+    description: "Maintain precision through calculations"
+    difficulty: "advanced"
+    categories: ["functions", "math", "precision", "calculations"]
+    expression: "(a + b).precision() <= a.precision().min(b.precision())"
+    expected: [true]
+    fixture:
+      resourceType: "Calculation"
+      a: 10.5
+      b: 20.25
+      
+  # Error cases
+  - name: "lowBoundary on non-numeric"
+    description: "lowBoundary on string value"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "boundary", "errors"]
+    expression: "'string'.lowBoundary()"
+    error:
+      type: "semantic"
+      message: "lowBoundary() requires numeric input"
+      
+  - name: "precision on non-numeric"
+    description: "precision on boolean value"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "precision", "errors"]
+    expression: "true.precision()"
+    error:
+      type: "semantic"
+      message: "precision() requires numeric input"
+      
+  - name: "round with non-numeric precision"
+    description: "round with invalid precision parameter"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "round", "errors"]
+    expression: "3.14.round('two')"
+    error:
+      type: "semantic"
+      message: "round() precision must be numeric"
+      
+  # Edge cases
+  - name: "boundaries of zero"
+    description: "Boundary functions on zero"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "boundary", "edge-cases"]
+    expression: "(0.lowBoundary() | 0.highBoundary())"
+    expected: [0, 0]
+    
+  - name: "precision of very small numbers"
+    description: "Precision handling for small decimals"
+    difficulty: "advanced"
+    categories: ["functions", "math", "precision", "edge-cases"]
+    expression: "0.000001.precision()"
+    expected: [6]
+    
+  - name: "round with extreme precision"
+    description: "Round with very large precision value"
+    difficulty: "advanced"
+    categories: ["functions", "math", "round", "edge-cases"]
+    expression: "3.14159265359.round(20)"
+    expected: [3.14159265359]

@@ -1,0 +1,209 @@
+name: "Collection Functions"
+description: "Tests for collection manipulation functions: combine(), union(), intersect(), exclude()"
+tests:
+  # combine() function - preserves duplicates
+  - name: "combine() - basic merge"
+    description: "Merge collections preserving duplicates"
+    difficulty: "basic"
+    categories: ["functions", "collections"]
+    expression: "(1 | 2 | 3).combine(2 | 3 | 4)"
+    fixture: {}
+    expected: [1, 2, 3, 2, 3, 4]
+    
+  - name: "combine() - with empty collection"
+    expression: "(1 | 2).combine({})"
+    fixture: {}
+    expected: [1, 2]
+    
+  - name: "combine() - both empty"
+    expression: "{}.combine({})"
+    fixture: {}
+    expected: []
+    
+  - name: "combine() - strings"
+    expression: "('a' | 'b').combine('b' | 'c')"
+    fixture: {}
+    expected: ["a", "b", "b", "c"]
+    
+  - name: "combine() - mixed types"
+    expression: "(1 | 'two').combine(true | 3)"
+    fixture: {}
+    expected: [1, "two", true, 3]
+    
+  # union() function - removes duplicates
+  - name: "union() - basic merge"
+    description: "Merge collections removing duplicates"
+    expression: "(1 | 2 | 3).union(2 | 3 | 4)"
+    fixture: {}
+    expected: [1, 2, 3, 4]
+    
+  - name: "union() - all duplicates"
+    expression: "(1 | 2 | 3).union(1 | 2 | 3)"
+    fixture: {}
+    expected: [1, 2, 3]
+    
+  - name: "union() - objects"
+    expression: "({a: 1} | {b: 2}).union({a: 1} | {c: 3})"
+    fixture: {}
+    expected: [{a: 1}, {b: 2}, {c: 3}]
+    
+  - name: "union() - preserve order"
+    expression: "(3 | 1 | 2).union(4 | 2 | 5)"
+    fixture: {}
+    expected: [3, 1, 2, 4, 5]
+    
+  # intersect() function
+  - name: "intersect() - common elements"
+    description: "Find common elements between collections"
+    expression: "(1 | 2 | 3 | 4).intersect(2 | 3 | 5)"
+    fixture: {}
+    expected: [2, 3]
+    
+  - name: "intersect() - no common elements"
+    expression: "(1 | 2 | 3).intersect(4 | 5 | 6)"
+    fixture: {}
+    expected: []
+    
+  - name: "intersect() - duplicates in first"
+    expression: "(1 | 2 | 2 | 3).intersect(2 | 3)"
+    fixture: {}
+    expected: [2, 3]
+    
+  - name: "intersect() - complex objects"
+    expression: "patients.intersect(activePatients)"
+    fixture:
+      patients: [{id: "1", name: "John"}, {id: "2", name: "Jane"}, {id: "3", name: "Bob"}]
+      activePatients: [{id: "1", name: "John"}, {id: "3", name: "Bob"}]
+    expected: [{id: "1", name: "John"}, {id: "3", name: "Bob"}]
+    
+  # exclude() function
+  - name: "exclude() - remove elements"
+    description: "Remove elements from first collection"
+    expression: "(1 | 2 | 3 | 4).exclude(2 | 4)"
+    fixture: {}
+    expected: [1, 3]
+    
+  - name: "exclude() - remove all"
+    expression: "(1 | 2 | 3).exclude(1 | 2 | 3)"
+    fixture: {}
+    expected: []
+    
+  - name: "exclude() - nothing to remove"
+    expression: "(1 | 2 | 3).exclude(4 | 5)"
+    fixture: {}
+    expected: [1, 2, 3]
+    
+  - name: "exclude() - duplicates"
+    expression: "(1 | 2 | 2 | 3).exclude(2)"
+    fixture: {}
+    expected: [1, 3]
+    
+  # Complex scenarios
+  - name: "Chained operations"
+    description: "Multiple collection operations"
+    difficulty: "intermediate"
+    expression: "(1 | 2 | 3).union(3 | 4 | 5).exclude(4)"
+    fixture: {}
+    expected: [1, 2, 3, 5]
+    
+  - name: "Set operations"
+    expression: "setA.union(setB).exclude(setA.intersect(setB))"
+    fixture:
+      setA: [1, 2, 3]
+      setB: [3, 4, 5]
+    expected: [1, 2, 4, 5]  # Symmetric difference
+    
+  - name: "Multiple combines"
+    expression: "(1 | 2).combine(3 | 4).combine(5 | 6)"
+    fixture: {}
+    expected: [1, 2, 3, 4, 5, 6]
+    
+  # Real-world scenarios
+  - name: "Merge patient lists"
+    description: "Combine patient lists from different sources"
+    difficulty: "intermediate"
+    expression: "wardPatients.union(icuPatients).union(erPatients)"
+    fixture:
+      wardPatients: [{id: "p1"}, {id: "p2"}]
+      icuPatients: [{id: "p2"}, {id: "p3"}]
+      erPatients: [{id: "p4"}]
+    expected: [{id: "p1"}, {id: "p2"}, {id: "p3"}, {id: "p4"}]
+    
+  - name: "Find shared medications"
+    expression: "patient1.medication.code.intersect(patient2.medication.code)"
+    fixture:
+      patient1: {medication: [{code: "med1"}, {code: "med2"}, {code: "med3"}]}
+      patient2: {medication: [{code: "med2"}, {code: "med3"}, {code: "med4"}]}
+    expected: ["med2", "med3"]
+    
+  - name: "Remove excluded codes"
+    expression: "allCodes.exclude(excludedCodes)"
+    fixture:
+      allCodes: ["001", "002", "003", "004", "005"]
+      excludedCodes: ["003", "005"]
+    expected: ["001", "002", "004"]
+    
+  - name: "Combine with filtering"
+    expression: "list1.combine(list2).where(value > 10)"
+    fixture:
+      list1: [{value: 5}, {value: 15}, {value: 25}]
+      list2: [{value: 8}, {value: 12}, {value: 30}]
+    expected: [{value: 15}, {value: 25}, {value: 12}, {value: 30}]
+    
+  # Performance considerations
+  - name: "Large collection union"
+    expression: "(1 to 100).union(50 to 150).count()"
+    fixture: {}
+    expected: [150]
+    
+  - name: "Intersect with empty"
+    expression: "(1 to 1000).intersect({})"
+    fixture: {}
+    expected: []
+    
+  # Edge cases
+  - name: "Union with self"
+    expression: "list.union(list)"
+    fixture:
+      list: [1, 2, 3, 2, 1]
+    expected: [1, 2, 3]
+    
+  - name: "Exclude from empty"
+    expression: "{}.exclude(1 | 2 | 3)"
+    fixture: {}
+    expected: []
+    
+  - name: "Nested collections"
+    expression: "((1 | 2) | (3 | 4)).combine((5 | 6))"
+    fixture: {}
+    expected: [[1, 2], [3, 4], 5, 6]
+    
+  - name: "Type preservation"
+    expression: "(1.0 | 2.0).union(2 | 3)"
+    fixture: {}
+    expected: [1.0, 2.0, 3]
+    
+  # Null handling
+  - name: "Union with nulls"
+    expression: "(1 | {} | 3).union(2 | {} | 4)"
+    fixture: {}
+    expected: [1, {}, 3, 2, 4]
+    
+  - name: "Exclude nulls"
+    expression: "(1 | {} | 2 | {} | 3).exclude({})"
+    fixture: {}
+    expected: [1, 2, 3]
+    
+  # Complex object operations
+  - name: "Union by property"
+    expression: "items1.union(items2).id.distinct()"
+    fixture:
+      items1: [{id: "a", value: 1}, {id: "b", value: 2}]
+      items2: [{id: "b", value: 3}, {id: "c", value: 4}]
+    expected: ["a", "b", "c"]
+    
+  # Error cases
+  - name: "Invalid combine argument"
+    expression: "(1 | 2).combine(3)"
+    fixture: {}
+    expected: [1, 2, 3]  # Single value treated as collection

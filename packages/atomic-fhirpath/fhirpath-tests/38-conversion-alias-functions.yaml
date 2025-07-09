@@ -1,0 +1,297 @@
+name: "Type Conversion and Alias Functions"
+description: "Tests for toString(), toDate(), single(), hasValue(), and string concatenation operator &"
+tests:
+  # toString() tests
+  - name: "toString from integer"
+    description: "Convert integer to string"
+    difficulty: "basic"
+    categories: ["functions", "conversion", "toString"]
+    expression: "42.toString()"
+    expected: ["42"]
+    
+  - name: "toString from decimal"
+    description: "Convert decimal to string"
+    difficulty: "basic"
+    categories: ["functions", "conversion", "toString"]
+    expression: "3.14.toString()"
+    expected: ["3.14"]
+    
+  - name: "toString from boolean"
+    description: "Convert boolean to string"
+    difficulty: "basic"
+    categories: ["functions", "conversion", "toString"]
+    expression: "true.toString()"
+    expected: ["true"]
+    
+  - name: "toString from date"
+    description: "Convert date to string"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toString", "datetime"]
+    expression: "@2024-01-15.toString()"
+    expected: ["2024-01-15"]
+    
+  - name: "toString from datetime"
+    description: "Convert datetime to string"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toString", "datetime"]
+    expression: "@2024-01-15T14:30:00.toString()"
+    expected: ["2024-01-15T14:30:00"]
+    
+  - name: "toString from quantity"
+    description: "Convert quantity to string representation"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toString", "quantities"]
+    expression: "(25.5 'mg').toString()"
+    expected: ["25.5 'mg'"]
+    
+  - name: "toString on collection"
+    description: "Convert each element to string"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toString", "collections"]
+    expression: "(1 | 2 | 3).toString()"
+    expected: ["1", "2", "3"]
+    
+  # toDate() tests
+  - name: "toDate from string"
+    description: "Convert string to date"
+    difficulty: "basic"
+    categories: ["functions", "conversion", "toDate"]
+    expression: "'2024-01-15'.toDate()"
+    expected: ["2024-01-15"]
+    
+  - name: "toDate from datetime"
+    description: "Extract date from datetime"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toDate", "datetime"]
+    expression: "@2024-01-15T14:30:00Z.toDate()"
+    expected: ["2024-01-15"]
+    
+  - name: "toDate with invalid format"
+    description: "toDate with invalid date string"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toDate", "errors"]
+    expression: "'not-a-date'.toDate()"
+    expected: []
+    
+  - name: "toDate from path expression"
+    description: "Convert birthdate strings to dates"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toDate", "path-navigation"]
+    expression: "patients.birthDate.toDate()"
+    expected: ["1990-05-15", "1985-12-20", "2000-01-01"]
+    fixture:
+      resourceType: "Bundle"
+      patients:
+        - birthDate: "1990-05-15"
+        - birthDate: "1985-12-20"
+        - birthDate: "2000-01-01"
+        
+  # single() alias tests
+  - name: "single on single-element collection"
+    description: "single() returns element if exactly one"
+    difficulty: "basic"
+    categories: ["functions", "alias", "single"]
+    expression: "(42).single()"
+    expected: [42]
+    
+  - name: "single on empty collection"
+    description: "single() errors on empty collection"
+    difficulty: "intermediate"
+    categories: ["functions", "alias", "single", "errors"]
+    expression: "{}.single()"
+    error:
+      type: "semantic"
+      message: "single() requires exactly one element"
+      
+  - name: "single on multi-element collection"
+    description: "single() errors with multiple elements"
+    difficulty: "intermediate"
+    categories: ["functions", "alias", "single", "errors"]
+    expression: "(1 | 2 | 3).single()"
+    error:
+      type: "semantic"
+      message: "single() requires exactly one element"
+      
+  - name: "single vs first comparison"
+    description: "single() is stricter than first()"
+    difficulty: "intermediate"
+    categories: ["functions", "alias", "single", "comparison"]
+    expression: "identifier.where(system = 'mrn').single()"
+    expected: [{"system": "mrn", "value": "12345"}]
+    fixture:
+      resourceType: "Patient"
+      identifier:
+        - system: "mrn"
+          value: "12345"
+          
+  # hasValue() tests
+  - name: "hasValue on element with value"
+    description: "Check if FHIR element has value"
+    difficulty: "basic"
+    categories: ["functions", "fhir", "hasValue"]
+    expression: "valueString.hasValue()"
+    expected: [true]
+    fixture:
+      resourceType: "Extension"
+      url: "http://example.com"
+      valueString: "test"
+      
+  - name: "hasValue on element without value"
+    description: "hasValue returns false for missing value"
+    difficulty: "basic"
+    categories: ["functions", "fhir", "hasValue"]
+    expression: "valueString.hasValue()"
+    expected: [false]
+    fixture:
+      resourceType: "Extension"
+      url: "http://example.com"
+      
+  - name: "hasValue on null extension"
+    description: "hasValue with null/missing extension"
+    difficulty: "intermediate"
+    categories: ["functions", "fhir", "hasValue", "null-handling"]
+    expression: "extension.hasValue()"
+    expected: [false]
+    fixture:
+      resourceType: "Element"
+      id: "test"
+      
+  - name: "hasValue in filtering"
+    description: "Use hasValue to filter elements"
+    difficulty: "intermediate"
+    categories: ["functions", "fhir", "hasValue", "filtering"]
+    expression: "extension.where(hasValue())"
+    expected: [
+      {"url": "height", "valueDecimal": 170},
+      {"url": "eye-color", "valueString": "blue"}
+    ]
+    fixture:
+      resourceType: "Patient"
+      extension:
+        - url: "weight"
+        - url: "height"
+          valueDecimal: 170
+        - url: "eye-color"
+          valueString: "blue"
+          
+  # String concatenation operator & tests
+  - name: "String concatenation with &"
+    description: "Concatenate strings using & operator"
+    difficulty: "basic"
+    categories: ["operators", "string", "concatenation"]
+    expression: "'Hello' & ' ' & 'World'"
+    expected: ["Hello World"]
+    
+  - name: "& operator with numbers"
+    description: "Concatenate numbers as strings"
+    difficulty: "intermediate"
+    categories: ["operators", "string", "concatenation", "conversion"]
+    expression: "'Value: ' & 42"
+    expected: ["Value: 42"]
+    
+  - name: "& operator with mixed types"
+    description: "Concatenate different types"
+    difficulty: "intermediate"
+    categories: ["operators", "string", "concatenation", "conversion"]
+    expression: "'Patient ' & id & ' is ' & active"
+    expected: ["Patient 12345 is true"]
+    fixture:
+      resourceType: "Patient"
+      id: "12345"
+      active: true
+      
+  - name: "& operator with null"
+    description: "Concatenation with null/empty values"
+    difficulty: "intermediate"
+    categories: ["operators", "string", "concatenation", "null-handling"]
+    expression: "'Name: ' & name.first() & ' ' & name.last()"
+    expected: ["Name: John "]
+    fixture:
+      resourceType: "Patient"
+      name:
+        - given: ["John"]
+          
+  - name: "& vs + operator comparison"
+    description: "String concatenation vs arithmetic addition"
+    difficulty: "advanced"
+    categories: ["operators", "string", "concatenation", "comparison"]
+    expression: "('1' & '2') != (1 + 2).toString()"
+    expected: [true]
+    
+  # Complex scenarios
+  - name: "Format patient identifier"
+    description: "Build formatted identifier string"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "real-world"]
+    expression: "identifier.where(use = 'official').first().type.text & ': ' & identifier.where(use = 'official').first().value"
+    expected: ["Medical Record Number: MRN-12345"]
+    fixture:
+      resourceType: "Patient"
+      identifier:
+        - use: "official"
+          type:
+            text: "Medical Record Number"
+          value: "MRN-12345"
+        - use: "secondary"
+          value: "ALT-67890"
+          
+  - name: "Date range formatting"
+    description: "Format date range as string"
+    difficulty: "advanced"
+    categories: ["functions", "conversion", "datetime", "real-world"]
+    expression: "'Period: ' & period.start.toDate().toString() & ' to ' & period.end.toDate().toString()"
+    expected: ["Period: 2024-01-01 to 2024-12-31"]
+    fixture:
+      resourceType: "Coverage"
+      period:
+        start: "2024-01-01T00:00:00Z"
+        end: "2024-12-31T23:59:59Z"
+        
+  - name: "Validate single primary contact"
+    description: "Ensure exactly one primary contact"
+    difficulty: "advanced"
+    categories: ["functions", "alias", "validation", "real-world"]
+    expression: "contact.where(relationship.coding.code = 'primary').single().name"
+    expected: ["John Smith"]
+    fixture:
+      resourceType: "Patient"
+      contact:
+        - relationship:
+            - coding:
+                - code: "primary"
+          name: "John Smith"
+        - relationship:
+            - coding:
+                - code: "emergency"
+          name: "Jane Doe"
+          
+  # Error cases
+  - name: "toString on empty collection"
+    description: "toString on empty returns empty"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toString", "edge-cases"]
+    expression: "{}.toString()"
+    expected: []
+    
+  - name: "Invalid date conversion"
+    description: "toDate with completely invalid input"
+    difficulty: "intermediate"
+    categories: ["functions", "conversion", "toDate", "errors"]
+    expression: "true.toDate()"
+    error:
+      type: "semantic"
+      message: "Cannot convert boolean to date"
+      
+  - name: "& operator type coercion limits"
+    description: "Complex object concatenation"
+    difficulty: "advanced"
+    categories: ["operators", "string", "concatenation", "errors"]
+    expression: "patient & ' suffix'"
+    error:
+      type: "semantic"
+      message: "Cannot concatenate complex object"
+    fixture:
+      resourceType: "Bundle"
+      patient:
+        id: "123"
+        name: [{given: ["John"]}]

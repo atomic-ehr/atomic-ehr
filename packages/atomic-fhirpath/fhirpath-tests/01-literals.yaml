@@ -1,0 +1,192 @@
+name: "Literal Values"
+description: "Tests for FHIRPath literal values including boolean, string, numeric, date/time, and quantity literals"
+
+tests:
+  # Boolean Literals
+  - name: "Boolean true literal"
+    description: "Test boolean true literal"
+    difficulty: "basic"
+    categories: ["literals", "boolean"]
+    expression: "true"
+    expected: [true]
+
+  - name: "Boolean false literal"
+    description: "Test boolean false literal"
+    difficulty: "basic"
+    categories: ["literals", "boolean"]
+    expression: "false"
+    expected: [false]
+
+  # String Literals
+  - name: "Simple string literal"
+    description: "Test simple string literal"
+    difficulty: "basic"
+    categories: ["literals", "string"]
+    expression: "'hello world'"
+    expected: ["hello world"]
+
+  - name: "String with escaped quote"
+    description: "Test string with escaped single quote"
+    difficulty: "basic"
+    categories: ["literals", "string"]
+    expression: "'patient''s name'"
+    expected: ["patient's name"]
+
+  - name: "String with escape sequences"
+    description: "Test string with various escape sequences"
+    difficulty: "intermediate"
+    categories: ["literals", "string"]
+    expression: "'line1\\nline2\\ttab\\\\backslash'"
+    expected: ["line1\nline2\ttab\\backslash"]
+
+  - name: "Empty string literal"
+    description: "Test empty string literal"
+    difficulty: "basic"
+    categories: ["literals", "string"]
+    expression: "''"
+    expected: [""]
+
+  # Integer Literals
+  - name: "Positive integer literal"
+    description: "Test positive integer literal"
+    difficulty: "basic"
+    categories: ["literals", "integer"]
+    expression: "42"
+    expected: [42]
+
+  - name: "Negative integer literal"
+    description: "Test negative integer literal"
+    difficulty: "basic"
+    categories: ["literals", "integer"]
+    expression: "-17"
+    expected: [-17]
+
+  - name: "Zero integer literal"
+    description: "Test zero integer literal"
+    difficulty: "basic"
+    categories: ["literals", "integer"]
+    expression: "0"
+    expected: [0]
+
+  # Decimal Literals
+  - name: "Positive decimal literal"
+    description: "Test positive decimal literal"
+    difficulty: "basic"
+    categories: ["literals", "decimal"]
+    expression: "3.14"
+    expected: [3.14]
+
+  - name: "Negative decimal literal"
+    description: "Test negative decimal literal"
+    difficulty: "basic"
+    categories: ["literals", "decimal"]
+    expression: "-2.5"
+    expected: [-2.5]
+
+  - name: "Zero decimal literal"
+    description: "Test zero decimal literal"
+    difficulty: "basic"
+    categories: ["literals", "decimal"]
+    expression: "0.0"
+    expected: [0.0]
+
+  - name: "Decimal without leading zero"
+    description: "Test decimal without leading zero"
+    difficulty: "basic"
+    categories: ["literals", "decimal"]
+    expression: ".5"
+    expected: [0.5]
+
+  # Date/Time Literals
+  - name: "Date literal"
+    description: "Test date literal"
+    difficulty: "basic"
+    categories: ["literals", "datetime"]
+    expression: "@2015-02-07"
+    expected: ["2015-02-07"]
+
+  - name: "DateTime literal with timezone"
+    description: "Test datetime literal with timezone"
+    difficulty: "intermediate"
+    categories: ["literals", "datetime"]
+    expression: "@2015-02-07T13:28:17.239+02:00"
+    expected: ["2015-02-07T13:28:17.239+02:00"]
+
+  - name: "Time literal"
+    description: "Test time literal"
+    difficulty: "basic"
+    categories: ["literals", "datetime"]
+    expression: "@T13:28:17.239"
+    expected: ["T13:28:17.239"]
+
+  - name: "Year literal"
+    description: "Test year literal"
+    difficulty: "basic"
+    categories: ["literals", "datetime"]
+    expression: "@2019"
+    expected: ["2019"]
+
+  # Quantity Literals
+  - name: "Quantity with unit in quotes"
+    description: "Test quantity with unit in quotes"
+    difficulty: "basic"
+    categories: ["literals", "quantity"]
+    expression: "5 'mg'"
+    expected: ["5 'mg'"]
+
+  - name: "Quantity with unit without quotes"
+    description: "Test quantity with unit without quotes"
+    difficulty: "basic"
+    categories: ["literals", "quantity"]
+    expression: "2 years"
+    expected: ["2 years"]
+
+  - name: "Decimal quantity"
+    description: "Test decimal quantity"
+    difficulty: "basic"
+    categories: ["literals", "quantity"]
+    expression: "3.14 'cm'"
+    expected: ["3.14 'cm'"]
+
+  - name: "Quantity with complex unit"
+    description: "Test quantity with complex unit"
+    difficulty: "intermediate"
+    categories: ["literals", "quantity"]
+    expression: "120 'mm[Hg]'"
+    expected: ["120 'mm[Hg]'"]
+
+  # Null Literal
+  - name: "Null literal (empty collection)"
+    description: "Test null literal represented as empty collection"
+    difficulty: "basic"
+    categories: ["literals", "null"]
+    expression: "{}"
+    expected: []
+
+  # Error Cases
+  - name: "Double quoted string (invalid)"
+    description: "Test that double-quoted strings are invalid"
+    difficulty: "basic"
+    categories: ["literals", "error"]
+    expression: '"invalid string"'
+    error:
+      type: "syntax"
+      message: "Double-quoted strings are not allowed"
+
+  - name: "Invalid escape sequence"
+    description: "Test invalid escape sequence in string"
+    difficulty: "intermediate"
+    categories: ["literals", "error"]
+    expression: "'invalid\\q'"
+    error:
+      type: "syntax"
+      message: "Invalid escape sequence"
+
+  - name: "Unterminated string"
+    description: "Test unterminated string literal"
+    difficulty: "basic"
+    categories: ["literals", "error"]
+    expression: "'unterminated"
+    error:
+      type: "syntax"
+      message: "Unterminated string literal"

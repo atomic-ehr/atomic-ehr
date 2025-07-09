@@ -1,0 +1,383 @@
+name: "Aggregate Functions"
+description: "Tests for FHIRPath aggregate functions including all(), any(), and sum()"
+
+tests:
+  # all() function
+  - name: "all() with true condition on all elements"
+    description: "Test all() function where condition is true for all elements"
+    difficulty: "basic"
+    categories: ["functions", "all"]
+    expression: "name.all(family.exists())"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "all() with false condition on some elements"
+    description: "Test all() function where condition is false for some elements"
+    difficulty: "basic"
+    categories: ["functions", "all"]
+    expression: "name.all(prefix.exists())"
+    expected: [false]
+    fixture:
+      name:
+        - given: ["Dr. John"]
+          family: "Doe"
+          prefix: ["Dr."]
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "all() with false condition on all elements"
+    description: "Test all() function where condition is false for all elements"
+    difficulty: "basic"
+    categories: ["functions", "all"]
+    expression: "name.all(suffix.exists())"
+    expected: [false]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "all() on empty collection"
+    description: "Test all() function on empty collection (should return true)"
+    difficulty: "basic"
+    categories: ["functions", "all"]
+    expression: "nonexistent.all(true)"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "all() on single element - true"
+    description: "Test all() function on single element with true condition"
+    difficulty: "basic"
+    categories: ["functions", "all"]
+    expression: "name.all(family = 'Doe')"
+    expected: [true]
+    fixture:
+      name:
+        given: ["John"]
+        family: "Doe"
+
+  - name: "all() on single element - false"
+    description: "Test all() function on single element with false condition"
+    difficulty: "basic"
+    categories: ["functions", "all"]
+    expression: "name.all(family = 'Smith')"
+    expected: [false]
+    fixture:
+      name:
+        given: ["John"]
+        family: "Doe"
+
+  - name: "all() with complex condition"
+    description: "Test all() function with complex boolean condition"
+    difficulty: "intermediate"
+    categories: ["functions", "all"]
+    expression: "telecom.all(system.exists() and value.exists())"
+    expected: [true]
+    fixture:
+      telecom:
+        - system: "phone"
+          value: "555-1234"
+        - system: "email"
+          value: "john@example.com"
+
+  - name: "all() with numeric comparison"
+    description: "Test all() function with numeric comparison"
+    difficulty: "intermediate"
+    categories: ["functions", "all"]
+    expression: "measurements.all(value > 0)"
+    expected: [false]
+    fixture:
+      measurements:
+        - value: 120
+          unit: "mmHg"
+        - value: 0
+          unit: "mmHg"
+        - value: 80
+          unit: "mmHg"
+
+  # any() function
+  - name: "any() with true condition on some elements"
+    description: "Test any() function where condition is true for some elements"
+    difficulty: "basic"
+    categories: ["functions", "any"]
+    expression: "name.any(use = 'official')"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Johnny"]
+          family: "Doe"
+          use: "nickname"
+
+  - name: "any() with false condition on all elements"
+    description: "Test any() function where condition is false for all elements"
+    difficulty: "basic"
+    categories: ["functions", "any"]
+    expression: "name.any(use = 'maiden')"
+    expected: [false]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Johnny"]
+          family: "Doe"
+          use: "nickname"
+
+  - name: "any() with true condition on all elements"
+    description: "Test any() function where condition is true for all elements"
+    difficulty: "basic"
+    categories: ["functions", "any"]
+    expression: "name.any(family.exists())"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "any() on empty collection"
+    description: "Test any() function on empty collection (should return false)"
+    difficulty: "basic"
+    categories: ["functions", "any"]
+    expression: "nonexistent.any(true)"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "any() on single element - true"
+    description: "Test any() function on single element with true condition"
+    difficulty: "basic"
+    categories: ["functions", "any"]
+    expression: "name.any(family = 'Doe')"
+    expected: [true]
+    fixture:
+      name:
+        given: ["John"]
+        family: "Doe"
+
+  - name: "any() on single element - false"
+    description: "Test any() function on single element with false condition"
+    difficulty: "basic"
+    categories: ["functions", "any"]
+    expression: "name.any(family = 'Smith')"
+    expected: [false]
+    fixture:
+      name:
+        given: ["John"]
+        family: "Doe"
+
+  - name: "any() with complex condition"
+    description: "Test any() function with complex boolean condition"
+    difficulty: "intermediate"
+    categories: ["functions", "any"]
+    expression: "telecom.any(system = 'phone' and use = 'home')"
+    expected: [true]
+    fixture:
+      telecom:
+        - system: "phone"
+          use: "home"
+          value: "555-1234"
+        - system: "phone"
+          use: "work"
+          value: "555-5678"
+        - system: "email"
+          use: "home"
+          value: "john@example.com"
+
+  - name: "any() with numeric comparison"
+    description: "Test any() function with numeric comparison"
+    difficulty: "intermediate"
+    categories: ["functions", "any"]
+    expression: "measurements.any(value > 100)"
+    expected: [true]
+    fixture:
+      measurements:
+        - value: 120
+          unit: "mmHg"
+        - value: 90
+          unit: "mmHg"
+        - value: 80
+          unit: "mmHg"
+
+  # sum() function
+  - name: "sum() of integers"
+    description: "Test sum() function with integer values"
+    difficulty: "basic"
+    categories: ["functions", "sum"]
+    expression: "values.sum()"
+    expected: [15]
+    fixture:
+      values: [1, 2, 3, 4, 5]
+
+  - name: "sum() of decimals"
+    description: "Test sum() function with decimal values"
+    difficulty: "basic"
+    categories: ["functions", "sum"]
+    expression: "values.sum()"
+    expected: [15.5]
+    fixture:
+      values: [1.5, 2.5, 3.5, 4.0, 4.0]
+
+  - name: "sum() of single value"
+    description: "Test sum() function with single value"
+    difficulty: "basic"
+    categories: ["functions", "sum"]
+    expression: "values.sum()"
+    expected: [42]
+    fixture:
+      values: [42]
+
+  - name: "sum() of empty collection"
+    description: "Test sum() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "sum"]
+    expression: "nonexistent.sum()"
+    expected: [0]
+    fixture:
+      values: [1, 2, 3]
+
+  - name: "sum() with negative numbers"
+    description: "Test sum() function with negative numbers"
+    difficulty: "basic"
+    categories: ["functions", "sum"]
+    expression: "values.sum()"
+    expected: [0]
+    fixture:
+      values: [-3, -2, -1, 0, 1, 2, 3]
+
+  - name: "sum() with mixed positive and negative"
+    description: "Test sum() function with mixed positive and negative numbers"
+    difficulty: "basic"
+    categories: ["functions", "sum"]
+    expression: "values.sum()"
+    expected: [5]
+    fixture:
+      values: [10, -3, -2]
+
+  - name: "sum() with quantities (should extract values)"
+    description: "Test sum() function with quantity values"
+    difficulty: "intermediate"
+    categories: ["functions", "sum"]
+    expression: "measurements.value.sum()"
+    expected: [290]
+    fixture:
+      measurements:
+        - value: 120
+          unit: "mmHg"
+        - value: 90
+          unit: "mmHg"
+        - value: 80
+          unit: "mmHg"
+
+  # Combined aggregate functions
+  - name: "Combining all() and any()"
+    description: "Test combining all() and any() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "combined"]
+    expression: "name.all(family.exists()) and name.any(use = 'official')"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Jane"]
+          family: "Smith"
+          use: "nickname"
+
+  - name: "all() with count() condition"
+    description: "Test all() function with count() condition"
+    difficulty: "intermediate"
+    categories: ["functions", "combined"]
+    expression: "name.all(given.count() > 0)"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "any() with exists() condition"
+    description: "Test any() function with exists() condition"
+    difficulty: "intermediate"
+    categories: ["functions", "combined"]
+    expression: "name.any(prefix.exists())"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+        - given: ["Dr. Jane"]
+          family: "Smith"
+          prefix: ["Dr."]
+
+  - name: "sum() with where() filter"
+    description: "Test sum() function with where() filter"
+    difficulty: "intermediate"
+    categories: ["functions", "combined"]
+    expression: "measurements.where(unit = 'mmHg').value.sum()"
+    expected: [200]
+    fixture:
+      measurements:
+        - value: 120
+          unit: "mmHg"
+        - value: 80
+          unit: "mmHg"
+        - value: 98.6
+          unit: "F"
+
+  # Edge cases
+  - name: "all() with always false condition"
+    description: "Test all() function with condition that's always false"
+    difficulty: "basic"
+    categories: ["functions", "edge"]
+    expression: "name.all(false)"
+    expected: [false]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+
+  - name: "any() with always true condition"
+    description: "Test any() function with condition that's always true"
+    difficulty: "basic"
+    categories: ["functions", "edge"]
+    expression: "name.any(true)"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+
+  - name: "sum() with zero values"
+    description: "Test sum() function with all zero values"
+    difficulty: "basic"
+    categories: ["functions", "edge"]
+    expression: "values.sum()"
+    expected: [0]
+    fixture:
+      values: [0, 0, 0]
+
+  # Error cases
+  - name: "sum() with non-numeric values"
+    description: "Test sum() function with non-numeric values (should error)"
+    difficulty: "intermediate"
+    categories: ["functions", "error"]
+    expression: "values.sum()"
+    error:
+      type: "semantic"
+      message: "Cannot sum non-numeric values"
+    fixture:
+      values: ["a", "b", "c"]

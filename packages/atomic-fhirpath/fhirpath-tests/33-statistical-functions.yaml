@@ -1,0 +1,280 @@
+name: "Statistical Functions"
+description: "Comprehensive tests for avg(), min(), max() statistical functions"
+tests:
+  # avg() tests
+  - name: "avg of integers"
+    description: "Calculate average of integer collection"
+    difficulty: "basic"
+    categories: ["functions", "statistics", "avg"]
+    expression: "(10 | 20 | 30 | 40 | 50).avg()"
+    expected: [30]
+    
+  - name: "avg of decimals"
+    description: "Calculate average of decimal numbers"
+    difficulty: "basic"
+    categories: ["functions", "statistics", "avg"]
+    expression: "(1.5 | 2.5 | 3.5).avg()"
+    expected: [2.5]
+    
+  - name: "avg with mixed numeric types"
+    description: "Average of integers and decimals"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "avg"]
+    expression: "(10 | 20.5 | 30).avg()"
+    expected: [20.166666666666668]
+    
+  - name: "avg of single element"
+    description: "Average of single-element collection"
+    difficulty: "basic"
+    categories: ["functions", "statistics", "avg", "edge-cases"]
+    expression: "(42).avg()"
+    expected: [42]
+    
+  - name: "avg on empty collection"
+    description: "avg() on empty collection returns empty"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "avg", "edge-cases"]
+    expression: "{}.avg()"
+    expected: []
+    
+  - name: "avg with path expression"
+    description: "Calculate average from path navigation"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "avg", "path-navigation"]
+    expression: "vitals.bloodPressure.systolic.avg()"
+    expected: [135]
+    fixture:
+      resourceType: "Patient"
+      vitals:
+        - date: "2024-01-01"
+          bloodPressure:
+            systolic: 120
+            diastolic: 80
+        - date: "2024-01-02"
+          bloodPressure:
+            systolic: 140
+            diastolic: 90
+        - date: "2024-01-03"
+          bloodPressure:
+            systolic: 145
+            diastolic: 95
+            
+  # min() tests
+  - name: "min of integers"
+    description: "Find minimum in integer collection"
+    difficulty: "basic"
+    categories: ["functions", "statistics", "min"]
+    expression: "(30 | 10 | 50 | 20 | 40).min()"
+    expected: [10]
+    
+  - name: "min of decimals"
+    description: "Find minimum in decimal collection"
+    difficulty: "basic"
+    categories: ["functions", "statistics", "min"]
+    expression: "(3.14 | 2.71 | 1.41 | 2.23).min()"
+    expected: [1.41]
+    
+  - name: "min with negative numbers"
+    description: "Minimum with negative values"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "min"]
+    expression: "(5 | -10 | 3 | -2 | 0).min()"
+    expected: [-10]
+    
+  - name: "min of strings"
+    description: "Find lexicographic minimum of strings"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "min", "strings"]
+    expression: "('zebra' | 'apple' | 'banana').min()"
+    expected: ['apple']
+    
+  - name: "min of dates"
+    description: "Find earliest date"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "min", "datetime"]
+    expression: "(@2024-01-15 | @2024-01-01 | @2024-01-30).min()"
+    expected: ["2024-01-01"]
+    
+  - name: "min on empty collection"
+    description: "min() on empty collection returns empty"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "min", "edge-cases"]
+    expression: "{}.min()"
+    expected: []
+    
+  # max() tests
+  - name: "max of integers"
+    description: "Find maximum in integer collection"
+    difficulty: "basic"
+    categories: ["functions", "statistics", "max"]
+    expression: "(30 | 10 | 50 | 20 | 40).max()"
+    expected: [50]
+    
+  - name: "max of decimals"
+    description: "Find maximum in decimal collection"
+    difficulty: "basic"
+    categories: ["functions", "statistics", "max"]
+    expression: "(3.14 | 2.71 | 1.41 | 2.23).max()"
+    expected: [3.14]
+    
+  - name: "max with negative numbers"
+    description: "Maximum with negative values"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "max"]
+    expression: "(-5 | -10 | -3 | -2 | -20).max()"
+    expected: [-2]
+    
+  - name: "max of strings"
+    description: "Find lexicographic maximum of strings"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "max", "strings"]
+    expression: "('zebra' | 'apple' | 'banana').max()"
+    expected: ['zebra']
+    
+  - name: "max of datetimes"
+    description: "Find latest datetime"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "max", "datetime"]
+    expression: "(@2024-01-15T10:00:00 | @2024-01-15T14:30:00 | @2024-01-15T08:00:00).max()"
+    expected: ["2024-01-15T14:30:00"]
+    
+  # Complex statistical scenarios
+  - name: "Combined statistical analysis"
+    description: "Using multiple statistical functions together"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "complex"]
+    expression: "(measurements.value.min() | measurements.value.avg() | measurements.value.max())"
+    expected: [90, 110, 130]
+    fixture:
+      resourceType: "Observation"
+      measurements:
+        - timestamp: "2024-01-01T08:00:00"
+          value: 100
+        - timestamp: "2024-01-01T12:00:00"
+          value: 110
+        - timestamp: "2024-01-01T16:00:00"
+          value: 120
+        - timestamp: "2024-01-01T20:00:00"
+          value: 130
+        - timestamp: "2024-01-02T08:00:00"
+          value: 90
+          
+  - name: "Statistical range calculation"
+    description: "Calculate range using max and min"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "calculations"]
+    expression: "scores.max() - scores.min()"
+    expected: [45]
+    fixture:
+      resourceType: "TestResult"
+      scores: [85, 92, 78, 95, 88, 75, 91, 87, 93, 90]
+      
+  - name: "Filtered statistics"
+    description: "Statistics on filtered subset"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "filtering"]
+    expression: "labResults.where(test = 'Glucose').value.avg()"
+    expected: [110]
+    fixture:
+      resourceType: "DiagnosticReport"
+      labResults:
+        - test: "Glucose"
+          value: 105
+        - test: "Cholesterol"
+          value: 180
+        - test: "Glucose"
+          value: 115
+        - test: "HbA1c"
+          value: 6.5
+        - test: "Glucose"
+          value: 110
+          
+  # Real-world medical scenarios
+  - name: "Blood pressure trending"
+    description: "Analyze blood pressure trends"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "real-world", "medical"]
+    expression: "(readings.systolic.avg() > 130) or (readings.diastolic.avg() > 80)"
+    expected: [true]
+    fixture:
+      resourceType: "BloodPressureLog"
+      readings:
+        - systolic: 128
+          diastolic: 82
+        - systolic: 135
+          diastolic: 88
+        - systolic: 142
+          diastolic: 92
+        - systolic: 130
+          diastolic: 85
+          
+  - name: "Temperature range monitoring"
+    description: "Check if temperature stays within normal range"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "real-world", "medical"]
+    expression: "temperatures.celsius.min() >= 36.1 and temperatures.celsius.max() <= 37.2"
+    expected: [false]
+    fixture:
+      resourceType: "VitalSigns"
+      temperatures:
+        - celsius: 36.5
+          time: "08:00"
+        - celsius: 37.1
+          time: "12:00"
+        - celsius: 37.8  # Fever
+          time: "16:00"
+        - celsius: 37.3
+          time: "20:00"
+          
+  - name: "Lab result outlier detection"
+    description: "Identify potential outliers in lab results"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "real-world", "analysis"]
+    expression: "values.where($ > values.avg() + 20 or $ < values.avg() - 20)"
+    expected: [150, 45]
+    fixture:
+      resourceType: "LabPanel"
+      values: [95, 98, 102, 97, 150, 100, 99, 45, 101, 96]
+      
+  # Statistical with quantities
+  - name: "avg with quantities"
+    description: "Average of quantities with same unit"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "quantities"]
+    expression: "(10 'mg' | 20 'mg' | 30 'mg').avg()"
+    expected: [{"value": 20, "unit": "mg"}]
+    
+  - name: "min/max with quantities"
+    description: "Min/max of quantities"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "quantities"]
+    expression: "(5.5 'kg' | 3.2 'kg' | 7.8 'kg').min()"
+    expected: [{"value": 3.2, "unit": "kg"}]
+    
+  # Error cases
+  - name: "avg on non-numeric collection"
+    description: "avg() on non-numeric values"
+    difficulty: "intermediate"
+    categories: ["functions", "statistics", "avg", "errors"]
+    expression: "('a' | 'b' | 'c').avg()"
+    error:
+      type: "semantic"
+      message: "avg() requires numeric values"
+      
+  - name: "statistical functions on mixed types"
+    description: "Statistics on incompatible types"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "errors", "type-checking"]
+    expression: "(10 | 'string' | @2024-01-01).max()"
+    error:
+      type: "semantic"
+      message: "Statistical functions require compatible types"
+      
+  - name: "avg with incompatible quantities"
+    description: "Average of quantities with different units"
+    difficulty: "advanced"
+    categories: ["functions", "statistics", "quantities", "errors"]
+    expression: "(10 'mg' | 5 'kg' | 15 'mg').avg()"
+    error:
+      type: "semantic"
+      message: "Cannot calculate average of quantities with different units"

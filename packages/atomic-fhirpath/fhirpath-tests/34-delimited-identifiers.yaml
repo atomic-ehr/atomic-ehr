@@ -1,0 +1,241 @@
+name: "Delimited Identifiers"
+description: "Tests for backtick-delimited identifiers with special characters, spaces, and reserved words"
+tests:
+  # Basic delimited identifiers
+  - name: "Identifier with spaces"
+    description: "Access property with spaces using backticks"
+    difficulty: "basic"
+    categories: ["syntax", "identifiers", "delimited"]
+    expression: "`first name`"
+    expected: ["John"]
+    fixture:
+      resourceType: "Person"
+      "first name": "John"
+      "last name": "Doe"
+      
+  - name: "Identifier with hyphen"
+    description: "Access property with hyphen"
+    difficulty: "basic"
+    categories: ["syntax", "identifiers", "delimited"]
+    expression: "`patient-id`"
+    expected: ["P12345"]
+    fixture:
+      resourceType: "Patient"
+      "patient-id": "P12345"
+      "admission-date": "2024-01-15"
+      
+  - name: "Identifier with dots"
+    description: "Access property containing dots"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited"]
+    expression: "`com.example.customField`"
+    expected: ["custom-value"]
+    fixture:
+      resourceType: "Resource"
+      "com.example.customField": "custom-value"
+      "com.example.version": "1.0"
+      
+  - name: "Reserved word as identifier"
+    description: "Use FHIRPath reserved word as property name"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "reserved-words"]
+    expression: "`where`"
+    expected: ["location"]
+    fixture:
+      resourceType: "Resource"
+      "where": "location"
+      "when": "2024-01-01"
+      "select": "option-a"
+      
+  - name: "Numeric identifier"
+    description: "Property name starting with number"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited"]
+    expression: "`123-code`"
+    expected: ["ABC"]
+    fixture:
+      resourceType: "CodeSystem"
+      "123-code": "ABC"
+      "456-code": "DEF"
+      
+  # Complex delimited identifiers
+  - name: "Special characters in identifier"
+    description: "Identifier with various special characters"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "special-chars"]
+    expression: "`field@2024!`"
+    expected: ["special"]
+    fixture:
+      resourceType: "Resource"
+      "field@2024!": "special"
+      "field#2023?": "previous"
+      
+  - name: "Unicode in identifier"
+    description: "Identifier with unicode characters"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "unicode"]
+    expression: "`名前`"
+    expected: ["太郎"]
+    fixture:
+      resourceType: "Patient"
+      "名前": "太郎"
+      "年齢": 30
+      
+  - name: "Emoji in identifier"
+    description: "Identifier containing emoji"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "unicode"]
+    expression: "`status-🟢`"
+    expected: ["active"]
+    fixture:
+      resourceType: "Resource"
+      "status-🟢": "active"
+      "status-🔴": "inactive"
+      
+  # Path navigation with delimited identifiers
+  - name: "Chained delimited identifiers"
+    description: "Multiple delimited identifiers in path"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "path-navigation"]
+    expression: "`patient info`.`full name`"
+    expected: ["John Smith"]
+    fixture:
+      resourceType: "Record"
+      "patient info":
+        "full name": "John Smith"
+        "date of birth": "1990-01-01"
+        
+  - name: "Mixed regular and delimited"
+    description: "Combining regular and delimited identifiers"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "path-navigation"]
+    expression: "data.`measurement-1`.value"
+    expected: [100]
+    fixture:
+      resourceType: "Observation"
+      data:
+        "measurement-1":
+          value: 100
+          unit: "mg/dL"
+        "measurement-2":
+          value: 110
+          unit: "mg/dL"
+          
+  - name: "Delimited identifier in where clause"
+    description: "Using delimited identifier in filtering"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "filtering"]
+    expression: "items.where(`item-code` = 'A123')"
+    expected: [{"item-code": "A123", "item-name": "Widget"}]
+    fixture:
+      resourceType: "Inventory"
+      items:
+        - "item-code": "A123"
+          "item-name": "Widget"
+        - "item-code": "B456"
+          "item-name": "Gadget"
+          
+  # Edge cases
+  - name: "Empty delimited identifier"
+    description: "Property with empty name"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "edge-cases"]
+    expression: "``"
+    expected: ["empty-property"]
+    fixture:
+      resourceType: "Resource"
+      "": "empty-property"
+      
+  - name: "Backtick inside identifier"
+    description: "Escaping backtick within identifier"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "escaping"]
+    expression: "`field\\`with\\`backticks`"
+    expected: ["value"]
+    fixture:
+      resourceType: "Resource"
+      "field`with`backticks": "value"
+      
+  - name: "Newline in identifier"
+    description: "Identifier containing newline"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "edge-cases"]
+    expression: "`field\nwith\nnewlines`"
+    expected: ["multiline"]
+    fixture:
+      resourceType: "Resource"
+      "field\nwith\nnewlines": "multiline"
+      
+  # Real-world scenarios
+  - name: "HL7 extension URLs"
+    description: "Accessing HL7 extension URLs as properties"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "real-world"]
+    expression: "`http://hl7.org/fhir/StructureDefinition/patient-birthPlace`"
+    expected: ["Boston, MA"]
+    fixture:
+      resourceType: "Patient"
+      "http://hl7.org/fhir/StructureDefinition/patient-birthPlace": "Boston, MA"
+      "http://hl7.org/fhir/StructureDefinition/patient-mothersMaidenName": "Smith"
+      
+  - name: "Custom namespace properties"
+    description: "Properties with namespace prefixes"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "real-world"]
+    expression: "`custom:patient-score`"
+    expected: [85]
+    fixture:
+      resourceType: "Patient"
+      "custom:patient-score": 85
+      "custom:risk-level": "medium"
+      
+  - name: "Database column names"
+    description: "Properties matching database column conventions"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "real-world"]
+    expression: "`PATIENT_FIRST_NAME`"
+    expected: ["Alice"]
+    fixture:
+      resourceType: "DatabaseRecord"
+      "PATIENT_FIRST_NAME": "Alice"
+      "PATIENT_LAST_NAME": "Johnson"
+      "PATIENT_DOB": "1985-06-15"
+      
+  # Function calls with delimited identifiers
+  - name: "Function on delimited property"
+    description: "Calling functions on delimited identifier results"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "functions"]
+    expression: "`test-results`.where(`test-type` = 'blood')"
+    expected: [
+      {"test-type": "blood", "test-value": 5.5},
+      {"test-type": "blood", "test-value": 6.2}
+    ]
+    fixture:
+      resourceType: "LabReport"
+      "test-results":
+        - "test-type": "blood"
+          "test-value": 5.5
+        - "test-type": "urine"
+          "test-value": 1.020
+        - "test-type": "blood"
+          "test-value": 6.2
+          
+  # Error cases
+  - name: "Unclosed delimited identifier"
+    description: "Missing closing backtick"
+    difficulty: "intermediate"
+    categories: ["syntax", "identifiers", "delimited", "errors"]
+    expression: "`unclosed identifier"
+    error:
+      type: "syntax"
+      message: "Unclosed delimited identifier"
+      
+  - name: "Invalid escape in delimited"
+    description: "Invalid escape sequence in delimited identifier"
+    difficulty: "advanced"
+    categories: ["syntax", "identifiers", "delimited", "errors"]
+    expression: "`invalid\\escape`"
+    error:
+      type: "syntax"
+      message: "Invalid escape sequence in delimited identifier"

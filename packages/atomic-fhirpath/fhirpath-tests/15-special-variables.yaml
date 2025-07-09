@@ -1,0 +1,359 @@
+name: "Special Variables"
+description: "Tests for FHIRPath special variables including $this, $index, and $total"
+
+tests:
+  # $this variable
+  - name: "$this basic usage in select"
+    description: "Test $this variable basic usage in select()"
+    difficulty: "basic"
+    categories: ["special", "this", "select"]
+    expression: "names.select($this)"
+    expected: ["John", "Jane", "Bob"]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "$this with string functions"
+    description: "Test $this variable with string functions"
+    difficulty: "basic"
+    categories: ["special", "this", "string"]
+    expression: "names.select($this.length())"
+    expected: [4, 4, 3]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "$this in where condition"
+    description: "Test $this variable in where() condition"
+    difficulty: "basic"
+    categories: ["special", "this", "where"]
+    expression: "numbers.where($this > 5)"
+    expected: [10, 7, 8]
+    fixture:
+      numbers: [3, 10, 2, 7, 8, 1]
+
+  - name: "$this with complex expressions"
+    description: "Test $this variable with complex expressions"
+    difficulty: "intermediate"
+    categories: ["special", "this", "complex"]
+    expression: "items.select($this.name + ' (' + $this.count.toString() + ')')"
+    expected: ["Apple (5)", "Banana (3)", "Orange (8)"]
+    fixture:
+      items:
+        - name: "Apple"
+          count: 5
+        - name: "Banana"
+          count: 3
+        - name: "Orange"
+          count: 8
+
+  - name: "$this with mathematical operations"
+    description: "Test $this variable with mathematical operations"
+    difficulty: "intermediate"
+    categories: ["special", "this", "math"]
+    expression: "numbers.select($this * $this)"
+    expected: [9, 16, 25, 36]
+    fixture:
+      numbers: [3, 4, 5, 6]
+
+  - name: "$this with type checking"
+    description: "Test $this variable with type checking"
+    difficulty: "intermediate"
+    categories: ["special", "this", "type"]
+    expression: "mixedValues.where($this is integer)"
+    expected: [42, 100]
+    fixture:
+      mixedValues: ["text", 42, true, 100, "string"]
+
+  - name: "$this with nested access"
+    description: "Test $this variable with nested property access"
+    difficulty: "intermediate"
+    categories: ["special", "this", "nested"]
+    expression: "people.where($this.age > 25).select($this.name)"
+    expected: ["John", "Alice"]
+    fixture:
+      people:
+        - name: "John"
+          age: 30
+        - name: "Jane"
+          age: 22
+        - name: "Alice"
+          age: 28
+
+  - name: "$this in collection aggregation"
+    description: "Test $this variable in collection aggregation"
+    difficulty: "intermediate"
+    categories: ["special", "this", "aggregation"]
+    expression: "scores.where($this >= 70).select($this).sum()"
+    expected: [235]
+    fixture:
+      scores: [85, 92, 65, 78, 55]
+
+  - name: "$this with contains operation"
+    description: "Test $this variable with contains operation"
+    difficulty: "intermediate"
+    categories: ["special", "this", "contains"]
+    expression: "names.where($this.contains('a'))"
+    expected: ["Jane", "Diana"]
+    fixture:
+      names: ["John", "Jane", "Bob", "Diana"]
+
+  # $index variable
+  - name: "$index basic usage"
+    description: "Test $index variable basic usage"
+    difficulty: "basic"
+    categories: ["special", "index", "basic"]
+    expression: "names.select($index)"
+    expected: [0, 1, 2]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "$index with $this"
+    description: "Test $index variable combined with $this"
+    difficulty: "intermediate"
+    categories: ["special", "index", "this"]
+    expression: "names.select($index.toString() + ': ' + $this)"
+    expected: ["0: John", "1: Jane", "2: Bob"]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "$index in filtering"
+    description: "Test $index variable in filtering operations"
+    difficulty: "intermediate"
+    categories: ["special", "index", "filtering"]
+    expression: "items.where($index mod 2 = 0)"
+    expected: ["first", "third", "fifth"]
+    fixture:
+      items: ["first", "second", "third", "fourth", "fifth"]
+
+  - name: "$index for position-based logic"
+    description: "Test $index variable for position-based logic"
+    difficulty: "intermediate"
+    categories: ["special", "index", "position"]
+    expression: "items.where($index = 0 or $index = items.count() - 1)"
+    expected: ["first", "last"]
+    fixture:
+      items: ["first", "middle1", "middle2", "last"]
+
+  - name: "$index with mathematical operations"
+    description: "Test $index variable with mathematical operations"
+    difficulty: "intermediate"
+    categories: ["special", "index", "math"]
+    expression: "items.select($index * 10 + $this)"
+    expected: [5, 13, 22, 34]
+    fixture:
+      items: [5, 3, 2, 4]
+
+  - name: "$index for ranking"
+    description: "Test $index variable for creating rankings"
+    difficulty: "advanced"
+    categories: ["special", "index", "ranking"]
+    expression: "scores.select({'rank': $index + 1, 'score': $this})"
+    expected: [{"rank": 1, "score": 95}, {"rank": 2, "score": 87}, {"rank": 3, "score": 92}]
+    fixture:
+      scores: [95, 87, 92]
+
+  - name: "$index boundary conditions"
+    description: "Test $index variable boundary conditions"
+    difficulty: "intermediate"
+    categories: ["special", "index", "boundary"]
+    expression: "singleItem.select($index)"
+    expected: [0]
+    fixture:
+      singleItem: ["only"]
+
+  # $total variable
+  - name: "$total basic usage"
+    description: "Test $total variable basic usage"
+    difficulty: "basic"
+    categories: ["special", "total", "basic"]
+    expression: "items.select($total)"
+    expected: [3, 3, 3]
+    fixture:
+      items: ["a", "b", "c"]
+
+  - name: "$total with percentage calculation"
+    description: "Test $total variable for percentage calculation"
+    difficulty: "intermediate"
+    categories: ["special", "total", "percentage"]
+    expression: "scores.select(($this / $total.sum()) * 100)"
+    expected: [40, 30, 30]
+    fixture:
+      scores: [40, 30, 30]
+
+  - name: "$total in progress tracking"
+    description: "Test $total variable for progress tracking"
+    difficulty: "intermediate"
+    categories: ["special", "total", "progress"]
+    expression: "tasks.select('Task ' + ($index + 1).toString() + ' of ' + $total.toString())"
+    expected: ["Task 1 of 4", "Task 2 of 4", "Task 3 of 4", "Task 4 of 4"]
+    fixture:
+      tasks: ["task1", "task2", "task3", "task4"]
+
+  - name: "$total with conditional logic"
+    description: "Test $total variable with conditional logic"
+    difficulty: "intermediate"
+    categories: ["special", "total", "conditional"]
+    expression: "items.select(iif($index = $total - 1, 'last', 'not last'))"
+    expected: ["not last", "not last", "last"]
+    fixture:
+      items: ["a", "b", "c"]
+
+  - name: "$total for batch processing"
+    description: "Test $total variable for batch processing logic"
+    difficulty: "advanced"
+    categories: ["special", "total", "batch"]
+    expression: "items.where(($index + 1) mod ($total div 2) = 0)"
+    expected: ["b", "d"]
+    fixture:
+      items: ["a", "b", "c", "d"]
+
+  # Combined special variables
+  - name: "All special variables together"
+    description: "Test all special variables in single expression"
+    difficulty: "advanced"
+    categories: ["special", "combined", "all"]
+    expression: "items.select({'item': $this, 'index': $index, 'total': $total, 'isLast': $index = $total - 1})"
+    expected: [
+      {"item": "first", "index": 0, "total": 3, "isLast": false},
+      {"item": "second", "index": 1, "total": 3, "isLast": false},
+      {"item": "third", "index": 2, "total": 3, "isLast": true}
+    ]
+    fixture:
+      items: ["first", "second", "third"]
+
+  - name: "Special variables in nested operations"
+    description: "Test special variables in nested operations"
+    difficulty: "advanced"
+    categories: ["special", "nested", "complex"]
+    expression: "groups.select(items.select($this + ' (group ' + $index.toString() + ')'))"
+    expected: [["item1 (group 0)", "item2 (group 0)"], ["item3 (group 1)", "item4 (group 1)"]]
+    fixture:
+      groups:
+        - items: ["item1", "item2"]
+        - items: ["item3", "item4"]
+
+  - name: "Special variables with aggregation"
+    description: "Test special variables with aggregation functions"
+    difficulty: "advanced"
+    categories: ["special", "aggregation", "complex"]
+    expression: "numbers.where($this > ($total.sum() / $total)).count()"
+    expected: [2]
+    fixture:
+      numbers: [10, 15, 5, 8, 20]
+
+  # Special variables in real-world scenarios
+  - name: "Pagination with special variables"
+    description: "Test pagination logic using special variables"
+    difficulty: "advanced"
+    categories: ["special", "pagination", "realworld"]
+    expression: "items.where($index >= pageStart and $index < pageStart + pageSize)"
+    expected: [{"name": "item2"}, {"name": "item3"}]
+    fixture:
+      pageStart: 1
+      pageSize: 2
+      items:
+        - name: "item1"
+        - name: "item2"
+        - name: "item3"
+        - name: "item4"
+
+  - name: "Progress bar calculation"
+    description: "Test progress bar calculation using special variables"
+    difficulty: "intermediate"
+    categories: ["special", "progress", "realworld"]
+    expression: "tasks.select(($index + 1) * 100 div $total)"
+    expected: [25, 50, 75, 100]
+    fixture:
+      tasks: ["task1", "task2", "task3", "task4"]
+
+  - name: "Data validation with position"
+    description: "Test data validation using positional information"
+    difficulty: "advanced"
+    categories: ["special", "validation", "realworld"]
+    expression: "records.where($index = 0 or $this.value != records[$index - 1].value)"
+    expected: [{"value": "A"}, {"value": "B"}, {"value": "A"}]
+    fixture:
+      records:
+        - value: "A"
+        - value: "A"
+        - value: "B"
+        - value: "B"
+        - value: "A"
+
+  # Error scenarios with special variables
+  - name: "Special variables outside context"
+    description: "Test special variables used outside valid context"
+    difficulty: "intermediate"
+    categories: ["special", "error", "context"]
+    expression: "$this + $index"
+    error:
+      type: "semantic"
+      message: "Special variables can only be used in collection operations"
+    fixture:
+      value: "test"
+
+  - name: "$index with empty collection"
+    description: "Test $index variable with empty collection"
+    difficulty: "basic"
+    categories: ["special", "index", "empty"]
+    expression: "emptyList.select($index)"
+    expected: []
+    fixture:
+      emptyList: []
+
+  - name: "$total with empty collection"
+    description: "Test $total variable with empty collection"
+    difficulty: "basic"
+    categories: ["special", "total", "empty"]
+    expression: "emptyList.select($total)"
+    expected: []
+    fixture:
+      emptyList: []
+
+  # Performance scenarios
+  - name: "Special variables with large collections"
+    description: "Test special variables performance with large collections"
+    difficulty: "advanced"
+    categories: ["special", "performance", "large"]
+    expression: "largeCollection.where($index mod 100 = 0).count()"
+    expected: [10]
+    fixture:
+      largeCollection: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] # Represents 1000 items
+
+  - name: "Complex special variable expressions"
+    description: "Test complex expressions with multiple special variables"
+    difficulty: "advanced"
+    categories: ["special", "complex", "performance"]
+    expression: "items.select(iif($index < $total div 2, $this.upper(), $this.lower()))"
+    expected: ["FIRST", "SECOND", "third", "fourth"]
+    fixture:
+      items: ["first", "second", "third", "fourth"]
+
+  # Special variables with other FHIRPath features
+  - name: "Special variables with type operations"
+    description: "Test special variables with type operations"
+    difficulty: "advanced"
+    categories: ["special", "type", "integration"]
+    expression: "mixedItems.where($this is string).select($index.toString() + ': ' + $this)"
+    expected: ["0: text1", "2: text2"]
+    fixture:
+      mixedItems: ["text1", 42, "text2", true]
+
+  - name: "Special variables with date operations"
+    description: "Test special variables with date operations"
+    difficulty: "advanced"
+    categories: ["special", "date", "integration"]
+    expression: "dates.select($this + ($index * 1 'day'))"
+    expected: ["@2023-01-01", "@2023-01-02", "@2023-01-03"]
+    fixture:
+      dates: ["@2023-01-01", "@2023-01-01", "@2023-01-01"]
+
+  - name: "Special variables with environment variables"
+    description: "Test special variables combined with environment variables"
+    difficulty: "advanced"
+    categories: ["special", "environment", "integration"]
+    expression: "items.where($index >= %startIndex and $index <= %endIndex)"
+    expected: ["item2", "item3"]
+    fixture:
+      startIndex: 1
+      endIndex: 2
+      items: ["item1", "item2", "item3", "item4"]

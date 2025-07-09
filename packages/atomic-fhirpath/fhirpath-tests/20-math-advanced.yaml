@@ -1,0 +1,239 @@
+name: "Advanced Math Functions"
+description: "Tests for advanced mathematical functions: ln(), log(), exp(), power(), truncate()"
+tests:
+  # Natural logarithm - ln()
+  - name: "ln() - natural log of e"
+    description: "Natural logarithm function tests"
+    difficulty: "basic"
+    categories: ["math", "functions"]
+    expression: "2.718281828.ln().round(2)"
+    fixture: {}
+    expected: [1.00]
+    
+  - name: "ln() - natural log of 1"
+    expression: "1.ln()"
+    fixture: {}
+    expected: [0]
+    
+  - name: "ln() - natural log of 10"
+    expression: "10.ln().round(4)"
+    fixture: {}
+    expected: [2.3026]
+    
+  - name: "ln() - invalid input"
+    expression: "0.ln()"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Natural log of non-positive number"
+      
+  - name: "ln() - negative input"
+    expression: "(-5).ln()"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Natural log of non-positive number"
+    
+  # Logarithm base 10 - log()
+  - name: "log() - base 10 of 10"
+    description: "Base 10 logarithm tests"
+    expression: "10.log()"
+    fixture: {}
+    expected: [1]
+    
+  - name: "log() - base 10 of 100"
+    expression: "100.log()"
+    fixture: {}
+    expected: [2]
+    
+  - name: "log() - base 10 of 1"
+    expression: "1.log()"
+    fixture: {}
+    expected: [0]
+    
+  - name: "log() - custom base"
+    expression: "8.log(2)"
+    fixture: {}
+    expected: [3]
+    
+  - name: "log() - fractional result"
+    expression: "5.log().round(4)"
+    fixture: {}
+    expected: [0.6990]
+    
+  # Exponential - exp()
+  - name: "exp() - e^0"
+    description: "Exponential function tests"
+    expression: "0.exp()"
+    fixture: {}
+    expected: [1]
+    
+  - name: "exp() - e^1"
+    expression: "1.exp().round(4)"
+    fixture: {}
+    expected: [2.7183]
+    
+  - name: "exp() - e^2"
+    expression: "2.exp().round(4)"
+    fixture: {}
+    expected: [7.3891]
+    
+  - name: "exp() - negative exponent"
+    expression: "(-1).exp().round(4)"
+    fixture: {}
+    expected: [0.3679]
+    
+  # Power - power()
+  - name: "power() - simple square"
+    description: "Power/exponentiation function"
+    expression: "2.power(3)"
+    fixture: {}
+    expected: [8]
+    
+  - name: "power() - base 10"
+    expression: "10.power(3)"
+    fixture: {}
+    expected: [1000]
+    
+  - name: "power() - fractional exponent"
+    expression: "9.power(0.5)"
+    fixture: {}
+    expected: [3]
+    
+  - name: "power() - negative exponent"
+    expression: "2.power(-2)"
+    fixture: {}
+    expected: [0.25]
+    
+  - name: "power() - zero exponent"
+    expression: "5.power(0)"
+    fixture: {}
+    expected: [1]
+    
+  # Truncate function
+  - name: "truncate() - positive number"
+    description: "Truncate decimal places"
+    expression: "3.14159.truncate(2)"
+    fixture: {}
+    expected: [3.14]
+    
+  - name: "truncate() - negative number"
+    expression: "(-3.14159).truncate(3)"
+    fixture: {}
+    expected: [-3.141]
+    
+  - name: "truncate() - zero decimal places"
+    expression: "5.99.truncate(0)"
+    fixture: {}
+    expected: [5]
+    
+  - name: "truncate() - no truncation needed"
+    expression: "2.5.truncate(2)"
+    fixture: {}
+    expected: [2.5]
+    
+  # Complex calculations
+  - name: "Compound interest"
+    description: "Calculate compound interest"
+    difficulty: "intermediate"
+    expression: "principal * (1 + rate).power(years)"
+    fixture:
+      principal: 1000
+      rate: 0.05
+      years: 10
+    expected: [1628.89]
+    
+  - name: "Scientific calculation"
+    expression: "(mass * (speed.power(2))).sqrt()"
+    fixture:
+      mass: 100
+      speed: 10
+    expected: [100]
+    
+  - name: "Logarithmic scale"
+    expression: "values.select(($this + 1).ln())"
+    fixture:
+      values: [0, 1, 9, 99]
+    expected: [0, 0.6931, 2.3026, 4.6052]
+    
+  - name: "Exponential growth"
+    expression: "initialPop * 2.718281828.power(rate * time)"
+    fixture:
+      initialPop: 100
+      rate: 0.02
+      time: 50
+    expected: [271.83]
+    
+  # Statistical calculations
+  - name: "Geometric mean"
+    description: "Calculate geometric mean"
+    difficulty: "advanced"
+    expression: "values.aggregate($total * $this, 1).power(1.0 / values.count())"
+    fixture:
+      values: [2, 8, 16]
+    expected: [6.35]
+    
+  - name: "Decibel calculation"
+    expression: "(intensity / reference).log() * 10"
+    fixture:
+      intensity: 100
+      reference: 1
+    expected: [20]
+    
+  - name: "pH calculation"
+    expression: "concentration.log().abs()"
+    fixture:
+      concentration: 0.0001
+    expected: [4]
+    
+  # Financial calculations
+  - name: "Present value"
+    expression: "futureValue / (1 + rate).power(periods)"
+    fixture:
+      futureValue: 1000
+      rate: 0.05
+      periods: 5
+    expected: [783.53]
+    
+  - name: "Continuous compounding"
+    expression: "principal * rate.exp()"
+    fixture:
+      principal: 1000
+      rate: 0.05
+    expected: [1051.27]
+    
+  # Edge cases
+  - name: "Very large exponent"
+    expression: "10.power(10).exists()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Very small result"
+    expression: "10.power(-10)"
+    fixture: {}
+    expected: [0.0000000001]
+    
+  - name: "Chained operations"
+    expression: "2.power(3).ln().exp()"
+    fixture: {}
+    expected: [8]
+    
+  - name: "Precision handling"
+    expression: "(1.0000001).ln().round(10)"
+    fixture: {}
+    expected: [0.0000001]
+    
+  # Error cases
+  - name: "Invalid power base"
+    expression: "(-2).power(0.5)"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Complex number result"
+      
+  - name: "Division by zero in log"
+    expression: "(1/0).log()"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Invalid input for logarithm"

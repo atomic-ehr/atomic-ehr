@@ -1,0 +1,403 @@
+name: "Environment Variables"
+description: "Tests for FHIRPath environment variables including %context, %now, %ucum, and custom variables"
+
+tests:
+  # %context variable
+  - name: "%context basic usage"
+    description: "Test %context environment variable basic usage"
+    difficulty: "basic"
+    categories: ["environment", "context", "variable"]
+    expression: "%context.name"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+      age: 30
+
+  - name: "%context vs direct access"
+    description: "Test %context vs direct property access equivalence"
+    difficulty: "basic"
+    categories: ["environment", "context", "equivalence"]
+    expression: "%context.age = age"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "%context with complex navigation"
+    description: "Test %context with complex property navigation"
+    difficulty: "intermediate"
+    categories: ["environment", "context", "navigation"]
+    expression: "%context.name.given.first()"
+    expected: ["John"]
+    fixture:
+      name:
+        given: ["John", "William"]
+        family: "Doe"
+
+  - name: "%context in where() condition"
+    description: "Test %context usage in where() conditions"
+    difficulty: "intermediate"
+    categories: ["environment", "context", "filtering"]
+    expression: "items.where(category = %context.preferredCategory)"
+    expected: [{"name": "Book", "category": "education"}]
+    fixture:
+      preferredCategory: "education"
+      items:
+        - name: "Book"
+          category: "education"
+        - name: "Toy"
+          category: "entertainment"
+
+  - name: "%context with functions"
+    description: "Test %context with function calls"
+    difficulty: "intermediate"
+    categories: ["environment", "context", "functions"]
+    expression: "%context.name.length() > 5"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  # %now variable
+  - name: "%now basic usage"
+    description: "Test %now environment variable basic usage"
+    difficulty: "basic"
+    categories: ["environment", "now", "datetime"]
+    expression: "%now.type().name"
+    expected: ["DateTime"]
+    fixture:
+      dummy: true
+
+  - name: "%now vs now() function"
+    description: "Test %now vs now() function equivalence"
+    difficulty: "basic"
+    categories: ["environment", "now", "equivalence"]
+    expression: "%now = now()"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "%now in date comparison"
+    description: "Test %now in date comparison"
+    difficulty: "intermediate"
+    categories: ["environment", "now", "comparison"]
+    expression: "birthDate < %now"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  - name: "%now with date arithmetic"
+    description: "Test %now with date arithmetic"
+    difficulty: "intermediate"
+    categories: ["environment", "now", "arithmetic"]
+    expression: "(%now - birthDate).value > 25 'years'"
+    expected: [true]
+    fixture:
+      birthDate: "@1990-01-01"
+
+  - name: "%now consistency within expression"
+    description: "Test %now returns same value within single expression"
+    difficulty: "intermediate"
+    categories: ["environment", "now", "consistency"]
+    expression: "%now = %now"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "%now in future date filtering"
+    description: "Test %now for filtering future dates"
+    difficulty: "intermediate"
+    categories: ["environment", "now", "filtering"]
+    expression: "appointments.where(dateTime > %now)"
+    expected: [{"dateTime": "@2030-01-01T10:00:00", "provider": "Dr. Future"}]
+    fixture:
+      appointments:
+        - dateTime: "@2020-01-01T10:00:00"
+          provider: "Dr. Past"
+        - dateTime: "@2030-01-01T10:00:00"
+          provider: "Dr. Future"
+
+  # %ucum variable  
+  - name: "%ucum basic usage"
+    description: "Test %ucum environment variable basic usage"
+    difficulty: "intermediate"
+    categories: ["environment", "ucum", "units"]
+    expression: "%ucum.exists()"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "%ucum unit validation"
+    description: "Test %ucum for unit validation"
+    difficulty: "intermediate"
+    categories: ["environment", "ucum", "validation"]
+    expression: "'kg' in %ucum.validUnits"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "%ucum unit conversion"
+    description: "Test %ucum for unit conversion"
+    difficulty: "advanced"
+    categories: ["environment", "ucum", "conversion"]
+    expression: "%ucum.convert(weight, 'kg', 'lb')"
+    expected: ["154 'lb'"]
+    fixture:
+      weight: "70 'kg'"
+
+  - name: "%ucum unit compatibility"
+    description: "Test %ucum for unit compatibility checking"
+    difficulty: "advanced"
+    categories: ["environment", "ucum", "compatibility"]
+    expression: "%ucum.isCompatible('kg', 'lb')"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "%ucum invalid unit check"
+    description: "Test %ucum for invalid unit checking"
+    difficulty: "intermediate"
+    categories: ["environment", "ucum", "validation"]
+    expression: "'invalidunit' in %ucum.validUnits"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  # Custom environment variables
+  - name: "Custom environment variable"
+    description: "Test custom environment variable usage"
+    difficulty: "basic"
+    categories: ["environment", "custom", "variable"]
+    expression: "%customVar"
+    expected: ["custom value"]
+    fixture:
+      dummy: true
+
+  - name: "Custom environment variable with spaces"
+    description: "Test custom environment variable with spaces in name"
+    difficulty: "basic"
+    categories: ["environment", "custom", "variable"]
+    expression: "%'custom var with spaces'"
+    expected: ["spaced value"]
+    fixture:
+      dummy: true
+
+  - name: "Custom environment variable in expression"
+    description: "Test custom environment variable in complex expression"
+    difficulty: "intermediate"
+    categories: ["environment", "custom", "expression"]
+    expression: "items.where(priority >= %minPriority)"
+    expected: [{"name": "High Priority Task", "priority": 8}]
+    fixture:
+      items:
+        - name: "Low Priority Task"
+          priority: 3
+        - name: "High Priority Task"
+          priority: 8
+
+  - name: "Multiple environment variables"
+    description: "Test multiple environment variables in single expression"
+    difficulty: "intermediate"
+    categories: ["environment", "multiple", "expression"]
+    expression: "events.where(startDate >= %startRange and endDate <= %endRange)"
+    expected: [{"name": "Valid Event", "startDate": "@2023-06-01", "endDate": "@2023-08-31"}]
+    fixture:
+      events:
+        - name: "Too Early Event"
+          startDate: "@2023-01-01"
+          endDate: "@2023-03-31"
+        - name: "Valid Event"
+          startDate: "@2023-06-01"
+          endDate: "@2023-08-31"
+        - name: "Too Late Event"
+          startDate: "@2023-10-01"
+          endDate: "@2023-12-31"
+
+  # Environment variables with collections
+  - name: "Environment variable with collection access"
+    description: "Test environment variable accessing collection properties"
+    difficulty: "intermediate"
+    categories: ["environment", "collection", "access"]
+    expression: "%context.names.count()"
+    expected: [3]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "Environment variable in collection filtering"
+    description: "Test environment variable in collection filtering"
+    difficulty: "intermediate"
+    categories: ["environment", "collection", "filtering"]
+    expression: "users.where(role = %context.currentUserRole)"
+    expected: [{"name": "Admin User", "role": "admin"}]
+    fixture:
+      currentUserRole: "admin"
+      users:
+        - name: "Regular User"
+          role: "user"
+        - name: "Admin User"
+          role: "admin"
+
+  - name: "Environment variable with aggregation"
+    description: "Test environment variable with aggregation functions"
+    difficulty: "intermediate"
+    categories: ["environment", "collection", "aggregation"]
+    expression: "scores.where($this >= %passingGrade).count()"
+    expected: [2]
+    fixture:
+      passingGrade: 70
+      scores: [85, 92, 65, 78, 45]
+
+  # Advanced environment variable scenarios
+  - name: "Nested environment variable access"
+    description: "Test nested environment variable property access"
+    difficulty: "advanced"
+    categories: ["environment", "nested", "access"]
+    expression: "%config.database.connectionString.exists()"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "Environment variable with function chaining"
+    description: "Test environment variable with function chaining"
+    difficulty: "advanced"
+    categories: ["environment", "chaining", "functions"]
+    expression: "%context.tags.where($this.startsWith('priority')).select($this.substring(9)).first()"
+    expected: ["high"]
+    fixture:
+      tags: ["category:health", "priority:high", "status:active"]
+
+  - name: "Environment variable type checking"
+    description: "Test environment variable type checking"
+    difficulty: "advanced"
+    categories: ["environment", "type", "checking"]
+    expression: "%config is object and %config.version is string"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "Environment variable in mathematical expression"
+    description: "Test environment variable in mathematical calculations"
+    difficulty: "intermediate"
+    categories: ["environment", "math", "calculation"]
+    expression: "(price * %taxRate) + %fixedFee"
+    expected: [23]
+    fixture:
+      price: 100
+      taxRate: 0.2
+      fixedFee: 3
+
+  # Error scenarios
+  - name: "Undefined environment variable"
+    description: "Test undefined environment variable access"
+    difficulty: "intermediate"
+    categories: ["environment", "error", "undefined"]
+    expression: "%undefinedVariable"
+    error:
+      type: "semantic"
+      message: "Undefined environment variable: %undefinedVariable"
+    fixture:
+      dummy: true
+
+  - name: "Invalid environment variable syntax"
+    description: "Test invalid environment variable syntax"
+    difficulty: "intermediate"
+    categories: ["environment", "error", "syntax"]
+    expression: "%"
+    error:
+      type: "syntax"
+      message: "Invalid environment variable syntax"
+    fixture:
+      dummy: true
+
+  - name: "Environment variable circular reference"
+    description: "Test environment variable circular reference"
+    difficulty: "advanced"
+    categories: ["environment", "error", "circular"]
+    expression: "%selfRef.value"
+    error:
+      type: "semantic"
+      message: "Circular reference in environment variable"
+    fixture:
+      dummy: true
+
+  # Real-world scenarios
+  - name: "Security context validation"
+    description: "Test security context using environment variables"
+    difficulty: "advanced"
+    categories: ["environment", "security", "realworld"]
+    expression: "sensitiveData.where(%context.userRole = 'admin' or %context.userId = owner)"
+    expected: [{"data": "admin accessible", "owner": "admin"}]
+    fixture:
+      userRole: "admin"
+      userId: "admin"
+      sensitiveData:
+        - data: "admin accessible"
+          owner: "admin"
+        - data: "user accessible"
+          owner: "user123"
+
+  - name: "Localization using environment variables"
+    description: "Test localization using environment variables"
+    difficulty: "intermediate"
+    categories: ["environment", "localization", "realworld"]
+    expression: "messages.where(language = %context.locale).text"
+    expected: ["Hello"]
+    fixture:
+      locale: "en"
+      messages:
+        - language: "en"
+          text: "Hello"
+        - language: "fr"
+          text: "Bonjour"
+        - language: "es"
+          text: "Hola"
+
+  - name: "Configuration-driven filtering"
+    description: "Test configuration-driven filtering"
+    difficulty: "advanced"
+    categories: ["environment", "configuration", "realworld"]
+    expression: "features.where(enabled = true and name in %config.enabledFeatures)"
+    expected: [{"name": "feature1", "enabled": true}]
+    fixture:
+      features:
+        - name: "feature1"
+          enabled: true
+        - name: "feature2"
+          enabled: true
+        - name: "feature3"
+          enabled: false
+
+  - name: "Time-based filtering with environment"
+    description: "Test time-based filtering using environment variables"
+    difficulty: "advanced"
+    categories: ["environment", "temporal", "realworld"]
+    expression: "events.where(startTime >= %businessHours.start and endTime <= %businessHours.end)"
+    expected: [{"name": "Business Meeting", "startTime": "@T09:00:00", "endTime": "@T10:00:00"}]
+    fixture:
+      events:
+        - name: "Early Meeting"
+          startTime: "@T07:00:00"
+          endTime: "@T08:00:00"
+        - name: "Business Meeting"
+          startTime: "@T09:00:00"
+          endTime: "@T10:00:00"
+        - name: "Late Meeting"
+          startTime: "@T19:00:00"
+          endTime: "@T20:00:00"
+
+  # Environment variable performance
+  - name: "Environment variable caching"
+    description: "Test environment variable caching behavior"
+    difficulty: "advanced"
+    categories: ["environment", "performance", "caching"]
+    expression: "%expensiveComputation = %expensiveComputation"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "Large environment variable collection"
+    description: "Test performance with large environment variable collection"
+    difficulty: "advanced"
+    categories: ["environment", "performance", "large"]
+    expression: "'target' in %largeCollection"
+    expected: [true]
+    fixture:
+      dummy: true

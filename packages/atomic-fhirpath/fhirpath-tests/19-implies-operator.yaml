@@ -1,0 +1,210 @@
+name: "Implies Operator"
+description: "Tests for the implies logical operator"
+tests:
+  # Basic implies operator
+  - name: "implies - true implies true"
+    description: "Basic implies truth table"
+    difficulty: "basic"
+    categories: ["operators", "logical"]
+    expression: "true implies true"
+    fixture: {}
+    expected: [true]
+    
+  - name: "implies - true implies false"
+    expression: "true implies false"
+    fixture: {}
+    expected: [false]
+    
+  - name: "implies - false implies true"
+    expression: "false implies true"
+    fixture: {}
+    expected: [true]
+    
+  - name: "implies - false implies false"
+    expression: "false implies false"
+    fixture: {}
+    expected: [true]
+    
+  # Three-valued logic with null
+  - name: "implies - null handling left"
+    description: "Null on left side of implies"
+    expression: "{} implies true"
+    fixture: {}
+    expected: [true]
+    
+  - name: "implies - null implies false"
+    expression: "{} implies false"
+    fixture: {}
+    expected: [true]
+    
+  - name: "implies - true implies null"
+    expression: "true implies {}"
+    fixture: {}
+    expected: []
+    
+  - name: "implies - false implies null"
+    expression: "false implies {}"
+    fixture: {}
+    expected: [true]
+    
+  - name: "implies - null implies null"
+    expression: "{} implies {}"
+    fixture: {}
+    expected: [true]
+    
+  # Practical scenarios
+  - name: "implies - conditional requirement"
+    description: "If pregnant then female"
+    difficulty: "intermediate"
+    expression: "pregnant implies (gender = 'female')"
+    fixture:
+      pregnant: true
+      gender: "female"
+    expected: [true]
+    
+  - name: "implies - violated condition"
+    expression: "pregnant implies (gender = 'female')"
+    fixture:
+      pregnant: true
+      gender: "male"
+    expected: [false]
+    
+  - name: "implies - not applicable"
+    expression: "pregnant implies (gender = 'female')"
+    fixture:
+      pregnant: false
+      gender: "male"
+    expected: [true]
+    
+  # Complex expressions
+  - name: "implies - chained conditions"
+    description: "Multiple implications"
+    expression: "active implies (status = 'active') and (endDate.empty() or endDate > today())"
+    fixture:
+      active: true
+      status: "active"
+      endDate: "2025-12-31"
+    expected: [true]
+    
+  - name: "implies - nested implications"
+    expression: "(category = 'medication') implies (code.exists() implies (code.system = 'http://snomed.info/sct'))"
+    fixture:
+      category: "medication"
+      code: {system: "http://snomed.info/sct", code: "123456"}
+    expected: [true]
+    
+  # Collection scenarios
+  - name: "implies with all()"
+    description: "All elements satisfy implication"
+    expression: "item.all(critical implies priority = 'high')"
+    fixture:
+      item: [
+        {critical: true, priority: "high"},
+        {critical: false, priority: "normal"},
+        {critical: true, priority: "high"}
+      ]
+    expected: [true]
+    
+  - name: "implies with where()"
+    expression: "observation.where(abnormal implies interpretation.exists())"
+    fixture:
+      observation: [
+        {abnormal: true, interpretation: "High"},
+        {abnormal: false},
+        {abnormal: true, interpretation: "Low"}
+      ]
+    expected: [
+      {abnormal: true, interpretation: "High"},
+      {abnormal: false},
+      {abnormal: true, interpretation: "Low"}
+    ]
+    
+  # Business rules
+  - name: "Age restriction rule"
+    description: "Adult services require age >= 18"
+    difficulty: "advanced"
+    expression: "service.all(adultOnly implies patient.age >= 18)"
+    fixture:
+      patient: {age: 25}
+      service: [
+        {name: "Pediatric Care", adultOnly: false},
+        {name: "Adult Counseling", adultOnly: true},
+        {name: "General Checkup", adultOnly: false}
+      ]
+    expected: [true]
+    
+  - name: "Prescription validation"
+    expression: "controlled implies (prescriber.dea.exists() and quantity <= maxQuantity)"
+    fixture:
+      controlled: true
+      prescriber: {dea: "BX1234567"}
+      quantity: 30
+      maxQuantity: 90
+    expected: [true]
+    
+  - name: "Insurance requirement"
+    expression: "expensive implies (insurance.exists() or selfPay = true)"
+    fixture:
+      expensive: true
+      insurance: []
+      selfPay: true
+    expected: [true]
+    
+  # Operator precedence
+  - name: "implies precedence with and"
+    expression: "true and false implies false"
+    fixture: {}
+    expected: [true]
+    
+  - name: "implies precedence with or"
+    expression: "false or true implies true"
+    fixture: {}
+    expected: [true]
+    
+  - name: "implies with comparison"
+    expression: "value > 100 implies category = 'high'"
+    fixture:
+      value: 150
+      category: "high"
+    expected: [true]
+    
+  # Error prevention patterns
+  - name: "Null-safe implication"
+    expression: "hasValue implies value > 0"
+    fixture:
+      hasValue: false
+    expected: [true]
+    
+  - name: "Existence check pattern"
+    expression: "code.exists() implies code.system.exists()"
+    fixture:
+      code: {code: "123", system: "http://example.com"}
+    expected: [true]
+    
+  # Edge cases
+  - name: "Empty collection implies"
+    expression: "{}.exists() implies false"
+    fixture: {}
+    expected: [true]
+    
+  - name: "String comparison implies"
+    expression: "(status = 'active') implies enabled"
+    fixture:
+      status: "inactive"
+      enabled: false
+    expected: [true]
+    
+  - name: "Complex null propagation"
+    expression: "required implies (value.exists() and value != '')"
+    fixture:
+      required: true
+      value: "present"
+    expected: [true]
+    
+  - name: "Multiple implies chain"
+    expression: "a implies b implies c"
+    fixture:
+      a: true
+      b: true
+      c: true
+    expected: [true]

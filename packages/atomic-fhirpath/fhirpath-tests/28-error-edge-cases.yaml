@@ -1,0 +1,259 @@
+name: "Error and Edge Cases"
+description: "Comprehensive error scenarios, null propagation, stack overflow, and performance edge cases"
+tests:
+  # Null propagation
+  - name: "Null propagation - simple path"
+    description: "Null propagates through path navigation"
+    difficulty: "basic"
+    categories: ["errors", "null-handling"]
+    expression: "{}.name.first()"
+    fixture: {}
+    expected: []
+    
+  - name: "Null propagation - function calls"
+    expression: "{}.toString().length()"
+    fixture: {}
+    expected: []
+    
+  - name: "Null propagation - operators"
+    expression: "{} + 5"
+    fixture: {}
+    expected: []
+    
+  - name: "Null propagation - comparison"
+    expression: "{} > 5"
+    fixture: {}
+    expected: []
+    
+  - name: "Null in collections"
+    expression: "(1 | {} | 3).count()"
+    fixture: {}
+    expected: [3]
+    
+  # Division by zero
+  - name: "Division by zero - integer"
+    expression: "10 / 0"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Division by zero"
+      
+  - name: "Division by zero - decimal"
+    expression: "10.5 / 0.0"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Division by zero"
+      
+  - name: "Mod by zero"
+    expression: "10 mod 0"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Division by zero"
+      
+  # Type errors
+  - name: "Type mismatch - arithmetic"
+    description: "Invalid type combinations"
+    difficulty: "intermediate"
+    expression: "'hello' + 5"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Cannot add string and integer"
+      
+  - name: "Type mismatch - comparison"
+    expression: "@2023-01-01 > 'yesterday'"
+    fixture: {}
+    expected: []
+    
+  - name: "Invalid function on type"
+    expression: "true.substring(0, 1)"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "substring() not defined for Boolean"
+      
+  # Stack overflow protection
+  - name: "Infinite recursion - repeat"
+    description: "Prevent infinite loops"
+    expression: "repeat($this).take(10000)"
+    fixture: {value: 1}
+    error:
+      type: "runtime"
+      message: "Maximum recursion depth exceeded"
+      
+  - name: "Circular reference detection"
+    expression: "repeat(next).count()"
+    fixture:
+      id: "a"
+      next: {id: "b", next: {id: "a"}}
+    error:
+      type: "runtime"
+      message: "Circular reference detected"
+      
+  # Performance edge cases
+  - name: "Very large collection - creation"
+    description: "Handle large collections efficiently"
+    expression: "(1 to 10000).count()"
+    fixture: {}
+    expected: [10000]
+    
+  - name: "Large collection filtering"
+    expression: "(1 to 10000).where($this mod 100 = 0).count()"
+    fixture: {}
+    expected: [100]
+    
+  - name: "Deep nesting limit"
+    expression: "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z"
+    fixture:
+      a: {b: {c: {d: {e: {f: {g: {h: {i: {j: {k: {l: {m: {n: {o: {p: {q: {r: {s: {t: {u: {v: {w: {x: {y: {z: "deep"}}}}}}}}}}}}}}}}}}}}}}}}
+    expected: ["deep"]
+    
+  # Invalid expressions
+  - name: "Syntax error - unclosed string"
+    expression: "'unclosed string"
+    fixture: {}
+    error:
+      type: "syntax"
+      message: "Unterminated string literal"
+      
+  - name: "Syntax error - invalid operator"
+    expression: "5 ++ 3"
+    fixture: {}
+    error:
+      type: "syntax"
+      message: "Invalid operator '++'"
+      
+  - name: "Unknown function"
+    expression: "unknownFunction()"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Unknown function 'unknownFunction'"
+      
+  - name: "Wrong number of arguments"
+    expression: "substring(1)"
+    fixture: "hello"
+    error:
+      type: "semantic"
+      message: "substring() requires 2 arguments"
+      
+  # Boundary value testing
+  - name: "Integer overflow"
+    expression: "9223372036854775807 + 1"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Integer overflow"
+      
+  - name: "Very small decimal"
+    expression: "0.00000000000000000001 * 0.00000000000000000001"
+    fixture: {}
+    expected: [0]
+    
+  - name: "Date boundary"
+    expression: "@9999-12-31 + 1 day"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Date out of range"
+      
+  # Complex error scenarios
+  - name: "Multiple errors - first wins"
+    expression: "unknownVar + (5 / 0)"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Unknown identifier 'unknownVar'"
+      
+  - name: "Error in where clause"
+    expression: "items.where(value / 0 > 5)"
+    fixture:
+      items: [{value: 10}, {value: 0}, {value: 20}]
+    error:
+      type: "runtime"
+      message: "Division by zero"
+      
+  - name: "Error recovery"
+    expression: "(1 / 0) | 2 | 3"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Division by zero"
+      
+  # Memory limits
+  - name: "String concatenation limit"
+    expression: "'x'.repeat(1000000)"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "String too large"
+      
+  - name: "Collection size limit"
+    expression: "(1 to 1000000).combine(1 to 1000000)"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Collection too large"
+      
+  # Special number handling
+  - name: "NaN handling"
+    expression: "0.0 / 0.0"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Not a number (NaN)"
+      
+  - name: "Infinity handling"
+    expression: "1.0 / 0.0"
+    fixture: {}
+    error:
+      type: "runtime"
+      message: "Infinity"
+      
+  # Path resolution errors
+  - name: "Invalid path segment"
+    expression: "patient.name[invalid]"
+    fixture:
+      patient: {name: [{family: "Smith"}]}
+    error:
+      type: "semantic"
+      message: "Invalid index 'invalid'"
+      
+  - name: "Index out of bounds"
+    expression: "items[10]"
+    fixture:
+      items: [1, 2, 3]
+    expected: []
+    
+  # Type constraint violations
+  - name: "Invalid type assertion"
+    expression: "'hello' as Integer"
+    fixture: {}
+    expected: []
+    
+  - name: "Invalid type in operation"
+    expression: "items.sum()"
+    fixture:
+      items: ["a", "b", "c"]
+    error:
+      type: "semantic"
+      message: "sum() requires numeric values"
+      
+  # Edge cases for specific functions
+  - name: "Empty aggregate"
+    expression: "{}.aggregate($this + $total, 0)"
+    fixture: {}
+    expected: [0]
+    
+  - name: "Single element tail"
+    expression: "(5).tail()"
+    fixture: {}
+    expected: []
+    
+  - name: "Negative indices"
+    expression: "items[-1]"
+    fixture:
+      items: [1, 2, 3]
+    expected: []

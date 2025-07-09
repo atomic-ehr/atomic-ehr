@@ -1,0 +1,546 @@
+name: "FHIR-Specific Functions"
+description: "Tests for FHIR-specific FHIRPath functions including getValue(), hasValue(), extension(), and choice type handling"
+
+tests:
+  # getValue() function
+  - name: "getValue() with string element"
+    description: "Test getValue() function with FHIR string element"
+    difficulty: "basic"
+    categories: ["fhir", "getValue", "primitive"]
+    expression: "Patient.gender.getValue()"
+    expected: ["male"]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        gender: "male"
+        _gender:
+          extension:
+            - url: "http://example.org/extension"
+              valueString: "metadata"
+
+  - name: "getValue() with boolean element"
+    description: "Test getValue() function with FHIR boolean element"
+    difficulty: "basic"
+    categories: ["fhir", "getValue", "primitive"]
+    expression: "Patient.active.getValue()"
+    expected: [true]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        active: true
+        _active:
+          extension:
+            - url: "http://example.org/extension"
+              valueString: "active metadata"
+
+  - name: "getValue() with integer element"
+    description: "Test getValue() function with FHIR integer element"
+    difficulty: "basic"
+    categories: ["fhir", "getValue", "primitive"]
+    expression: "Observation.valueInteger.getValue()"
+    expected: [120]
+    fixture:
+      Observation:
+        resourceType: "Observation"
+        valueInteger: 120
+        _valueInteger:
+          extension:
+            - url: "http://example.org/unit"
+              valueString: "mmHg"
+
+  - name: "getValue() with decimal element"
+    description: "Test getValue() function with FHIR decimal element"
+    difficulty: "basic"
+    categories: ["fhir", "getValue", "primitive"]
+    expression: "Observation.valueDecimal.getValue()"
+    expected: [98.6]
+    fixture:
+      Observation:
+        resourceType: "Observation"
+        valueDecimal: 98.6
+
+  - name: "getValue() with collection"
+    description: "Test getValue() function with collection of primitive elements"
+    difficulty: "intermediate"
+    categories: ["fhir", "getValue", "collection"]
+    expression: "Patient.name.given.getValue()"
+    expected: ["John", "William"]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          - given: ["John", "William"]
+            family: "Doe"
+
+  - name: "getValue() with complex element returns empty"
+    description: "Test getValue() function with complex element returns empty"
+    difficulty: "intermediate"
+    categories: ["fhir", "getValue", "complex"]
+    expression: "Patient.name.getValue()"
+    expected: []
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          - given: ["John"]
+            family: "Doe"
+
+  # hasValue() function
+  - name: "hasValue() with primitive element"
+    description: "Test hasValue() function with primitive element"
+    difficulty: "basic"
+    categories: ["fhir", "hasValue", "primitive"]
+    expression: "Patient.gender.hasValue()"
+    expected: [true]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        gender: "male"
+
+  - name: "hasValue() with missing element"
+    description: "Test hasValue() function with missing element"
+    difficulty: "basic"
+    categories: ["fhir", "hasValue", "missing"]
+    expression: "Patient.gender.hasValue()"
+    expected: [false]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          given: ["John"]
+          family: "Doe"
+
+  - name: "hasValue() with complex element"
+    description: "Test hasValue() function with complex element"
+    difficulty: "intermediate"
+    categories: ["fhir", "hasValue", "complex"]
+    expression: "Patient.name.hasValue()"
+    expected: [false]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          - given: ["John"]
+            family: "Doe"
+
+  - name: "hasValue() with extension-only element"
+    description: "Test hasValue() function with element having only extensions"
+    difficulty: "intermediate"
+    categories: ["fhir", "hasValue", "extension"]
+    expression: "Patient.gender.hasValue()"
+    expected: [false]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        _gender:
+          extension:
+            - url: "http://example.org/extension"
+              valueString: "metadata only"
+
+  - name: "hasValue() with collection"
+    description: "Test hasValue() function with collection of elements"
+    difficulty: "intermediate"
+    categories: ["fhir", "hasValue", "collection"]
+    expression: "Patient.name.given.hasValue()"
+    expected: [true, true, false]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          - given: ["John", "William"]
+            family: "Doe"
+          - given: []
+            family: "Smith"
+
+  # extension() function
+  - name: "extension() basic usage"
+    description: "Test extension() function basic usage"
+    difficulty: "basic"
+    categories: ["fhir", "extension", "basic"]
+    expression: "Patient.extension('http://example.org/ethnicity')"
+    expected: [{"url": "http://example.org/ethnicity", "valueString": "Hispanic"}]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        extension:
+          - url: "http://example.org/ethnicity"
+            valueString: "Hispanic"
+          - url: "http://example.org/birthPlace"
+            valueString: "New York"
+
+  - name: "extension() with no matches"
+    description: "Test extension() function with no matching extensions"
+    difficulty: "basic"
+    categories: ["fhir", "extension", "nomatch"]
+    expression: "Patient.extension('http://example.org/nonexistent')"
+    expected: []
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        extension:
+          - url: "http://example.org/ethnicity"
+            valueString: "Hispanic"
+
+  - name: "extension() with nested extensions"
+    description: "Test extension() function with nested extensions"
+    difficulty: "intermediate"
+    categories: ["fhir", "extension", "nested"]
+    expression: "Patient.extension('http://example.org/name').extension('given')"
+    expected: [{"url": "given", "valueString": "preferredGiven"}]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        extension:
+          - url: "http://example.org/name"
+            extension:
+              - url: "given"
+                valueString: "preferredGiven"
+              - url: "family"
+                valueString: "preferredFamily"
+
+  - name: "extension() on element level"
+    description: "Test extension() function on FHIR element extensions"
+    difficulty: "intermediate"
+    categories: ["fhir", "extension", "element"]
+    expression: "Patient.name.extension('http://example.org/nameQuality')"
+    expected: [{"url": "http://example.org/nameQuality", "valueString": "verified"}]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          - given: ["John"]
+            family: "Doe"
+            _family:
+              extension:
+                - url: "http://example.org/nameQuality"
+                  valueString: "verified"
+
+  - name: "extension() with multiple matches"
+    description: "Test extension() function with multiple matching extensions"
+    difficulty: "intermediate"
+    categories: ["fhir", "extension", "multiple"]
+    expression: "Patient.extension('http://example.org/identifier').count()"
+    expected: [2]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        extension:
+          - url: "http://example.org/identifier"
+            valueString: "SSN"
+          - url: "http://example.org/identifier"
+            valueString: "DL"
+          - url: "http://example.org/other"
+            valueString: "other"
+
+  # Choice type handling (value[x])
+  - name: "Choice type string access"
+    description: "Test choice type access with string value"
+    difficulty: "intermediate"
+    categories: ["fhir", "choice", "string"]
+    expression: "Observation.value.getValue()"
+    expected: ["positive"]
+    fixture:
+      Observation:
+        resourceType: "Observation"
+        valueString: "positive"
+
+  - name: "Choice type quantity access"
+    description: "Test choice type access with quantity value"
+    difficulty: "intermediate"
+    categories: ["fhir", "choice", "quantity"]
+    expression: "Observation.value.value"
+    expected: [120]
+    fixture:
+      Observation:
+        resourceType: "Observation"
+        valueQuantity:
+          value: 120
+          unit: "mmHg"
+          system: "http://unitsofmeasure.org"
+
+  - name: "Choice type boolean access"
+    description: "Test choice type access with boolean value"
+    difficulty: "intermediate"
+    categories: ["fhir", "choice", "boolean"]
+    expression: "Observation.value.getValue()"
+    expected: [true]
+    fixture:
+      Observation:
+        resourceType: "Observation"
+        valueBoolean: true
+
+  - name: "Choice type type checking"
+    description: "Test choice type with type checking"
+    difficulty: "advanced"
+    categories: ["fhir", "choice", "type"]
+    expression: "Observation.value is Quantity"
+    expected: [true]
+    fixture:
+      Observation:
+        resourceType: "Observation"
+        valueQuantity:
+          value: 120
+          unit: "mmHg"
+
+  - name: "Choice type filtering"
+    description: "Test choice type filtering by type"
+    difficulty: "advanced"
+    categories: ["fhir", "choice", "filtering"]
+    expression: "observations.value.where($this is Quantity)"
+    expected: [{"value": 120, "unit": "mmHg"}]
+    fixture:
+      observations:
+        - resourceType: "Observation"
+          valueString: "positive"
+        - resourceType: "Observation"
+          valueQuantity:
+            value: 120
+            unit: "mmHg"
+        - resourceType: "Observation"
+          valueBoolean: false
+
+  # Factory functions
+  - name: "Factory string function"
+    description: "Test %factory.string() function"
+    difficulty: "intermediate"
+    categories: ["fhir", "factory", "string"]
+    expression: "%factory.string('test value')"
+    expected: ["test value"]
+    fixture:
+      dummy: true
+
+  - name: "Factory boolean function"
+    description: "Test %factory.boolean() function"
+    difficulty: "intermediate"
+    categories: ["fhir", "factory", "boolean"]
+    expression: "%factory.boolean(true)"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "Factory integer function"
+    description: "Test %factory.integer() function"
+    difficulty: "intermediate"
+    categories: ["fhir", "factory", "integer"]
+    expression: "%factory.integer(42)"
+    expected: [42]
+    fixture:
+      dummy: true
+
+  - name: "Factory decimal function"
+    description: "Test %factory.decimal() function"
+    difficulty: "intermediate"
+    categories: ["fhir", "factory", "decimal"]
+    expression: "%factory.decimal(3.14)"
+    expected: [3.14]
+    fixture:
+      dummy: true
+
+  - name: "Factory quantity function"
+    description: "Test %factory.quantity() function"
+    difficulty: "advanced"
+    categories: ["fhir", "factory", "quantity"]
+    expression: "%factory.quantity(120, 'mmHg')"
+    expected: ["120 'mmHg'"]
+    fixture:
+      dummy: true
+
+  # Contained resource navigation
+  - name: "Contained resource basic access"
+    description: "Test contained resource basic access"
+    difficulty: "intermediate"
+    categories: ["fhir", "contained", "access"]
+    expression: "Patient.contained.where(resourceType = 'Organization').name"
+    expected: ["Acme Healthcare"]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          given: ["John"]
+          family: "Doe"
+        contained:
+          - resourceType: "Organization"
+            id: "org1"
+            name: "Acme Healthcare"
+          - resourceType: "Practitioner"
+            id: "pract1"
+            name:
+              given: ["Jane"]
+              family: "Smith"
+
+  - name: "Contained resource reference resolution"
+    description: "Test contained resource reference resolution"
+    difficulty: "advanced"
+    categories: ["fhir", "contained", "reference"]
+    expression: "Patient.resolve(managingOrganization.reference).name"
+    expected: ["Acme Healthcare"]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          given: ["John"]
+          family: "Doe"
+        managingOrganization:
+          reference: "#org1"
+        contained:
+          - resourceType: "Organization"
+            id: "org1"
+            name: "Acme Healthcare"
+
+  - name: "Contained resource type filtering"
+    description: "Test contained resource filtering by type"
+    difficulty: "intermediate"
+    categories: ["fhir", "contained", "filtering"]
+    expression: "Bundle.entry.resource.contained.ofType(Practitioner).name.family"
+    expected: ["Smith", "Johnson"]
+    fixture:
+      Bundle:
+        entry:
+          - resource:
+              resourceType: "Patient"
+              contained:
+                - resourceType: "Practitioner"
+                  name:
+                    family: "Smith"
+                - resourceType: "Organization"
+                  name: "Hospital"
+          - resource:
+              resourceType: "Encounter"
+              contained:
+                - resourceType: "Practitioner"
+                  name:
+                    family: "Johnson"
+
+  # FHIR model version differences
+  - name: "FHIR R4 specific behavior"
+    description: "Test FHIR R4 specific behavior"
+    difficulty: "advanced"
+    categories: ["fhir", "version", "r4"]
+    expression: "Patient.name.where(use = 'official').family.getValue()"
+    expected: ["Doe"]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          - use: "official"
+            given: ["John"]
+            family: "Doe"
+          - use: "nickname"
+            given: ["Johnny"]
+
+  - name: "FHIR resource meta handling"
+    description: "Test FHIR resource meta element handling"
+    difficulty: "intermediate"
+    categories: ["fhir", "meta", "resource"]
+    expression: "Patient.meta.profile"
+    expected: ["http://example.org/StructureDefinition/CustomPatient"]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        meta:
+          versionId: "1"
+          lastUpdated: "2023-01-01T10:00:00Z"
+          profile:
+            - "http://example.org/StructureDefinition/CustomPatient"
+
+  # Complex FHIR scenarios
+  - name: "Extension chain navigation"
+    description: "Test complex extension chain navigation"
+    difficulty: "advanced"
+    categories: ["fhir", "extension", "complex"]
+    expression: "Patient.extension('http://example.org/complex').extension('nested').extension('deep').valueString"
+    expected: ["deep value"]
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        extension:
+          - url: "http://example.org/complex"
+            extension:
+              - url: "nested"
+                extension:
+                  - url: "deep"
+                    valueString: "deep value"
+
+  - name: "Choice type with extensions"
+    description: "Test choice type elements with extensions"
+    difficulty: "advanced"
+    categories: ["fhir", "choice", "extension"]
+    expression: "Observation.value.extension('http://example.org/precision').valueInteger"
+    expected: [2]
+    fixture:
+      Observation:
+        resourceType: "Observation"
+        valueQuantity:
+          value: 120.45
+          unit: "mmHg"
+          _value:
+            extension:
+              - url: "http://example.org/precision"
+                valueInteger: 2
+
+  - name: "Bundle resource navigation"
+    description: "Test Bundle resource navigation patterns"
+    difficulty: "advanced"
+    categories: ["fhir", "bundle", "navigation"]
+    expression: "Bundle.entry.resource.where(resourceType = 'Patient').name.family"
+    expected: ["Doe", "Smith"]
+    fixture:
+      Bundle:
+        resourceType: "Bundle"
+        entry:
+          - resource:
+              resourceType: "Patient"
+              name:
+                family: "Doe"
+          - resource:
+              resourceType: "Observation"
+              valueString: "normal"
+          - resource:
+              resourceType: "Patient"
+              name:
+                family: "Smith"
+
+  # Error scenarios
+  - name: "getValue() on non-primitive returns empty"
+    description: "Test getValue() on non-primitive element returns empty collection"
+    difficulty: "intermediate"
+    categories: ["fhir", "getValue", "error"]
+    expression: "Patient.name.getValue()"
+    expected: []
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        name:
+          given: ["John"]
+          family: "Doe"
+
+  - name: "extension() with invalid URL"
+    description: "Test extension() function with malformed URL"
+    difficulty: "intermediate"
+    categories: ["fhir", "extension", "error"]
+    expression: "Patient.extension('not-a-url')"
+    expected: []
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        extension:
+          - url: "http://example.org/valid"
+            valueString: "value"
+
+  - name: "Contained resource circular reference"
+    description: "Test contained resource with circular reference handling"
+    difficulty: "advanced"
+    categories: ["fhir", "contained", "error"]
+    expression: "Patient.contained.where(id = 'self')"
+    error:
+      type: "semantic"
+      message: "Circular reference in contained resources"
+    fixture:
+      Patient:
+        resourceType: "Patient"
+        id: "patient1"
+        contained:
+          - resourceType: "Patient"
+            id: "self"
+            managingOrganization:
+              reference: "#patient1"

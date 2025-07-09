@@ -1,0 +1,262 @@
+name: "Type Conversion Functions"
+description: "Tests for type checking and conversion functions: convertsToX(), toDateTime(), toQuantity()"
+tests:
+  # convertsToBoolean()
+  - name: "convertsToBoolean() - valid strings"
+    description: "Check if values can be converted to boolean"
+    difficulty: "basic"
+    categories: ["functions", "type-conversion"]
+    expression: "'true'.convertsToBoolean()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToBoolean() - numeric values"
+    expression: "1.convertsToBoolean()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToBoolean() - invalid string"
+    expression: "'maybe'.convertsToBoolean()"
+    fixture: {}
+    expected: [false]
+    
+  - name: "convertsToBoolean() - already boolean"
+    expression: "false.convertsToBoolean()"
+    fixture: {}
+    expected: [true]
+    
+  # convertsToInteger()
+  - name: "convertsToInteger() - valid string"
+    expression: "'42'.convertsToInteger()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToInteger() - decimal string"
+    expression: "'3.14'.convertsToInteger()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToInteger() - invalid string"
+    expression: "'not a number'.convertsToInteger()"
+    fixture: {}
+    expected: [false]
+    
+  - name: "convertsToInteger() - decimal value"
+    expression: "3.14.convertsToInteger()"
+    fixture: {}
+    expected: [true]
+    
+  # convertsToDecimal()
+  - name: "convertsToDecimal() - valid string"
+    expression: "'3.14159'.convertsToDecimal()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToDecimal() - integer string"
+    expression: "'42'.convertsToDecimal()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToDecimal() - scientific notation"
+    expression: "'1.23e-4'.convertsToDecimal()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToDecimal() - invalid format"
+    expression: "'12.34.56'.convertsToDecimal()"
+    fixture: {}
+    expected: [false]
+    
+  # convertsToString()
+  - name: "convertsToString() - all types"
+    expression: "(42).convertsToString() and (true).convertsToString() and (@2023-01-01).convertsToString()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToString() - complex object"
+    expression: "{a: 1, b: 2}.convertsToString()"
+    fixture: {}
+    expected: [true]
+    
+  # convertsToDateTime()
+  - name: "convertsToDateTime() - valid formats"
+    description: "Check various date/time string formats"
+    difficulty: "intermediate"
+    expression: "'2023-01-15T10:30:00Z'.convertsToDateTime()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToDateTime() - date only"
+    expression: "'2023-01-15'.convertsToDateTime()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToDateTime() - with timezone"
+    expression: "'2023-01-15T10:30:00-05:00'.convertsToDateTime()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToDateTime() - invalid format"
+    expression: "'01/15/2023'.convertsToDateTime()"
+    fixture: {}
+    expected: [false]
+    
+  # convertsToTime()
+  - name: "convertsToTime() - valid time"
+    expression: "'10:30:00'.convertsToTime()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToTime() - with milliseconds"
+    expression: "'10:30:00.123'.convertsToTime()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToTime() - invalid format"
+    expression: "'10:70:00'.convertsToTime()"
+    fixture: {}
+    expected: [false]
+    
+  # convertsToQuantity()
+  - name: "convertsToQuantity() - with unit"
+    expression: "'10 mg'.convertsToQuantity()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToQuantity() - UCUM unit"
+    expression: "'5.5 mmol/L'.convertsToQuantity()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToQuantity() - number only"
+    expression: "'10'.convertsToQuantity()"
+    fixture: {}
+    expected: [true]
+    
+  - name: "convertsToQuantity() - invalid format"
+    expression: "'ten milligrams'.convertsToQuantity()"
+    fixture: {}
+    expected: [false]
+    
+  # toDateTime() conversion
+  - name: "toDateTime() - from string"
+    description: "Convert strings to DateTime"
+    expression: "'2023-01-15T10:30:00Z'.toDateTime()"
+    fixture: {}
+    expected: ["@2023-01-15T10:30:00Z"]
+    
+  - name: "toDateTime() - date only string"
+    expression: "'2023-01-15'.toDateTime()"
+    fixture: {}
+    expected: ["@2023-01-15T00:00:00"]
+    
+  - name: "toDateTime() - already DateTime"
+    expression: "@2023-01-15T10:30:00Z.toDateTime()"
+    fixture: {}
+    expected: ["@2023-01-15T10:30:00Z"]
+    
+  - name: "toDateTime() - invalid conversion"
+    expression: "'invalid date'.toDateTime()"
+    fixture: {}
+    expected: []
+    
+  # toTime() conversion
+  - name: "toTime() - from string"
+    expression: "'14:30:00'.toTime()"
+    fixture: {}
+    expected: ["@T14:30:00"]
+    
+  - name: "toTime() - with milliseconds"
+    expression: "'14:30:00.500'.toTime()"
+    fixture: {}
+    expected: ["@T14:30:00.500"]
+    
+  - name: "toTime() - from DateTime"
+    expression: "@2023-01-15T14:30:00Z.toTime()"
+    fixture: {}
+    expected: ["@T14:30:00"]
+    
+  # toQuantity() conversion
+  - name: "toQuantity() - from string"
+    expression: "'25 kg'.toQuantity()"
+    fixture: {}
+    expected: [{value: 25, unit: "kg"}]
+    
+  - name: "toQuantity() - complex unit"
+    expression: "'120 mm[Hg]'.toQuantity()"
+    fixture: {}
+    expected: [{value: 120, unit: "mm[Hg]"}]
+    
+  - name: "toQuantity() - from number"
+    expression: "42.toQuantity()"
+    fixture: {}
+    expected: [{value: 42}]
+    
+  - name: "toQuantity() - already quantity"
+    expression: "(10 'mg').toQuantity()"
+    fixture: {}
+    expected: [{value: 10, unit: "mg"}]
+    
+  # Complex conversion scenarios
+  - name: "Chained conversions"
+    description: "Multiple type conversions in sequence"
+    difficulty: "advanced"
+    expression: "'42.5'.toDecimal().toInteger().toString()"
+    fixture: {}
+    expected: ["42"]
+    
+  - name: "Collection conversions"
+    expression: "('1' | '2' | 'three' | '4').where($this.convertsToInteger()).toInteger()"
+    fixture: {}
+    expected: [1, 2, 4]
+    
+  - name: "Conditional conversion"
+    expression: "iif(value.convertsToInteger(), value.toInteger(), 0)"
+    fixture:
+      value: "123"
+    expected: [123]
+    
+  - name: "Safe navigation with conversion"
+    expression: "stringValue.where(convertsToDateTime()).toDateTime()"
+    fixture:
+      stringValue: ["2023-01-15", "not a date", "2023-12-31"]
+    expected: ["@2023-01-15T00:00:00", "@2023-12-31T00:00:00"]
+    
+  # Real-world scenarios
+  - name: "Parse observation values"
+    expression: "component.where(valueString.convertsToDecimal()).valueString.toDecimal()"
+    fixture:
+      component: [
+        {valueString: "98.6"},
+        {valueString: "normal"},
+        {valueString: "120.5"}
+      ]
+    expected: [98.6, 120.5]
+    
+  - name: "Convert timing"
+    expression: "event.where(convertsToDateTime()).toDateTime()"
+    fixture:
+      event: ["2023-01-15T08:00:00", "morning", "2023-01-15T20:00:00"]
+    expected: ["@2023-01-15T08:00:00", "@2023-01-15T20:00:00"]
+    
+  # Edge cases
+  - name: "Empty string conversions"
+    expression: "''.convertsToInteger() or ''.convertsToDecimal() or ''.convertsToBoolean()"
+    fixture: {}
+    expected: [false]
+    
+  - name: "Whitespace handling"
+    expression: "'  42  '.convertsToInteger() and '  42  '.toInteger() = 42"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Null conversions"
+    expression: "{}.toInteger().exists()"
+    fixture: {}
+    expected: [false]
+    
+  # Error cases
+  - name: "Invalid conversion chain"
+    expression: "'abc'.toInteger().toDecimal()"
+    fixture: {}
+    expected: []

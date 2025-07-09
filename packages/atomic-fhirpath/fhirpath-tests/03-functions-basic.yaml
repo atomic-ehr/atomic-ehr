@@ -1,0 +1,335 @@
+name: "Basic Functions"
+description: "Tests for basic FHIRPath functions including empty(), exists(), count(), first(), last(), tail(), skip(), and take()"
+
+tests:
+  # empty() function
+  - name: "empty() on empty collection"
+    description: "Test empty() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "empty"]
+    expression: "nonexistent.empty()"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "empty() on non-empty collection"
+    description: "Test empty() function on non-empty collection"
+    difficulty: "basic"
+    categories: ["functions", "empty"]
+    expression: "name.empty()"
+    expected: [false]
+    fixture:
+      name: ["John Doe", "Jane Smith"]
+
+  - name: "empty() on single element"
+    description: "Test empty() function on single element"
+    difficulty: "basic"
+    categories: ["functions", "empty"]
+    expression: "name.empty()"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  # exists() function
+  - name: "exists() on empty collection"
+    description: "Test exists() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "exists"]
+    expression: "nonexistent.exists()"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "exists() on non-empty collection"
+    description: "Test exists() function on non-empty collection"
+    difficulty: "basic"
+    categories: ["functions", "exists"]
+    expression: "name.exists()"
+    expected: [true]
+    fixture:
+      name: ["John Doe", "Jane Smith"]
+
+  - name: "exists() on single element"
+    description: "Test exists() function on single element"
+    expected: [true]
+    difficulty: "basic"
+    categories: ["functions", "exists"]
+    expression: "name.exists()"
+    fixture:
+      name: "John Doe"
+
+  - name: "exists() with condition"
+    description: "Test exists() function with condition"
+    difficulty: "intermediate"
+    categories: ["functions", "exists"]
+    expression: "name.exists(use = 'official')"
+    expected: [true]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Johnny"]
+          family: "Doe"
+          use: "nickname"
+
+  - name: "exists() with false condition"
+    description: "Test exists() function with false condition"
+    difficulty: "intermediate"
+    categories: ["functions", "exists"]
+    expression: "name.exists(use = 'maiden')"
+    expected: [false]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Johnny"]
+          family: "Doe"
+          use: "nickname"
+
+  # count() function
+  - name: "count() on empty collection"
+    description: "Test count() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "count"]
+    expression: "nonexistent.count()"
+    expected: [0]
+    fixture:
+      name: "John Doe"
+
+  - name: "count() on single element"
+    description: "Test count() function on single element"
+    difficulty: "basic"
+    categories: ["functions", "count"]
+    expression: "name.count()"
+    expected: [1]
+    fixture:
+      name: "John Doe"
+
+  - name: "count() on collection"
+    description: "Test count() function on collection"
+    difficulty: "basic"
+    categories: ["functions", "count"]
+    expression: "name.count()"
+    expected: [3]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  - name: "count() on flattened collection"
+    description: "Test count() function on flattened collection"
+    difficulty: "intermediate"
+    categories: ["functions", "count"]
+    expression: "name.given.count()"
+    expected: [4]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+        - given: ["Bob"]
+          family: "Johnson"
+
+  # first() function
+  - name: "first() on empty collection"
+    description: "Test first() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "first"]
+    expression: "nonexistent.first()"
+    expected: []
+    fixture:
+      name: "John Doe"
+
+  - name: "first() on single element"
+    description: "Test first() function on single element"
+    difficulty: "basic"
+    categories: ["functions", "first"]
+    expression: "name.first()"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "first() on collection"
+    description: "Test first() function on collection"
+    difficulty: "basic"
+    categories: ["functions", "first"]
+    expression: "name.first()"
+    expected: ["John Doe"]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  - name: "first() on nested collection"
+    description: "Test first() function on nested collection"
+    difficulty: "intermediate"
+    categories: ["functions", "first"]
+    expression: "name.given.first()"
+    expected: ["John"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  # last() function
+  - name: "last() on empty collection"
+    description: "Test last() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "last"]
+    expression: "nonexistent.last()"
+    expected: []
+    fixture:
+      name: "John Doe"
+
+  - name: "last() on single element"
+    description: "Test last() function on single element"
+    difficulty: "basic"
+    categories: ["functions", "last"]
+    expression: "name.last()"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "last() on collection"
+    description: "Test last() function on collection"
+    difficulty: "basic"
+    categories: ["functions", "last"]
+    expression: "name.last()"
+    expected: ["Bob Johnson"]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  - name: "last() on nested collection"
+    description: "Test last() function on nested collection"
+    difficulty: "intermediate"
+    categories: ["functions", "last"]
+    expression: "name.given.last()"
+    expected: ["Jane"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  # tail() function
+  - name: "tail() on empty collection"
+    description: "Test tail() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "tail"]
+    expression: "nonexistent.tail()"
+    expected: []
+    fixture:
+      name: "John Doe"
+
+  - name: "tail() on single element"
+    description: "Test tail() function on single element"
+    difficulty: "basic"
+    categories: ["functions", "tail"]
+    expression: "name.tail()"
+    expected: []
+    fixture:
+      name: "John Doe"
+
+  - name: "tail() on collection"
+    description: "Test tail() function on collection"
+    difficulty: "basic"
+    categories: ["functions", "tail"]
+    expression: "name.tail()"
+    expected: ["Jane Smith", "Bob Johnson"]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  # skip() function
+  - name: "skip() on empty collection"
+    description: "Test skip() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "skip"]
+    expression: "nonexistent.skip(2)"
+    expected: []
+    fixture:
+      name: "John Doe"
+
+  - name: "skip() more than collection size"
+    description: "Test skip() function with count larger than collection"
+    difficulty: "basic"
+    categories: ["functions", "skip"]
+    expression: "name.skip(5)"
+    expected: []
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  - name: "skip() some elements"
+    description: "Test skip() function with partial skip"
+    difficulty: "basic"
+    categories: ["functions", "skip"]
+    expression: "name.skip(1)"
+    expected: ["Jane Smith", "Bob Johnson"]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  - name: "skip() zero elements"
+    description: "Test skip() function with zero"
+    difficulty: "basic"
+    categories: ["functions", "skip"]
+    expression: "name.skip(0)"
+    expected: ["John Doe", "Jane Smith", "Bob Johnson"]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  # take() function
+  - name: "take() on empty collection"
+    description: "Test take() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "take"]
+    expression: "nonexistent.take(2)"
+    expected: []
+    fixture:
+      name: "John Doe"
+
+  - name: "take() more than collection size"
+    description: "Test take() function with count larger than collection"
+    difficulty: "basic"
+    categories: ["functions", "take"]
+    expression: "name.take(5)"
+    expected: ["John Doe", "Jane Smith", "Bob Johnson"]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  - name: "take() some elements"
+    description: "Test take() function with partial take"
+    difficulty: "basic"
+    categories: ["functions", "take"]
+    expression: "name.take(2)"
+    expected: ["John Doe", "Jane Smith"]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  - name: "take() zero elements"
+    description: "Test take() function with zero"
+    difficulty: "basic"
+    categories: ["functions", "take"]
+    expression: "name.take(0)"
+    expected: []
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  # Chained function calls
+  - name: "Chained basic functions"
+    description: "Test chaining multiple basic functions"
+    difficulty: "intermediate"
+    categories: ["functions", "chained"]
+    expression: "name.skip(1).take(2).count()"
+    expected: [2]
+    fixture:
+      name: ["John Doe", "Jane Smith", "Bob Johnson", "Alice Brown"]
+
+  - name: "Combined exists and count"
+    description: "Test combining exists and count functions"
+    difficulty: "intermediate"
+    categories: ["functions", "combined"]
+    expression: "name.exists() and name.count() > 1"
+    expected: [true]
+    fixture:
+      name: ["John Doe", "Jane Smith"]

@@ -1,0 +1,324 @@
+name: "Advanced Collection Functions"
+description: "Tests for slice(), isDistinct(), flatten(), subsetOf(), supersetOf() functions"
+tests:
+  # slice() tests
+  - name: "slice basic usage"
+    description: "Extract a portion of collection with slice()"
+    difficulty: "basic"
+    categories: ["functions", "collections", "slice"]
+    expression: "(1 | 2 | 3 | 4 | 5).slice(1, 3)"
+    expected: [2, 3, 4]
+    
+  - name: "slice from beginning"
+    description: "slice() starting from index 0"
+    difficulty: "basic"
+    categories: ["functions", "collections", "slice"]
+    expression: "('a' | 'b' | 'c' | 'd').slice(0, 2)"
+    expected: ['a', 'b']
+    
+  - name: "slice to end"
+    description: "slice() with length exceeding collection size"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "slice"]
+    expression: "(10 | 20 | 30).slice(1, 10)"
+    expected: [20, 30]
+    
+  - name: "slice with negative start"
+    description: "slice() with negative start index"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "slice", "edge-cases"]
+    expression: "(1 | 2 | 3 | 4).slice(-2, 2)"
+    expected: [3, 4]
+    
+  - name: "slice empty result"
+    description: "slice() returning empty when start exceeds length"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "slice", "edge-cases"]
+    expression: "(1 | 2 | 3).slice(5, 2)"
+    expected: []
+    
+  - name: "slice on path expression"
+    description: "Using slice() on property paths"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "slice", "path-navigation"]
+    expression: "medications.slice(1, 2)"
+    expected: [
+      {"name": "Lisinopril", "dose": "10mg"},
+      {"name": "Metformin", "dose": "500mg"}
+    ]
+    fixture:
+      resourceType: "Patient"
+      medications:
+        - name: "Aspirin"
+          dose: "81mg"
+        - name: "Lisinopril"
+          dose: "10mg"
+        - name: "Metformin"
+          dose: "500mg"
+        - name: "Atorvastatin"
+          dose: "20mg"
+          
+  # isDistinct() tests
+  - name: "isDistinct with unique values"
+    description: "isDistinct() returns true for unique values"
+    difficulty: "basic"
+    categories: ["functions", "collections", "distinct"]
+    expression: "(1 | 2 | 3 | 4).isDistinct()"
+    expected: [true]
+    
+  - name: "isDistinct with duplicates"
+    description: "isDistinct() returns false when duplicates exist"
+    difficulty: "basic"
+    categories: ["functions", "collections", "distinct"]
+    expression: "(1 | 2 | 2 | 3).isDistinct()"
+    expected: [false]
+    
+  - name: "isDistinct with strings"
+    description: "isDistinct() checking string uniqueness"
+    difficulty: "basic"
+    categories: ["functions", "collections", "distinct"]
+    expression: "('apple' | 'banana' | 'apple').isDistinct()"
+    expected: [false]
+    
+  - name: "isDistinct on empty collection"
+    description: "isDistinct() on empty collection returns true"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "distinct", "edge-cases"]
+    expression: "{}.isDistinct()"
+    expected: [true]
+    
+  - name: "isDistinct with complex objects"
+    description: "isDistinct() comparing complex objects"
+    difficulty: "advanced"
+    categories: ["functions", "collections", "distinct", "complex-types"]
+    expression: "codes.isDistinct()"
+    expected: [false]
+    fixture:
+      resourceType: "CodeableConcept"
+      codes:
+        - system: "http://loinc.org"
+          code: "1234-5"
+        - system: "http://loinc.org"
+          code: "5678-9"
+        - system: "http://loinc.org"
+          code: "1234-5"
+          
+  # flatten() tests
+  - name: "flatten nested collections"
+    description: "flatten() removes one level of nesting"
+    difficulty: "basic"
+    categories: ["functions", "collections", "flatten"]
+    expression: "((1 | 2) | (3 | 4)).flatten()"
+    expected: [1, 2, 3, 4]
+    
+  - name: "flatten mixed depth collections"
+    description: "flatten() with varying nesting levels"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "flatten"]
+    expression: "(1 | (2 | 3) | 4).flatten()"
+    expected: [1, 2, 3, 4]
+    
+  - name: "flatten already flat collection"
+    description: "flatten() on non-nested collection"
+    difficulty: "basic"
+    categories: ["functions", "collections", "flatten"]
+    expression: "(1 | 2 | 3).flatten()"
+    expected: [1, 2, 3]
+    
+  - name: "flatten path expressions"
+    description: "flatten() with nested path results"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "flatten", "path-navigation"]
+    expression: "organizations.departments.employees.flatten()"
+    expected: [
+      {"name": "Alice", "role": "Manager"},
+      {"name": "Bob", "role": "Developer"},
+      {"name": "Carol", "role": "Analyst"},
+      {"name": "David", "role": "Designer"}
+    ]
+    fixture:
+      resourceType: "Bundle"
+      organizations:
+        - name: "Tech Corp"
+          departments:
+            - name: "Engineering"
+              employees:
+                - name: "Alice"
+                  role: "Manager"
+                - name: "Bob"
+                  role: "Developer"
+            - name: "Analytics"
+              employees:
+                - name: "Carol"
+                  role: "Analyst"
+        - name: "Design Inc"
+          departments:
+            - name: "Creative"
+              employees:
+                - name: "David"
+                  role: "Designer"
+                  
+  # subsetOf() tests
+  - name: "subsetOf true case"
+    description: "Collection is subset of another"
+    difficulty: "basic"
+    categories: ["functions", "collections", "subset"]
+    expression: "(1 | 2).subsetOf(1 | 2 | 3 | 4)"
+    expected: [true]
+    
+  - name: "subsetOf false case"
+    description: "Collection is not subset when element missing"
+    difficulty: "basic"
+    categories: ["functions", "collections", "subset"]
+    expression: "(1 | 2 | 5).subsetOf(1 | 2 | 3 | 4)"
+    expected: [false]
+    
+  - name: "subsetOf with duplicates"
+    description: "subsetOf handling duplicate elements"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "subset"]
+    expression: "(1 | 1 | 2).subsetOf(1 | 2 | 3)"
+    expected: [true]
+    
+  - name: "subsetOf empty collection"
+    description: "Empty collection is subset of any collection"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "subset", "edge-cases"]
+    expression: "{}.subsetOf(1 | 2 | 3)"
+    expected: [true]
+    
+  - name: "subsetOf same collection"
+    description: "Collection is subset of itself"
+    difficulty: "basic"
+    categories: ["functions", "collections", "subset"]
+    expression: "(1 | 2 | 3).subsetOf(1 | 2 | 3)"
+    expected: [true]
+    
+  # supersetOf() tests
+  - name: "supersetOf true case"
+    description: "Collection is superset of another"
+    difficulty: "basic"
+    categories: ["functions", "collections", "superset"]
+    expression: "(1 | 2 | 3 | 4).supersetOf(2 | 3)"
+    expected: [true]
+    
+  - name: "supersetOf false case"
+    description: "Collection is not superset when element missing"
+    difficulty: "basic"
+    categories: ["functions", "collections", "superset"]
+    expression: "(1 | 2 | 3).supersetOf(2 | 4)"
+    expected: [false]
+    
+  - name: "supersetOf with empty"
+    description: "Any collection is superset of empty collection"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "superset", "edge-cases"]
+    expression: "(1 | 2).supersetOf({})"
+    expected: [true]
+    
+  # Complex scenarios
+  - name: "Chained collection operations"
+    description: "Combining multiple collection functions"
+    difficulty: "advanced"
+    categories: ["functions", "collections", "chaining"]
+    expression: "patients.conditions.flatten().slice(0, 3).isDistinct()"
+    expected: [false]
+    fixture:
+      resourceType: "Bundle"
+      patients:
+        - id: "p1"
+          conditions: ["Diabetes", "Hypertension"]
+        - id: "p2"
+          conditions: ["Diabetes", "Asthma"]
+        - id: "p3"
+          conditions: ["COPD"]
+          
+  - name: "Set operations combination"
+    description: "Complex subset/superset checking"
+    difficulty: "advanced"
+    categories: ["functions", "collections", "set-operations"]
+    expression: "requiredTests.subsetOf(completedTests) and completedTests.supersetOf(criticalTests)"
+    expected: [true]
+    fixture:
+      resourceType: "DiagnosticOrder"
+      requiredTests: ["CBC", "BMP"]
+      completedTests: ["CBC", "BMP", "Lipid Panel", "HbA1c"]
+      criticalTests: ["CBC"]
+      
+  - name: "Distinct slices of data"
+    description: "Checking uniqueness in data slices"
+    difficulty: "advanced"
+    categories: ["functions", "collections", "complex"]
+    expression: "observations.slice(0, 5).code.isDistinct() and observations.slice(5, 5).code.isDistinct()"
+    expected: [false]
+    fixture:
+      resourceType: "Bundle"
+      observations:
+        - code: "8480-6"  # Systolic BP
+        - code: "8462-4"  # Diastolic BP
+        - code: "8310-5"  # Body temp
+        - code: "8480-6"  # Systolic BP (duplicate)
+        - code: "9279-1"  # Respiratory rate
+        - code: "8867-4"  # Heart rate
+        - code: "8867-4"  # Heart rate (duplicate)
+        - code: "2708-6"  # O2 saturation
+        - code: "8480-6"  # Systolic BP
+        - code: "8462-4"  # Diastolic BP
+          
+  # Real-world medical scenarios
+  - name: "Medication list uniqueness check"
+    description: "Ensure no duplicate medications prescribed"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "distinct", "real-world"]
+    expression: "medicationRequest.medication.coding.code.isDistinct()"
+    expected: [false]
+    fixture:
+      resourceType: "Bundle"
+      medicationRequest:
+        - medication:
+            coding:
+              - system: "RxNorm"
+                code: "315677"  # Simvastatin
+        - medication:
+            coding:
+              - system: "RxNorm"
+                code: "860975"  # Metformin
+        - medication:
+            coding:
+              - system: "RxNorm"
+                code: "315677"  # Simvastatin (duplicate)
+                
+  - name: "Lab result pagination"
+    description: "Paginate through lab results using slice"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "slice", "real-world"]
+    expression: "labResults.orderBy(date).slice(10, 10)"
+    expected: []
+    fixture:
+      resourceType: "Bundle"
+      labResults:
+        - test: "Glucose"
+          date: "2024-01-01"
+        - test: "HbA1c"
+          date: "2024-01-02"
+        - test: "Cholesterol"
+          date: "2024-01-03"
+          
+  # Error cases
+  - name: "slice with invalid parameters"
+    description: "slice() with non-numeric parameters"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "slice", "errors"]
+    expression: "(1 | 2 | 3).slice('a', 2)"
+    error:
+      type: "semantic"
+      message: "slice() requires numeric parameters"
+      
+  - name: "subsetOf with non-collection"
+    description: "subsetOf() with non-collection argument"
+    difficulty: "intermediate"
+    categories: ["functions", "collections", "subset", "errors"]
+    expression: "(1 | 2).subsetOf(3)"
+    error:
+      type: "semantic"
+      message: "subsetOf() requires collection argument"

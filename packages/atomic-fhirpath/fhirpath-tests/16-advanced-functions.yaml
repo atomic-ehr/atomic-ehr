@@ -1,0 +1,494 @@
+name: "Advanced Functions"
+description: "Tests for advanced FHIRPath functions including intersect(), exclude(), iif(), trace(), matches(), replace(), and utility functions"
+
+tests:
+  # intersect() function
+  - name: "intersect() with overlapping collections"
+    description: "Test intersect() function with overlapping collections"
+    difficulty: "basic"
+    categories: ["functions", "collection", "intersect"]
+    expression: "set1.intersect(set2)"
+    expected: ["b", "c"]
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["b", "c", "d"]
+
+  - name: "intersect() with no overlap"
+    description: "Test intersect() function with no overlapping elements"
+    difficulty: "basic"
+    categories: ["functions", "collection", "intersect"]
+    expression: "set1.intersect(set2)"
+    expected: []
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["d", "e", "f"]
+
+  - name: "intersect() with identical collections"
+    description: "Test intersect() function with identical collections"
+    difficulty: "basic"
+    categories: ["functions", "collection", "intersect"]
+    expression: "set1.intersect(set2)"
+    expected: ["a", "b", "c"]
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["a", "b", "c"]
+
+  - name: "intersect() with empty collection"
+    description: "Test intersect() function with empty collection"
+    difficulty: "basic"
+    categories: ["functions", "collection", "intersect"]
+    expression: "set1.intersect(empty)"
+    expected: []
+    fixture:
+      set1: ["a", "b", "c"]
+      empty: []
+
+  - name: "intersect() with complex objects"
+    description: "Test intersect() function with complex objects"
+    difficulty: "intermediate"
+    categories: ["functions", "collection", "intersect"]
+    expression: "people1.name.intersect(people2.name)"
+    expected: ["John", "Jane"]
+    fixture:
+      people1:
+        - name: "John"
+          age: 30
+        - name: "Jane"
+          age: 25
+      people2:
+        - name: "Jane"
+          age: 27
+        - name: "Bob"
+          age: 35
+
+  # exclude() function
+  - name: "exclude() basic usage"
+    description: "Test exclude() function basic usage"
+    difficulty: "basic"
+    categories: ["functions", "collection", "exclude"]
+    expression: "set1.exclude(set2)"
+    expected: ["a"]
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["b", "c", "d"]
+
+  - name: "exclude() with no matches"
+    description: "Test exclude() function with no matching elements"
+    difficulty: "basic"
+    categories: ["functions", "collection", "exclude"]
+    expression: "set1.exclude(set2)"
+    expected: ["a", "b", "c"]
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["d", "e", "f"]
+
+  - name: "exclude() all elements"
+    description: "Test exclude() function excluding all elements"
+    difficulty: "basic"
+    categories: ["functions", "collection", "exclude"]
+    expression: "set1.exclude(set2)"
+    expected: []
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["a", "b", "c", "d"]
+
+  - name: "exclude() with duplicates"
+    description: "Test exclude() function with duplicate elements"
+    difficulty: "intermediate"
+    categories: ["functions", "collection", "exclude"]
+    expression: "set1.exclude(set2)"
+    expected: ["a", "a"]
+    fixture:
+      set1: ["a", "b", "a", "c"]
+      set2: ["b", "c"]
+
+  - name: "exclude() with complex filtering"
+    description: "Test exclude() function with complex object filtering"
+    difficulty: "intermediate"
+    categories: ["functions", "collection", "exclude"]
+    expression: "allUsers.name.exclude(bannedUsers.name)"
+    expected: ["John", "Jane"]
+    fixture:
+      allUsers:
+        - name: "John"
+          status: "active"
+        - name: "Jane"
+          status: "active"
+        - name: "Bob"
+          status: "banned"
+      bannedUsers:
+        - name: "Bob"
+        - name: "Alice"
+
+  # iif() function
+  - name: "iif() with true condition"
+    description: "Test iif() function with true condition"
+    difficulty: "basic"
+    categories: ["functions", "conditional", "iif"]
+    expression: "iif(age >= 18, 'adult', 'minor')"
+    expected: ["adult"]
+    fixture:
+      age: 25
+
+  - name: "iif() with false condition"
+    description: "Test iif() function with false condition"
+    difficulty: "basic"
+    categories: ["functions", "conditional", "iif"]
+    expression: "iif(age >= 18, 'adult', 'minor')"
+    expected: ["minor"]
+    fixture:
+      age: 15
+
+  - name: "iif() with complex condition"
+    description: "Test iif() function with complex condition"
+    difficulty: "intermediate"
+    categories: ["functions", "conditional", "iif"]
+    expression: "iif(score >= 90, 'excellent', iif(score >= 70, 'good', 'needs improvement'))"
+    expected: ["good"]
+    fixture:
+      score: 85
+
+  - name: "iif() with collection"
+    description: "Test iif() function applied to collection"
+    difficulty: "intermediate"
+    categories: ["functions", "conditional", "iif"]
+    expression: "scores.select(iif($this >= 70, 'pass', 'fail'))"
+    expected: ["fail", "pass", "pass", "fail"]
+    fixture:
+      scores: [65, 85, 92, 58]
+
+  - name: "iif() with type checking"
+    description: "Test iif() function with type checking"
+    difficulty: "intermediate"
+    categories: ["functions", "conditional", "iif"]
+    expression: "values.select(iif($this is string, $this.upper(), $this.toString()))"
+    expected: ["HELLO", "42", "TRUE"]
+    fixture:
+      values: ["hello", 42, true]
+
+  - name: "iif() nested conditions"
+    description: "Test iif() function with deeply nested conditions"
+    difficulty: "advanced"
+    categories: ["functions", "conditional", "iif"]
+    expression: "temperature.select(iif($this < 0, 'freezing', iif($this < 20, 'cold', iif($this < 30, 'warm', 'hot'))))"
+    expected: ["cold", "warm", "hot"]
+    fixture:
+      temperature: [15, 25, 35]
+
+  # trace() function
+  - name: "trace() basic usage"
+    description: "Test trace() function basic usage"
+    difficulty: "basic"
+    categories: ["functions", "debug", "trace"]
+    expression: "name.trace('patient name')"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "trace() with expression"
+    description: "Test trace() function with expression evaluation"
+    difficulty: "intermediate"
+    categories: ["functions", "debug", "trace"]
+    expression: "scores.where($this > 80).trace('high scores').count()"
+    expected: [2]
+    fixture:
+      scores: [75, 85, 92, 68, 88]
+
+  - name: "trace() with custom projection"
+    description: "Test trace() function with custom projection"
+    difficulty: "intermediate"
+    categories: ["functions", "debug", "trace"]
+    expression: "patients.trace('patient data', name).age.sum()"
+    expected: [85]
+    fixture:
+      patients:
+        - name: "John"
+          age: 30
+        - name: "Jane"
+          age: 25
+        - name: "Bob"
+          age: 30
+
+  - name: "trace() chaining"
+    description: "Test trace() function in chained operations"
+    difficulty: "intermediate"
+    categories: ["functions", "debug", "trace"]
+    expression: "items.trace('original').where(active = true).trace('filtered').count()"
+    expected: [2]
+    fixture:
+      items:
+        - name: "item1"
+          active: true
+        - name: "item2"
+          active: false
+        - name: "item3"
+          active: true
+
+  # matches() function (regex support)
+  - name: "matches() basic pattern"
+    description: "Test matches() function with basic regex pattern"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "regex"]
+    expression: "text.matches('[0-9]+')"
+    expected: [true]
+    fixture:
+      text: "12345"
+
+  - name: "matches() with complex pattern"
+    description: "Test matches() function with complex regex pattern"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "regex"]
+    expression: "email.matches('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}')"
+    expected: [true]
+    fixture:
+      email: "user@example.com"
+
+  - name: "matches() case insensitive"
+    description: "Test matches() function with case insensitive matching"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "regex"]
+    expression: "text.matches('(?i)hello')"
+    expected: [true]
+    fixture:
+      text: "HELLO"
+
+  - name: "matches() with collection"
+    description: "Test matches() function applied to collection"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "regex"]
+    expression: "phones.where($this.matches('\\+1-[0-9]{3}-[0-9]{3}-[0-9]{4}'))"
+    expected: ["+1-555-123-4567"]
+    fixture:
+      phones: ["+1-555-123-4567", "555-1234", "+44-20-1234-5678"]
+
+  - name: "matches() validation"
+    description: "Test matches() function for data validation"
+    difficulty: "advanced"
+    categories: ["functions", "string", "validation"]
+    expression: "identifiers.all($this.matches('[A-Z]{2}[0-9]{8}'))"
+    expected: [false]
+    fixture:
+      identifiers: ["AB12345678", "CD87654321", "invalid123"]
+
+  # replace() function
+  - name: "replace() basic usage"
+    description: "Test replace() function basic usage"
+    difficulty: "basic"
+    categories: ["functions", "string", "replace"]
+    expression: "text.replace('old', 'new')"
+    expected: ["This is new text"]
+    fixture:
+      text: "This is old text"
+
+  - name: "replace() with regex"
+    description: "Test replace() function with regex pattern"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "replace"]
+    expression: "text.replace('[0-9]+', 'NUMBER')"
+    expected: ["Version NUMBER.NUMBER.NUMBER"]
+    fixture:
+      text: "Version 1.2.3"
+
+  - name: "replace() multiple occurrences"
+    description: "Test replace() function with multiple occurrences"
+    difficulty: "basic"
+    categories: ["functions", "string", "replace"]
+    expression: "text.replace('a', 'A')"
+    expected: ["bAnAnA"]
+    fixture:
+      text: "banana"
+
+  - name: "replace() with capture groups"
+    description: "Test replace() function with regex capture groups"
+    difficulty: "advanced"
+    categories: ["functions", "string", "replace"]
+    expression: "text.replace('(\\w+)\\s+(\\w+)', '$2, $1')"
+    expected: ["Doe, John"]
+    fixture:
+      text: "John Doe"
+
+  - name: "replace() data cleaning"
+    description: "Test replace() function for data cleaning"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "cleaning"]
+    expression: "messyData.replace('[^a-zA-Z0-9\\s]', '').replace('\\s+', ' ')"
+    expected: ["Clean text data 123"]
+    fixture:
+      messyData: "Clean!@# text   data!!! 123"
+
+  # split() function
+  - name: "split() basic usage"
+    description: "Test split() function basic usage"
+    difficulty: "basic"
+    categories: ["functions", "string", "split"]
+    expression: "text.split(',')"
+    expected: [["apple", "banana", "orange"]]
+    fixture:
+      text: "apple,banana,orange"
+
+  - name: "split() with regex delimiter"
+    description: "Test split() function with regex delimiter"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "split"]
+    expression: "text.split('\\s+')"
+    expected: [["word1", "word2", "word3"]]
+    fixture:
+      text: "word1   word2    word3"
+
+  - name: "split() with limit"
+    description: "Test split() function with limit parameter"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "split"]
+    expression: "text.split(',', 2)"
+    expected: [["first", "second,third,fourth"]]
+    fixture:
+      text: "first,second,third,fourth"
+
+  - name: "split() empty delimiter"
+    description: "Test split() function with empty delimiter"
+    difficulty: "basic"
+    categories: ["functions", "string", "split"]
+    expression: "text.split('')"
+    expected: [["h", "e", "l", "l", "o"]]
+    fixture:
+      text: "hello"
+
+  # join() function
+  - name: "join() basic usage"
+    description: "Test join() function basic usage"
+    difficulty: "basic"
+    categories: ["functions", "collection", "join"]
+    expression: "items.join(', ')"
+    expected: ["apple, banana, orange"]
+    fixture:
+      items: ["apple", "banana", "orange"]
+
+  - name: "join() with empty separator"
+    description: "Test join() function with empty separator"
+    difficulty: "basic"
+    categories: ["functions", "collection", "join"]
+    expression: "letters.join('')"
+    expected: ["hello"]
+    fixture:
+      letters: ["h", "e", "l", "l", "o"]
+
+  - name: "join() with single element"
+    description: "Test join() function with single element"
+    difficulty: "basic"
+    categories: ["functions", "collection", "join"]
+    expression: "singleItem.join(',')"
+    expected: ["only"]
+    fixture:
+      singleItem: ["only"]
+
+  - name: "join() with empty collection"
+    description: "Test join() function with empty collection"
+    difficulty: "basic"
+    categories: ["functions", "collection", "join"]
+    expression: "empty.join(',')"
+    expected: [""]
+    fixture:
+      empty: []
+
+  - name: "join() with complex formatting"
+    description: "Test join() function with complex formatting"
+    difficulty: "intermediate"
+    categories: ["functions", "collection", "join"]
+    expression: "people.select(name + ' (' + age.toString() + ')').join('; ')"
+    expected: ["John (30); Jane (25); Bob (35)"]
+    fixture:
+      people:
+        - name: "John"
+          age: 30
+        - name: "Jane"
+          age: 25
+        - name: "Bob"
+          age: 35
+
+  # Advanced utility functions
+  - name: "combine() function"
+    description: "Test combine() function for merging collections"
+    difficulty: "intermediate"
+    categories: ["functions", "collection", "combine"]
+    expression: "set1.combine(set2)"
+    expected: ["a", "b", "c", "b", "c", "d"]
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["b", "c", "d"]
+
+  - name: "union() vs combine() difference"
+    description: "Test difference between union() and combine() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "collection", "comparison"]
+    expression: "set1.union(set2).count() != set1.combine(set2).count()"
+    expected: [true]
+    fixture:
+      set1: ["a", "b", "c"]
+      set2: ["b", "c", "d"]
+
+  # Complex function combinations
+  - name: "Advanced function chaining"
+    description: "Test complex chaining of advanced functions"
+    difficulty: "advanced"
+    categories: ["functions", "chaining", "complex"]
+    expression: "data.where(status = 'active').select(name).exclude(blacklist).join(', ')"
+    expected: ["John, Jane"]
+    fixture:
+      data:
+        - name: "John"
+          status: "active"
+        - name: "Bob"
+          status: "inactive"
+        - name: "Jane"
+          status: "active"
+        - name: "Alice"
+          status: "active"
+      blacklist: ["Alice"]
+
+  - name: "Conditional processing with iif and matches"
+    description: "Test conditional processing combining iif() and matches()"
+    difficulty: "advanced"
+    categories: ["functions", "conditional", "regex"]
+    expression: "emails.select(iif($this.matches('.*@company\\.com$'), 'internal', 'external'))"
+    expected: ["internal", "external", "internal"]
+    fixture:
+      emails: ["john@company.com", "jane@gmail.com", "bob@company.com"]
+
+  - name: "Data transformation pipeline"
+    description: "Test complex data transformation using multiple advanced functions"
+    difficulty: "advanced"
+    categories: ["functions", "transformation", "pipeline"]
+    expression: "rawData.replace('[^a-zA-Z0-9,]', '').split(',').where($this != '').select($this.upper()).distinct().join(' | ')"
+    expected: ["APPLE | BANANA | ORANGE"]
+    fixture:
+      rawData: "apple!@#,banana,apple,orange!!!"
+
+  # Error scenarios
+  - name: "matches() with invalid regex"
+    description: "Test matches() function with invalid regex pattern"
+    difficulty: "intermediate"
+    categories: ["functions", "regex", "error"]
+    expression: "text.matches('[invalid')"
+    error:
+      type: "semantic"
+      message: "Invalid regular expression pattern"
+    fixture:
+      text: "test"
+
+  - name: "split() with null input"
+    description: "Test split() function with null input"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "error"]
+    expression: "nullValue.split(',')"
+    expected: []
+    fixture:
+      nullValue: null
+
+  - name: "join() with non-string elements"
+    description: "Test join() function with non-string elements"
+    difficulty: "intermediate"
+    categories: ["functions", "collection", "error"]
+    expression: "mixedTypes.join(',')"
+    expected: ["42,true,text"]
+    fixture:
+      mixedTypes: [42, true, "text"]

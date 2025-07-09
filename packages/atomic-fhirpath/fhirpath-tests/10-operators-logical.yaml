@@ -1,0 +1,465 @@
+name: "Logical Operators"
+description: "Tests for FHIRPath logical operators including and, or, xor, and not"
+
+tests:
+  # AND operator
+  - name: "AND operator with true values"
+    description: "Test AND operator with both true values"
+    difficulty: "basic"
+    categories: ["operators", "logical", "and"]
+    expression: "true and true"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "AND operator with false values"
+    description: "Test AND operator with both false values"
+    difficulty: "basic"
+    categories: ["operators", "logical", "and"]
+    expression: "false and false"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "AND operator with mixed values - true and false"
+    description: "Test AND operator with true and false"
+    difficulty: "basic"
+    categories: ["operators", "logical", "and"]
+    expression: "true and false"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "AND operator with mixed values - false and true"
+    description: "Test AND operator with false and true"
+    difficulty: "basic"
+    categories: ["operators", "logical", "and"]
+    expression: "false and true"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "AND operator with expressions"
+    description: "Test AND operator with comparison expressions"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "and"]
+    expression: "age > 18 and age < 65"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "AND operator short-circuit evaluation"
+    description: "Test AND operator short-circuit behavior"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "and"]
+    expression: "false and (1/0 > 0)"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  # OR operator
+  - name: "OR operator with true values"
+    description: "Test OR operator with both true values"
+    difficulty: "basic"
+    categories: ["operators", "logical", "or"]
+    expression: "true or true"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "OR operator with false values"
+    description: "Test OR operator with both false values"
+    difficulty: "basic"
+    categories: ["operators", "logical", "or"]
+    expression: "false or false"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "OR operator with mixed values - true or false"
+    description: "Test OR operator with true or false"
+    difficulty: "basic"
+    categories: ["operators", "logical", "or"]
+    expression: "true or false"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "OR operator with mixed values - false or true"
+    description: "Test OR operator with false or true"
+    difficulty: "basic"
+    categories: ["operators", "logical", "or"]
+    expression: "false or true"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "OR operator with expressions"
+    description: "Test OR operator with comparison expressions"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "or"]
+    expression: "age < 18 or age > 65"
+    expected: [false]
+    fixture:
+      age: 30
+
+  - name: "OR operator short-circuit evaluation"
+    description: "Test OR operator short-circuit behavior"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "or"]
+    expression: "true or (1/0 > 0)"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  # XOR operator
+  - name: "XOR operator with true values"
+    description: "Test XOR operator with both true values"
+    difficulty: "basic"
+    categories: ["operators", "logical", "xor"]
+    expression: "true xor true"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "XOR operator with false values"
+    description: "Test XOR operator with both false values"
+    difficulty: "basic"
+    categories: ["operators", "logical", "xor"]
+    expression: "false xor false"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "XOR operator with mixed values - true xor false"
+    description: "Test XOR operator with true xor false"
+    difficulty: "basic"
+    categories: ["operators", "logical", "xor"]
+    expression: "true xor false"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "XOR operator with mixed values - false xor true"
+    description: "Test XOR operator with false xor true"
+    difficulty: "basic"
+    categories: ["operators", "logical", "xor"]
+    expression: "false xor true"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "XOR operator with expressions"
+    description: "Test XOR operator with comparison expressions"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "xor"]
+    expression: "(age < 25) xor (weight > 80)"
+    expected: [false]
+    fixture:
+      age: 30
+      weight: 70
+
+  # NOT operator
+  - name: "NOT operator with true value"
+    description: "Test NOT operator with true value"
+    difficulty: "basic"
+    categories: ["operators", "logical", "not"]
+    expression: "not true"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  - name: "NOT operator with false value"
+    description: "Test NOT operator with false value"
+    difficulty: "basic"
+    categories: ["operators", "logical", "not"]
+    expression: "not false"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "NOT operator with expression"
+    description: "Test NOT operator with comparison expression"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "not"]
+    expression: "not (age > 65)"
+    expected: [true]
+    fixture:
+      age: 30
+
+  - name: "Double negation"
+    description: "Test double NOT operator"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "not"]
+    expression: "not (not true)"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  # Logical operators with collections
+  - name: "AND operator with collection results"
+    description: "Test AND operator with expressions returning collections"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "collection"]
+    expression: "names.exists() and ages.exists()"
+    expected: [true]
+    fixture:
+      names: ["John", "Jane"]
+      ages: [30, 25]
+
+  - name: "OR operator with empty collections"
+    description: "Test OR operator with empty collection checks"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "collection"]
+    expression: "names.empty() or ages.empty()"
+    expected: [false]
+    fixture:
+      names: ["John", "Jane"]
+      ages: [30, 25]
+
+  - name: "Logical operators with where() results"
+    description: "Test logical operators with where() filtering"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "collection"]
+    expression: "patients.where(age > 25).exists() and patients.where(age < 40).exists()"
+    expected: [true]
+    fixture:
+      patients:
+        - name: "John"
+          age: 30
+        - name: "Jane"
+          age: 35
+
+  # Complex logical expressions
+  - name: "Multiple AND operations"
+    description: "Test multiple AND operations in sequence"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "complex"]
+    expression: "age > 18 and age < 65 and active = true"
+    expected: [true]
+    fixture:
+      age: 30
+      active: true
+
+  - name: "Multiple OR operations"
+    description: "Test multiple OR operations in sequence"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "complex"]
+    expression: "status = 'active' or status = 'pending' or status = 'review'"
+    expected: [true]
+    fixture:
+      status: "pending"
+
+  - name: "Mixed logical operators"
+    description: "Test mixed AND and OR operators"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "complex"]
+    expression: "(age >= 18 and age <= 25) or (age >= 65 and retired = true)"
+    expected: [false]
+    fixture:
+      age: 30
+      retired: false
+
+  - name: "Logical operators with parentheses"
+    description: "Test logical operators with explicit parentheses"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "complex"]
+    expression: "(age > 18 and active = true) or (vip = true)"
+    expected: [true]
+    fixture:
+      age: 30
+      active: true
+      vip: false
+
+  # Operator precedence
+  - name: "AND/OR precedence without parentheses"
+    description: "Test AND/OR operator precedence"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "precedence"]
+    expression: "true or false and false"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "NOT operator precedence"
+    description: "Test NOT operator precedence"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "precedence"]
+    expression: "not false and true"
+    expected: [true]
+    fixture:
+      dummy: true
+
+  - name: "Complex precedence with comparison"
+    description: "Test logical operator precedence with comparisons"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "precedence"]
+    expression: "age > 18 and weight < 100 or height > 200"
+    expected: [true]
+    fixture:
+      age: 30
+      weight: 70
+      height: 175
+
+  # Null handling in logical operations
+  - name: "AND with null values"
+    description: "Test AND operator with null values"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "null"]
+    expression: "name.exists() and middleName.exists()"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "OR with null values"
+    description: "Test OR operator with null values"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "null"]
+    expression: "name.exists() or middleName.exists()"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "NOT with empty collection"
+    description: "Test NOT operator with empty collection"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "null"]
+    expression: "not middleName.exists()"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  # Real-world logical scenarios
+  - name: "Eligibility criteria check"
+    description: "Test complex eligibility criteria using logical operators"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "realworld"]
+    expression: "(age >= 18 and age <= 65) and (income >= 25000 or hasInsurance = true) and criminalRecord.empty()"
+    expected: [true]
+    fixture:
+      age: 30
+      income: 35000
+      hasInsurance: true
+      criminalRecord: []
+
+  - name: "Medical contraindication check"
+    description: "Test medical contraindication logic"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "realworld"]
+    expression: "not (allergies.contains('penicillin') or (age < 18 and weight < 40) or pregnancyStatus = 'pregnant')"
+    expected: [true]
+    fixture:
+      allergies: ["pollen", "dust"]
+      age: 30
+      weight: 70
+      pregnancyStatus: "not pregnant"
+
+  - name: "Business hours validation"
+    description: "Test business hours validation logic"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "realworld"]
+    expression: "(dayOfWeek >= 1 and dayOfWeek <= 5) and (hour >= 9 and hour <= 17) and not isHoliday"
+    expected: [true]
+    fixture:
+      dayOfWeek: 3
+      hour: 14
+      isHoliday: false
+
+  - name: "Access control logic"
+    description: "Test access control using logical operators"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "realworld"]
+    expression: "(role = 'admin') or (role = 'manager' and department = requestedDepartment) or (role = 'user' and userId = resourceOwner)"
+    expected: [true]
+    fixture:
+      role: "manager"
+      department: "IT"
+      requestedDepartment: "IT"
+      userId: "user123"
+      resourceOwner: "user456"
+
+  # Error handling and edge cases
+  - name: "Logical operator with non-boolean expression"
+    description: "Test logical operator with non-boolean expression"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "error"]
+    expression: "name and age"
+    error:
+      type: "semantic"
+      message: "Logical operators require boolean operands"
+    fixture:
+      name: "John Doe"
+      age: 30
+
+  - name: "Logical operator with empty collection"
+    description: "Test logical operator behavior with empty collections"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "empty"]
+    expression: "nonexistent.exists() and true"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  # Three-valued logic (true, false, unknown)
+  - name: "Three-valued logic - unknown AND true"
+    description: "Test three-valued logic with unknown and true"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "threevalued"]
+    expression: "unknownValue.exists() and true"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "Three-valued logic - unknown OR true"
+    description: "Test three-valued logic with unknown or true"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "threevalued"]
+    expression: "unknownValue.exists() or true"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "Three-valued logic - unknown AND false"
+    description: "Test three-valued logic with unknown and false"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "threevalued"]
+    expression: "unknownValue.exists() and false"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  # Chaining logical operations
+  - name: "Long chain of AND operations"
+    description: "Test long chain of AND operations"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "chained"]
+    expression: "a = 1 and b = 2 and c = 3 and d = 4 and e = 5"
+    expected: [true]
+    fixture:
+      a: 1
+      b: 2
+      c: 3
+      d: 4
+      e: 5
+
+  - name: "Long chain of OR operations"
+    description: "Test long chain of OR operations"
+    difficulty: "intermediate"
+    categories: ["operators", "logical", "chained"]
+    expression: "status = 'draft' or status = 'review' or status = 'approved' or status = 'published'"
+    expected: [true]
+    fixture:
+      status: "approved"
+
+  - name: "Complex nested logical expression"
+    description: "Test complex nested logical expression"
+    difficulty: "advanced"
+    categories: ["operators", "logical", "nested"]
+    expression: "((age >= 18 and citizen = true) or (age >= 16 and hasPermit = true)) and not (banned = true or suspended = true)"
+    expected: [true]
+    fixture:
+      age: 20
+      citizen: true
+      hasPermit: false
+      banned: false
+      suspended: false

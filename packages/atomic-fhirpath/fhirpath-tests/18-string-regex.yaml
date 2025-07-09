@@ -1,0 +1,227 @@
+name: "String and Regex Functions"
+description: "Tests for advanced string manipulation: matches(), replace(), split(), join()"
+tests:
+  # matches() function
+  - name: "matches() - basic pattern"
+    description: "Basic regex pattern matching"
+    difficulty: "basic"
+    categories: ["string", "regex"]
+    expression: "'hello123'.matches('[a-z]+[0-9]+')"
+    fixture: {}
+    expected: [true]
+    
+  - name: "matches() - case insensitive"
+    expression: "'Hello'.matches('hello', 'i')"
+    fixture: {}
+    expected: [true]
+    
+  - name: "matches() - digit pattern"
+    expression: "'12345'.matches('^\\d+$')"
+    fixture: {}
+    expected: [true]
+    
+  - name: "matches() - email pattern"
+    expression: "'user@example.com'.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')"
+    fixture: {}
+    expected: [true]
+    
+  - name: "matches() - no match"
+    expression: "'hello'.matches('^[0-9]+$')"
+    fixture: {}
+    expected: [false]
+    
+  - name: "matches() - multiline"
+    expression: "'line1\nline2'.matches('line1.*line2', 's')"
+    fixture: {}
+    expected: [true]
+    
+  # replace() function
+  - name: "replace() - simple replacement"
+    description: "Basic string replacement"
+    expression: "'hello world'.replace('world', 'universe')"
+    fixture: {}
+    expected: ["hello universe"]
+    
+  - name: "replace() - regex replacement"
+    expression: "'hello123world'.replace('[0-9]+', '-')"
+    fixture: {}
+    expected: ["hello-world"]
+    
+  - name: "replace() - capture groups"
+    expression: "'John Smith'.replace('(\\w+) (\\w+)', '$2, $1')"
+    fixture: {}
+    expected: ["Smith, John"]
+    
+  - name: "replace() - global replacement"
+    expression: "'aaabbbccc'.replace('b+', 'X')"
+    fixture: {}
+    expected: ["aaaXccc"]
+    
+  - name: "replace() - case insensitive"
+    expression: "'Hello HELLO hello'.replace('hello', 'hi', 'i')"
+    fixture: {}
+    expected: ["hi HELLO hello"]
+    
+  - name: "replace() - special characters"
+    expression: "'price: $10.99'.replace('\\$([0-9.]+)', '€$1')"
+    fixture: {}
+    expected: ["price: €10.99"]
+    
+  # split() function
+  - name: "split() - simple delimiter"
+    description: "Split string by delimiter"
+    expression: "'a,b,c'.split(',')"
+    fixture: {}
+    expected: ["a", "b", "c"]
+    
+  - name: "split() - regex delimiter"
+    expression: "'a1b2c3'.split('[0-9]')"
+    fixture: {}
+    expected: ["a", "b", "c", ""]
+    
+  - name: "split() - whitespace"
+    expression: "'hello   world   test'.split('\\s+')"
+    fixture: {}
+    expected: ["hello", "world", "test"]
+    
+  - name: "split() - empty strings"
+    expression: "'a,,c'.split(',')"
+    fixture: {}
+    expected: ["a", "", "c"]
+    
+  - name: "split() - limit parameter"
+    expression: "'a-b-c-d'.split('-', 2)"
+    fixture: {}
+    expected: ["a", "b-c-d"]
+    
+  # join() function
+  - name: "join() - simple join"
+    description: "Join collection of strings"
+    expression: "('a' | 'b' | 'c').join(',')"
+    fixture: {}
+    expected: ["a,b,c"]
+    
+  - name: "join() - with space"
+    expression: "('hello' | 'world').join(' ')"
+    fixture: {}
+    expected: ["hello world"]
+    
+  - name: "join() - empty delimiter"
+    expression: "('1' | '2' | '3').join('')"
+    fixture: {}
+    expected: ["123"]
+    
+  - name: "join() - complex delimiter"
+    expression: "('item1' | 'item2' | 'item3').join(' -> ')"
+    fixture: {}
+    expected: ["item1 -> item2 -> item3"]
+    
+  - name: "join() - single item"
+    expression: "('solo').join(',')"
+    fixture: {}
+    expected: ["solo"]
+    
+  # Complex scenarios
+  - name: "Extract and transform"
+    description: "Extract parts using regex and transform"
+    difficulty: "intermediate"
+    expression: "identifier.where(system = 'http://example.com').value.replace('^PAT-', '')"
+    fixture:
+      identifier: [
+        {system: "http://example.com", value: "PAT-12345"},
+        {system: "http://other.com", value: "OTHER-67890"},
+        {system: "http://example.com", value: "PAT-11111"}
+      ]
+    expected: ["12345", "11111"]
+    
+  - name: "Parse structured string"
+    expression: "'Name: John Doe; Age: 30; Status: Active'.split(';').select($this.split(':')[1].trim())"
+    fixture: {}
+    expected: ["John Doe", "30", "Active"]
+    
+  - name: "Validate and clean phone"
+    expression: "'(555) 123-4567'.replace('[^0-9]', '').matches('^[0-9]{10}$')"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Extract URLs"
+    expression: "text.matches('https?://[^\\s]+')"
+    fixture:
+      text: "Visit https://example.com for more info"
+    expected: [true]
+    
+  - name: "Build path from parts"
+    expression: "('users' | id | 'profile').join('/')"
+    fixture:
+      id: "12345"
+    expected: ["users/12345/profile"]
+    
+  # Real-world scenarios
+  - name: "Parse CSV line"
+    description: "Parse CSV with quoted values"
+    difficulty: "advanced"
+    expression: "'\"Smith, John\",30,\"Active\"'.split(',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)')"
+    fixture: {}
+    expected: ["\"Smith, John\"", "30", "\"Active\""]
+    
+  - name: "Sanitize HTML"
+    expression: "'<p>Hello <b>world</b></p>'.replace('<[^>]+>', '')"
+    fixture: {}
+    expected: ["Hello world"]
+    
+  - name: "Format name variations"
+    expression: "name.select($this.given.join(' ') + ' ' + $this.family.upper())"
+    fixture:
+      name: [
+        {given: ["John", "Michael"], family: "Smith"},
+        {given: ["Jane"], family: "Doe"}
+      ]
+    expected: ["John Michael SMITH", "Jane DOE"]
+    
+  - name: "Extract hashtags"
+    expression: "'Check out #fhir and #healthcare'.split(' ').where($this.matches('^#[a-zA-Z0-9]+')).replace('#', '')"
+    fixture: {}
+    expected: ["fhir", "healthcare"]
+    
+  # Error cases
+  - name: "matches() - invalid regex"
+    description: "Invalid regex pattern"
+    expression: "'test'.matches('[invalid')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Invalid regular expression"
+      
+  - name: "replace() - invalid replacement"
+    expression: "'test'.replace('(test)', '$2')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Invalid capture group reference"
+      
+  # Edge cases
+  - name: "Empty string operations"
+    expression: "''.split(',').count()"
+    fixture: {}
+    expected: [1]
+    
+  - name: "Unicode handling"
+    expression: "'café'.matches('^[a-zé]+$')"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Newline handling"
+    expression: "'line1\nline2\nline3'.split('\n').count()"
+    fixture: {}
+    expected: [3]
+    
+  - name: "Escape sequences"
+    expression: "'path\\to\\file'.replace('\\\\', '/')"
+    fixture: {}
+    expected: ["path/to/file"]
+    
+  - name: "Complex nested operations"
+    expression: "text.split('\n').where($this.matches('^\\s*[A-Z]')).select($this.trim()).join('; ')"
+    fixture:
+      text: "First line\n  Second line\nthird line\n  Fourth line"
+    expected: ["First line; Second line; Fourth line"]

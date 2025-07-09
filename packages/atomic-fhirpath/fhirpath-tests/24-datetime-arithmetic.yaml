@@ -1,0 +1,200 @@
+name: "DateTime Arithmetic"
+description: "Tests for date/time arithmetic with quantities and durations"
+tests:
+  # Basic date arithmetic
+  - name: "Date plus days"
+    description: "Add days to a date"
+    difficulty: "basic"
+    categories: ["datetime", "arithmetic"]
+    expression: "@2023-01-15 + 10 days"
+    fixture: {}
+    expected: ["@2023-01-25"]
+    
+  - name: "Date minus days"
+    expression: "@2023-01-15 - 5 days"
+    fixture: {}
+    expected: ["@2023-01-10"]
+    
+  - name: "DateTime plus hours"
+    expression: "@2023-01-15T10:00:00Z + 3 hours"
+    fixture: {}
+    expected: ["@2023-01-15T13:00:00Z"]
+    
+  - name: "DateTime minus minutes"
+    expression: "@2023-01-15T10:30:00Z - 45 minutes"
+    fixture: {}
+    expected: ["@2023-01-15T09:45:00Z"]
+    
+  # Different time units
+  - name: "Add years"
+    expression: "@2023-01-15 + 2 years"
+    fixture: {}
+    expected: ["@2025-01-15"]
+    
+  - name: "Add months"
+    expression: "@2023-01-15 + 3 months"
+    fixture: {}
+    expected: ["@2023-04-15"]
+    
+  - name: "Add weeks"
+    expression: "@2023-01-15 + 2 weeks"
+    fixture: {}
+    expected: ["@2023-01-29"]
+    
+  - name: "Add seconds"
+    expression: "@2023-01-15T10:00:00Z + 90 seconds"
+    fixture: {}
+    expected: ["@2023-01-15T10:01:30Z"]
+    
+  - name: "Add milliseconds"
+    expression: "@2023-01-15T10:00:00.000Z + 500 milliseconds"
+    fixture: {}
+    expected: ["@2023-01-15T10:00:00.500Z"]
+    
+  # Complex arithmetic
+  - name: "Multiple operations"
+    description: "Chain multiple date operations"
+    difficulty: "intermediate"
+    expression: "@2023-01-15 + 1 year - 2 months + 10 days"
+    fixture: {}
+    expected: ["@2023-11-25"]
+    
+  - name: "Leap year handling"
+    expression: "@2024-02-29 + 1 year"
+    fixture: {}
+    expected: ["@2025-02-28"]
+    
+  - name: "Month end handling"
+    expression: "@2023-01-31 + 1 month"
+    fixture: {}
+    expected: ["@2023-02-28"]
+    
+  - name: "Cross year boundary"
+    expression: "@2023-12-25 + 10 days"
+    fixture: {}
+    expected: ["@2024-01-04"]
+    
+  # Time zone handling
+  - name: "DateTime with timezone offset"
+    expression: "@2023-01-15T10:00:00-05:00 + 3 hours"
+    fixture: {}
+    expected: ["@2023-01-15T13:00:00-05:00"]
+    
+  - name: "Cross day boundary with timezone"
+    expression: "@2023-01-15T22:00:00-05:00 + 5 hours"
+    fixture: {}
+    expected: ["@2023-01-16T03:00:00-05:00"]
+    
+  # Date differences
+  - name: "Date difference in days"
+    description: "Calculate difference between dates"
+    expression: "(@2023-01-20 - @2023-01-15) in days"
+    fixture: {}
+    expected: [5]
+    
+  - name: "DateTime difference in hours"
+    expression: "(@2023-01-15T15:00:00Z - @2023-01-15T10:00:00Z) in hours"
+    fixture: {}
+    expected: [5]
+    
+  - name: "Date difference in years"
+    expression: "(@2025-06-15 - @2023-06-15) in years"
+    fixture: {}
+    expected: [2]
+    
+  - name: "Negative difference"
+    expression: "(@2023-01-10 - @2023-01-15) in days"
+    fixture: {}
+    expected: [-5]
+    
+  # Real-world scenarios
+  - name: "Age calculation"
+    description: "Calculate age from birthdate"
+    difficulty: "intermediate"
+    expression: "(today() - birthDate) in years"
+    fixture:
+      birthDate: "@1990-06-15"
+    environment:
+      now: "@2023-12-01T00:00:00Z"
+    expected: [33]
+    
+  - name: "Appointment scheduling"
+    expression: "start + duration minutes"
+    fixture:
+      start: "@2023-01-15T09:00:00Z"
+      duration: 30
+    expected: ["@2023-01-15T09:30:00Z"]
+    
+  - name: "Medication schedule"
+    expression: "startDate + (doseNumber - 1) * 12 hours"
+    fixture:
+      startDate: "@2023-01-15T08:00:00Z"
+      doseNumber: 3
+    expected: ["@2023-01-16T08:00:00Z"]
+    
+  - name: "Follow-up calculation"
+    expression: "discharged + followUpDays days"
+    fixture:
+      discharged: "@2023-01-15"
+      followUpDays: 14
+    expected: ["@2023-01-29"]
+    
+  # Edge cases
+  - name: "Add to time only"
+    expression: "@T10:30:00 + 2 hours"
+    fixture: {}
+    expected: ["@T12:30:00"]
+    
+  - name: "Daylight saving transition"
+    expression: "@2023-03-12T01:30:00-05:00 + 1 hour"
+    fixture: {}
+    expected: ["@2023-03-12T02:30:00-05:00"]
+    
+  - name: "Very large addition"
+    expression: "@2023-01-15 + 10000 days"
+    fixture: {}
+    expected: ["@2050-06-02"]
+    
+  - name: "Fractional units"
+    expression: "@2023-01-15T10:00:00Z + 1.5 hours"
+    fixture: {}
+    expected: ["@2023-01-15T11:30:00Z"]
+    
+  # Comparisons with arithmetic
+  - name: "Date range check"
+    expression: "date >= today() - 30 days and date <= today()"
+    fixture:
+      date: "@2023-01-10"
+    environment:
+      now: "@2023-01-15T00:00:00Z"
+    expected: [true]
+    
+  - name: "Overdue calculation"
+    expression: "(today() - dueDate) in days > 0"
+    fixture:
+      dueDate: "@2023-01-10"
+    environment:
+      now: "@2023-01-15T00:00:00Z"
+    expected: [true]
+    
+  # Error cases
+  - name: "Invalid unit"
+    expression: "@2023-01-15 + 5 decades"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Invalid time unit 'decades'"
+      
+  - name: "Incompatible types"
+    expression: "@2023-01-15 + '5 days'"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Cannot add string to date"
+      
+  - name: "Time arithmetic on date"
+    expression: "@2023-01-15 + 30 seconds"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Cannot add time units to date without time"

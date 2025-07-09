@@ -1,0 +1,249 @@
+name: "String Encoding Functions"
+description: "Tests for string encoding/decoding functions: encode(), decode(), escape(), unescape(), toChars()"
+tests:
+  # encode() function - base64
+  - name: "encode() - base64 simple string"
+    description: "Encode string to base64"
+    difficulty: "basic"
+    categories: ["functions", "string", "encoding"]
+    expression: "'Hello World'.encode('base64')"
+    fixture: {}
+    expected: ["SGVsbG8gV29ybGQ="]
+    
+  - name: "encode() - base64 empty string"
+    expression: "''.encode('base64')"
+    fixture: {}
+    expected: [""]
+    
+  - name: "encode() - base64 special characters"
+    expression: "'FHIRPath test: ñ, é, 中文'.encode('base64')"
+    fixture: {}
+    expected: ["RkhJUlBhdGggdGVzdDogw7EsIMOpLCDkuK3mloc="]
+    
+  # encode() function - urlbase64
+  - name: "encode() - urlbase64"
+    description: "URL-safe base64 encoding"
+    expression: "'Data with + and / chars'.encode('urlbase64')"
+    fixture: {}
+    expected: ["RGF0YSB3aXRoICsgYW5kIC8gY2hhcnM"]
+    
+  - name: "encode() - urlbase64 padding"
+    expression: "'test'.encode('urlbase64')"
+    fixture: {}
+    expected: ["dGVzdA"]
+    
+  # encode() function - hex
+  - name: "encode() - hex lowercase"
+    expression: "'FHIR'.encode('hex')"
+    fixture: {}
+    expected: ["46484952"]
+    
+  - name: "encode() - hex numbers"
+    expression: "'123'.encode('hex')"
+    fixture: {}
+    expected: ["313233"]
+    
+  - name: "encode() - hex unicode"
+    expression: "'€'.encode('hex')"
+    fixture: {}
+    expected: ["e282ac"]
+    
+  # decode() function - base64
+  - name: "decode() - base64 simple"
+    description: "Decode base64 to string"
+    expression: "'SGVsbG8gV29ybGQ='.decode('base64')"
+    fixture: {}
+    expected: ["Hello World"]
+    
+  - name: "decode() - base64 with padding"
+    expression: "'Rkhpcg=='.decode('base64')"
+    fixture: {}
+    expected: ["FHir"]
+    
+  - name: "decode() - base64 invalid"
+    expression: "'Not valid base64!'.decode('base64')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Invalid base64 encoding"
+    
+  # decode() function - hex
+  - name: "decode() - hex simple"
+    expression: "'46484952'.decode('hex')"
+    fixture: {}
+    expected: ["FHIR"]
+    
+  - name: "decode() - hex lowercase"
+    expression: "'68656c6c6f'.decode('hex')"
+    fixture: {}
+    expected: ["hello"]
+    
+  - name: "decode() - hex uppercase"
+    expression: "'48454C4C4F'.decode('hex')"
+    fixture: {}
+    expected: ["HELLO"]
+    
+  - name: "decode() - hex invalid"
+    expression: "'XYZ'.decode('hex')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Invalid hex encoding"
+    
+  # toChars() function
+  - name: "toChars() - simple string"
+    description: "Convert string to character array"
+    expression: "'FHIR'.toChars()"
+    fixture: {}
+    expected: ["F", "H", "I", "R"]
+    
+  - name: "toChars() - empty string"
+    expression: "''.toChars()"
+    fixture: {}
+    expected: []
+    
+  - name: "toChars() - unicode"
+    expression: "'Hello 世界'.toChars()"
+    fixture: {}
+    expected: ["H", "e", "l", "l", "o", " ", "世", "界"]
+    
+  - name: "toChars() - emoji"
+    expression: "'😀👍'.toChars()"
+    fixture: {}
+    expected: ["😀", "👍"]
+    
+  # escape() function
+  - name: "escape() - JSON escaping"
+    description: "Escape special characters for JSON"
+    expression: "'Line 1\\nLine 2\\tTabbed'.escape('json')"
+    fixture: {}
+    expected: ["Line 1\\\\nLine 2\\\\tTabbed"]
+    
+  - name: "escape() - quotes"
+    expression: "'She said \"Hello\"'.escape('json')"
+    fixture: {}
+    expected: ["She said \\\"Hello\\\""]
+    
+  - name: "escape() - backslash"
+    expression: "'Path\\\\to\\\\file'.escape('json')"
+    fixture: {}
+    expected: ["Path\\\\\\\\to\\\\\\\\file"]
+    
+  - name: "escape() - HTML"
+    expression: "'<p>Hello & goodbye</p>'.escape('html')"
+    fixture: {}
+    expected: ["&lt;p&gt;Hello &amp; goodbye&lt;/p&gt;"]
+    
+  # unescape() function
+  - name: "unescape() - JSON unescaping"
+    expression: "'Line 1\\\\nLine 2'.unescape('json')"
+    fixture: {}
+    expected: ["Line 1\nLine 2"]
+    
+  - name: "unescape() - quotes"
+    expression: "'Say \\\"Hello\\\"'.unescape('json')"
+    fixture: {}
+    expected: ["Say \"Hello\""]
+    
+  - name: "unescape() - HTML entities"
+    expression: "'&lt;div&gt;Hello &amp; world&lt;/div&gt;'.unescape('html')"
+    fixture: {}
+    expected: ["<div>Hello & world</div>"]
+    
+  # Complex encoding scenarios
+  - name: "Round-trip encoding"
+    description: "Encode and decode should preserve original"
+    difficulty: "intermediate"
+    expression: "original = original.encode('base64').decode('base64')"
+    fixture:
+      original: "Test string with special chars: !@#$%^&*()"
+    expected: [true]
+    
+  - name: "Chained encoding"
+    expression: "'secret'.encode('base64').encode('hex')"
+    fixture: {}
+    expected: ["633256356a5a58513d"]
+    
+  - name: "Character manipulation"
+    expression: "'HELLO'.toChars().where($this != 'L').join('')"
+    fixture: {}
+    expected: ["HEO"]
+    
+  # Real-world scenarios
+  - name: "Base64 encoded attachment"
+    description: "Handle FHIR attachment data"
+    expression: "attachment.data.decode('base64').substring(0, 10)"
+    fixture:
+      attachment:
+        contentType: "text/plain"
+        data: "VGhpcyBpcyBhIHRlc3QgZG9jdW1lbnQ="
+    expected: ["This is a "]
+    
+  - name: "Hex color validation"
+    expression: "color.substring(1).decode('hex').encode('hex').length() = 6"
+    fixture:
+      color: "#FF5733"
+    expected: [true]
+    
+  - name: "URL parameter encoding"
+    expression: "param.encode('urlbase64').replace('=', '')"
+    fixture:
+      param: "user:password123"
+    expected: ["dXNlcjpwYXNzd29yZDEyMw"]
+    
+  - name: "Character frequency"
+    expression: "'hello world'.toChars().where($this != ' ').groupBy($this).select({char: $this.first(), count: $this.count()})"
+    fixture: {}
+    expected: [
+      {char: "h", count: 1},
+      {char: "e", count: 1},
+      {char: "l", count: 3},
+      {char: "o", count: 2},
+      {char: "w", count: 1},
+      {char: "r", count: 1},
+      {char: "d", count: 1}
+    ]
+    
+  # Edge cases
+  - name: "Large string encoding"
+    expression: "largeString.encode('base64').length() > largeString.length()"
+    fixture:
+      largeString: "A".repeat(1000)
+    expected: [true]
+    
+  - name: "Binary data representation"
+    expression: "'\\x00\\x01\\x02'.encode('hex')"
+    fixture: {}
+    expected: ["000102"]
+    
+  - name: "Whitespace in base64"
+    expression: "'SGVs bG8g V29y bGQ='.replace(' ', '').decode('base64')"
+    fixture: {}
+    expected: ["Hello World"]
+    
+  - name: "Empty encode/decode"
+    expression: "''.encode('hex').decode('hex')"
+    fixture: {}
+    expected: [""]
+    
+  # Error cases
+  - name: "Invalid encoding type"
+    expression: "'test'.encode('base32')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Unsupported encoding type 'base32'"
+      
+  - name: "Decode corrupted data"
+    expression: "'SGVsbG8gV29ybGQ!@#'.decode('base64')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Invalid base64 data"
+      
+  - name: "Odd length hex"
+    expression: "'46869'.decode('hex')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Hex string must have even length"

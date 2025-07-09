@@ -1,0 +1,211 @@
+name: "Equivalence Operators"
+description: "Tests for semantic equivalence operators: ~ (equivalent) and !~ (not equivalent)"
+tests:
+  # Basic equivalence - strings
+  - name: "String equivalence - case insensitive"
+    description: "Strings are equivalent ignoring case"
+    difficulty: "basic"
+    categories: ["operators", "equivalence"]
+    expression: "'Hello' ~ 'hello'"
+    fixture: {}
+    expected: [true]
+    
+  - name: "String equivalence - whitespace normalization"
+    expression: "'Hello   World' ~ 'Hello World'"
+    fixture: {}
+    expected: [true]
+    
+  - name: "String equivalence - leading/trailing whitespace"
+    expression: "'  test  ' ~ 'test'"
+    fixture: {}
+    expected: [true]
+    
+  - name: "String not equivalent"
+    expression: "'Hello' !~ 'Goodbye'"
+    fixture: {}
+    expected: [true]
+    
+  # Numeric equivalence
+  - name: "Decimal equivalence - trailing zeros"
+    description: "Decimals equivalent ignoring trailing zeros"
+    expression: "1.0 ~ 1.00"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Decimal equivalence - different precision"
+    expression: "3.14 ~ 3.1400"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Integer and decimal equivalence"
+    expression: "42 ~ 42.0"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Numeric not equivalent"
+    expression: "1.0 !~ 1.1"
+    fixture: {}
+    expected: [true]
+    
+  # Boolean equivalence
+  - name: "Boolean equivalence"
+    expression: "true ~ true"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Boolean not equivalent"
+    expression: "true !~ false"
+    fixture: {}
+    expected: [true]
+    
+  # Date/time equivalence
+  - name: "DateTime equivalence - same instant"
+    description: "Different timezone representations of same instant"
+    expression: "@2023-01-15T10:00:00Z ~ @2023-01-15T05:00:00-05:00"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Date equivalence"
+    expression: "@2023-01-15 ~ @2023-01-15"
+    fixture: {}
+    expected: [true]
+    
+  - name: "DateTime precision equivalence"
+    expression: "@2023-01-15T10:00:00 ~ @2023-01-15T10:00:00.000"
+    fixture: {}
+    expected: [true]
+    
+  # Quantity equivalence
+  - name: "Quantity equivalence - same unit"
+    description: "Quantities with same value and unit"
+    difficulty: "intermediate"
+    expression: "10 'mg' ~ 10.0 'mg'"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Quantity equivalence - convertible units"
+    expression: "1000 'mg' ~ 1 'g'"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Quantity not equivalent - different units"
+    expression: "10 'mg' !~ 10 'ml'"
+    fixture: {}
+    expected: [true]
+    
+  # Collection equivalence
+  - name: "Collection equivalence - order matters"
+    expression: "(1 | 2 | 3) ~ (1 | 2 | 3)"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Collection not equivalent - different order"
+    expression: "(1 | 2 | 3) !~ (3 | 2 | 1)"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Collection equivalence - nested"
+    expression: "((1 | 2) | (3 | 4)) ~ ((1.0 | 2.00) | (3 | 4))"
+    fixture: {}
+    expected: [true]
+    
+  # Complex object equivalence
+  - name: "Object equivalence - property order"
+    description: "Objects equivalent regardless of property order"
+    difficulty: "intermediate"
+    expression: "obj1 ~ obj2"
+    fixture:
+      obj1: {a: 1, b: "test", c: true}
+      obj2: {c: true, a: 1.0, b: "TEST"}
+    expected: [true]
+    
+  - name: "Object not equivalent - different values"
+    expression: "obj1 !~ obj2"
+    fixture:
+      obj1: {a: 1, b: "test"}
+      obj2: {a: 2, b: "test"}
+    expected: [true]
+    
+  - name: "Object not equivalent - missing property"
+    expression: "obj1 !~ obj2"
+    fixture:
+      obj1: {a: 1, b: "test", c: true}
+      obj2: {a: 1, b: "test"}
+    expected: [true]
+    
+  # Null handling
+  - name: "Null equivalence"
+    expression: "{} ~ {}"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Null not equivalent to value"
+    expression: "{} !~ 0"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Empty string equivalence to null"
+    expression: "'' ~ {}"
+    fixture: {}
+    expected: [false]
+    
+  # Real-world scenarios
+  - name: "Code system comparison"
+    description: "Compare codes ignoring case"
+    expression: "code ~ 'ACTIVE'"
+    fixture:
+      code: "active"
+    expected: [true]
+    
+  - name: "Identifier comparison"
+    expression: "identifier.where(system ~ 'HTTP://EXAMPLE.COM')"
+    fixture:
+      identifier: [
+        {system: "http://example.com", value: "123"},
+        {system: "http://other.com", value: "456"}
+      ]
+    expected: [{system: "http://example.com", value: "123"}]
+    
+  - name: "Status checking"
+    expression: "status ~ 'Draft' or status ~ 'DRAFT'"
+    fixture:
+      status: "draft"
+    expected: [true]
+    
+  # Edge cases
+  - name: "Very long string equivalence"
+    expression: "longStr1 ~ longStr2"
+    fixture:
+      longStr1: "This is a very long string with MIXED case and   extra   spaces"
+      longStr2: "this is a very long string with mixed case and extra spaces"
+    expected: [true]
+    
+  - name: "Special characters"
+    expression: "'Test\\nLine' ~ 'Test\\nLine'"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Unicode normalization"
+    expression: "'café' ~ 'CAFÉ'"
+    fixture: {}
+    expected: [true]
+    
+  # Chained comparisons
+  - name: "Multiple equivalence checks"
+    expression: "a ~ b and b ~ c implies a ~ c"
+    fixture:
+      a: "TEST"
+      b: "test"
+      c: "Test"
+    expected: [true]
+    
+  # Error cases
+  - name: "Type mismatch equivalence"
+    expression: "1 ~ 'one'"
+    fixture: {}
+    expected: [false]
+    
+  - name: "Complex type equivalence"
+    expression: "@2023-01-15 ~ '2023-01-15'"
+    fixture: {}
+    expected: [false]

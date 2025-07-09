@@ -1,0 +1,258 @@
+name: "Variable Management"
+description: "Tests for defineVariable() function and variable scoping"
+tests:
+  # Basic variable definition
+  - name: "Define simple variable"
+    description: "Basic variable definition and usage"
+    difficulty: "basic"
+    categories: ["functions", "variables", "defineVariable"]
+    expression: "defineVariable('myVar', 42)"
+    expected: [42]
+    
+  - name: "Define and use variable"
+    description: "Define variable and reference it"
+    difficulty: "basic"
+    categories: ["functions", "variables", "defineVariable"]
+    expression: "defineVariable('total', count()) and %total > 5"
+    expected: [false]
+    fixture:
+      resourceType: "Bundle"
+      entry:
+        - resource: {id: "1"}
+        - resource: {id: "2"}
+        - resource: {id: "3"}
+        
+  - name: "Define variable from path"
+    description: "Store path result in variable"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "defineVariable", "path-navigation"]
+    expression: "defineVariable('patientName', name.first())"
+    expected: ["John"]
+    fixture:
+      resourceType: "Patient"
+      name:
+        - given: ["John", "James"]
+          family: "Doe"
+          
+  - name: "Multiple variable definitions"
+    description: "Define multiple variables in expression"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "defineVariable"]
+    expression: "defineVariable('x', 10) and defineVariable('y', 20) and %x + %y"
+    expected: [30]
+    
+  # Variable scoping
+  - name: "Variable in where clause"
+    description: "Use variable within where() scope"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "scoping", "filtering"]
+    expression: "defineVariable('threshold', 100) and values.where($ > %threshold)"
+    expected: [150, 200, 125]
+    fixture:
+      resourceType: "Observation"
+      values: [50, 150, 75, 200, 125, 90]
+      
+  - name: "Variable in select expression"
+    description: "Reference variable in select()"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "scoping", "transformation"]
+    expression: "defineVariable('factor', 1.1) and prices.select($ * %factor)"
+    expected: [11, 22, 33]
+    fixture:
+      resourceType: "PriceList"
+      prices: [10, 20, 30]
+      
+  - name: "Nested variable scopes"
+    description: "Variables in nested expressions"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "scoping", "nested"]
+    expression: "defineVariable('outer', 5) and items.select(defineVariable('inner', value) and %inner + %outer)"
+    expected: [15, 25, 35]
+    fixture:
+      resourceType: "List"
+      items:
+        - value: 10
+        - value: 20
+        - value: 30
+        
+  # Complex variable usage
+  - name: "Variable with collection"
+    description: "Store collection in variable"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "collections"]
+    expression: "defineVariable('codes', code.coding.code) and %codes.distinct()"
+    expected: ["123", "456"]
+    fixture:
+      resourceType: "Condition"
+      code:
+        coding:
+          - system: "ICD-10"
+            code: "123"
+          - system: "SNOMED"
+            code: "456"
+          - system: "ICD-10"
+            code: "123"
+            
+  - name: "Conditional variable definition"
+    description: "Define variable based on condition"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "conditional"]
+    expression: "defineVariable('status', iif(active, 'Active', 'Inactive')) and %status"
+    expected: ["Active"]
+    fixture:
+      resourceType: "Patient"
+      active: true
+      
+  - name: "Variable in aggregate function"
+    description: "Use variable in aggregate calculation"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "aggregates"]
+    expression: "defineVariable('avg', measurements.avg()) and measurements.where($ > %avg)"
+    expected: [30, 40]
+    fixture:
+      resourceType: "Report"
+      measurements: [10, 20, 30, 40]
+      
+  # Real-world scenarios
+  - name: "BMI calculation with variables"
+    description: "Calculate BMI using variables"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "real-world", "calculations"]
+    expression: "defineVariable('weightKg', weight.value) and defineVariable('heightM', height.value / 100) and %weightKg / (%heightM * %heightM)"
+    expected: [24.22]
+    fixture:
+      resourceType: "Observation"
+      weight:
+        value: 70
+        unit: "kg"
+      height:
+        value: 170
+        unit: "cm"
+        
+  - name: "Risk score with variables"
+    description: "Complex risk calculation using multiple variables"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "real-world", "medical"]
+    expression: |
+      defineVariable('age', 65) and
+      defineVariable('hasHypertension', conditions.exists(code = 'I10')) and
+      defineVariable('hasDiabetes', conditions.exists(code = 'E11')) and
+      defineVariable('baseScore', %age / 10) and
+      defineVariable('riskMultiplier', iif(%hasHypertension, 1.5, 1) * iif(%hasDiabetes, 1.3, 1)) and
+      %baseScore * %riskMultiplier
+    expected: [12.675]
+    fixture:
+      resourceType: "Patient"
+      conditions:
+        - code: "I10"  # Hypertension
+          display: "Essential hypertension"
+        - code: "E11"  # Diabetes
+          display: "Type 2 diabetes"
+          
+  - name: "Lab result analysis"
+    description: "Analyze lab results with reference ranges"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "real-world", "laboratory"]
+    expression: |
+      defineVariable('result', value) and
+      defineVariable('low', referenceRange.low) and
+      defineVariable('high', referenceRange.high) and
+      defineVariable('status', 
+        iif(%result < %low, 'Low',
+          iif(%result > %high, 'High', 'Normal'))) and
+      %status
+    expected: ["High"]
+    fixture:
+      resourceType: "Observation"
+      value: 250
+      referenceRange:
+        low: 70
+        high: 100
+        
+  # Variable persistence and updates
+  - name: "Variable shadowing"
+    description: "Inner variable shadows outer variable"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "scoping", "shadowing"]
+    expression: |
+      defineVariable('x', 10) and
+      items.select(
+        defineVariable('x', 20) and %x
+      )
+    expected: [20, 20]
+    fixture:
+      resourceType: "List"
+      items: [{}, {}]
+      
+  - name: "Variable in repeat function"
+    description: "Using variables with repeat()"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "iteration"]
+    expression: |
+      defineVariable('counter', 0) and
+      repeat(item,
+        defineVariable('counter', %counter + 1) and
+        {index: %counter, value: item}
+      ).take(3)
+    expected: [
+      {index: 1, value: {id: "1"}},
+      {index: 2, value: {id: "2"}},
+      {index: 3, value: {id: "3"}}
+    ]
+    fixture:
+      resourceType: "List"
+      item: {id: "1"}
+      
+  # Error cases
+  - name: "Undefined variable reference"
+    description: "Reference to undefined variable"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "errors"]
+    expression: "%undefinedVar + 10"
+    error:
+      type: "semantic"
+      message: "Undefined variable: undefinedVar"
+      
+  - name: "Invalid variable name"
+    description: "Variable name with invalid characters"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "errors"]
+    expression: "defineVariable('my-var', 10)"
+    error:
+      type: "semantic"
+      message: "Invalid variable name: my-var"
+      
+  - name: "Circular variable reference"
+    description: "Variable referencing itself"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "errors"]
+    expression: "defineVariable('x', %x + 1)"
+    error:
+      type: "semantic"
+      message: "Circular variable reference: x"
+      
+  # Edge cases
+  - name: "Empty variable name"
+    description: "Define variable with empty name"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "edge-cases", "errors"]
+    expression: "defineVariable('', 42)"
+    error:
+      type: "semantic"
+      message: "Variable name cannot be empty"
+      
+  - name: "Variable with null value"
+    description: "Store null in variable"
+    difficulty: "intermediate"
+    categories: ["functions", "variables", "null-handling"]
+    expression: "defineVariable('nullVar', {}) and %nullVar.exists()"
+    expected: [false]
+    
+  - name: "Variable name collision with constants"
+    description: "Variable name same as environment constant"
+    difficulty: "advanced"
+    categories: ["functions", "variables", "naming", "errors"]
+    expression: "defineVariable('context', 'myValue')"
+    error:
+      type: "semantic"
+      message: "Variable name conflicts with environment constant: context"

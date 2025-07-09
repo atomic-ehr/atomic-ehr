@@ -1,0 +1,242 @@
+name: "Tree Navigation Functions"
+description: "Tests for tree navigation functions: children(), descendants()"
+tests:
+  # children() function
+  - name: "children() - basic navigation"
+    description: "Get immediate children of an element"
+    difficulty: "basic"
+    categories: ["functions", "navigation", "tree"]
+    expression: "children()"
+    fixture:
+      resourceType: "Patient"
+      id: "123"
+      name: [{family: "Smith", given: ["John"]}]
+      active: true
+    expected: [
+      "Patient",
+      "123",
+      [{family: "Smith", given: ["John"]}],
+      true
+    ]
+    
+  - name: "children() - nested object"
+    expression: "name.first().children()"
+    fixture:
+      name: [{
+        use: "official",
+        family: "Smith",
+        given: ["John", "Michael"],
+        period: {start: "2020-01-01"}
+      }]
+    expected: [
+      "official",
+      "Smith",
+      ["John", "Michael"],
+      {start: "2020-01-01"}
+    ]
+    
+  - name: "children() - array elements"
+    expression: "identifier.children()"
+    fixture:
+      identifier: [
+        {system: "http://example.com", value: "123"},
+        {system: "http://other.com", value: "456"}
+      ]
+    expected: [
+      "http://example.com",
+      "123",
+      "http://other.com",
+      "456"
+    ]
+    
+  - name: "children() - empty object"
+    expression: "{}.children()"
+    fixture: {}
+    expected: []
+    
+  - name: "children() - primitive value"
+    expression: "'simple string'.children()"
+    fixture: {}
+    expected: []
+    
+  # descendants() function
+  - name: "descendants() - full tree traversal"
+    description: "Get all descendants of an element"
+    difficulty: "intermediate"
+    expression: "descendants()"
+    fixture:
+      level1: {
+        level2: {
+          level3: "deep value"
+        },
+        other2: ["array", "values"]
+      }
+    expected: [
+      {level2: {level3: "deep value"}, other2: ["array", "values"]},
+      {level3: "deep value"},
+      "deep value",
+      ["array", "values"],
+      "array",
+      "values"
+    ]
+    
+  - name: "descendants() - count all nodes"
+    expression: "descendants().count()"
+    fixture:
+      a: {
+        b: {c: 1, d: 2},
+        e: [3, 4, 5]
+      }
+    expected: [10]
+    
+  - name: "descendants() - filter descendants"
+    expression: "descendants().where($this is String)"
+    fixture:
+      patient: {
+        name: {
+          family: "Smith",
+          given: ["John", "Michael"]
+        },
+        id: "123",
+        active: true
+      }
+    expected: ["Smith", "John", "Michael", "123"]
+    
+  # Complex navigation scenarios
+  - name: "Find all codes in resource"
+    description: "Extract all code values from a complex resource"
+    expression: "descendants().where(code.exists()).code"
+    fixture:
+      resourceType: "Observation"
+      code: {
+        coding: [{code: "1234", system: "http://loinc.org"}]
+      },
+      component: [
+        {code: {coding: [{code: "5678"}]}},
+        {code: {coding: [{code: "9012"}]}}
+      ]
+    expected: [
+      {coding: [{code: "1234", system: "http://loinc.org"}]},
+      {coding: [{code: "5678"}]},
+      {coding: [{code: "9012"}]}
+    ]
+    
+  - name: "All references in bundle"
+    expression: "entry.resource.descendants().where(reference.exists()).reference.distinct()"
+    fixture:
+      resourceType: "Bundle"
+      entry: [
+        {
+          resource: {
+            resourceType: "Patient",
+            id: "p1",
+            generalPractitioner: [{reference: "Practitioner/1"}]
+          }
+        },
+        {
+          resource: {
+            resourceType: "Observation",
+            subject: {reference: "Patient/p1"},
+            performer: [{reference: "Practitioner/1"}]
+          }
+        }
+      ]
+    expected: ["Practitioner/1", "Patient/p1"]
+    
+  # Combining with other functions
+  - name: "children() with where"
+    expression: "children().where($this is Coding)"
+    fixture:
+      code: {
+        coding: [{system: "http://loinc.org", code: "1234"}],
+        text: "Test"
+      }
+    expected: []
+    
+  - name: "descendants() with type check"
+    expression: "descendants().where($this is Quantity).value"
+    fixture:
+      valueQuantity: {value: 10, unit: "mg"},
+      component: [
+        {valueQuantity: {value: 20, unit: "kg"}},
+        {valueString: "ignore"}
+      ]
+    expected: [10, 20]
+    
+  # Real-world scenarios
+  - name: "Extract all periods"
+    description: "Find all period elements in a resource"
+    expression: "descendants().where($this is Period)"
+    fixture:
+      resourceType: "Patient"
+      name: [{
+        use: "official",
+        period: {start: "2020-01-01", end: "2021-01-01"}
+      }],
+      address: [{
+        period: {start: "2019-01-01"}
+      }]
+    expected: [
+      {start: "2020-01-01", end: "2021-01-01"},
+      {start: "2019-01-01"}
+    ]
+    
+  - name: "All identifiers in document"
+    expression: "descendants().where(system.exists() and value.exists())"
+    fixture:
+      resourceType: "Bundle"
+      identifier: {system: "http://example.com", value: "bundle-1"},
+      entry: [{
+        resource: {
+          identifier: [{system: "http://example.com", value: "patient-1"}]
+        }
+      }]
+    expected: [
+      {system: "http://example.com", value: "bundle-1"},
+      {system: "http://example.com", value: "patient-1"}
+    ]
+    
+  # Performance considerations
+  - name: "descendants() with early termination"
+    expression: "descendants().take(5)"
+    fixture:
+      a: {b: {c: {d: {e: {f: "deep"}}}}}
+    expected: [
+      {b: {c: {d: {e: {f: "deep"}}}}},
+      {c: {d: {e: {f: "deep"}}}},
+      {d: {e: {f: "deep"}}},
+      {e: {f: "deep"}},
+      {f: "deep"}
+    ]
+    
+  # Edge cases
+  - name: "children() of array"
+    expression: "(1 | 2 | 3).children()"
+    fixture: {}
+    expected: []
+    
+  - name: "descendants() circular reference"
+    expression: "descendants().take(10).count()"
+    fixture:
+      a: {ref: "circular"}
+    expected: [2]
+    
+  - name: "Mixed content navigation"
+    expression: "descendants().where($this.toString().matches('[0-9]+'))"
+    fixture:
+      data: {
+        values: [123, "not a number", 456],
+        nested: {
+          id: "789",
+          count: 10
+        }
+      }
+    expected: [123, 456, "789", 10]
+    
+  # Error cases
+  - name: "children() with argument"
+    expression: "children('invalid')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "children() takes no arguments"

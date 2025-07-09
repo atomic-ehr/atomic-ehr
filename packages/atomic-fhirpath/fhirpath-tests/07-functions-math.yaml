@@ -1,0 +1,406 @@
+name: "Math Functions"
+description: "Tests for FHIRPath mathematical functions including abs(), ceiling(), floor(), round(), and sqrt()"
+
+tests:
+  # abs() function
+  - name: "abs() on positive number"
+    description: "Test abs() function on positive number"
+    difficulty: "basic"
+    categories: ["functions", "math", "abs"]
+    expression: "value.abs()"
+    expected: [42]
+    fixture:
+      value: 42
+
+  - name: "abs() on negative number"
+    description: "Test abs() function on negative number"
+    difficulty: "basic"
+    categories: ["functions", "math", "abs"]
+    expression: "value.abs()"
+    expected: [42]
+    fixture:
+      value: -42
+
+  - name: "abs() on zero"
+    description: "Test abs() function on zero"
+    difficulty: "basic"
+    categories: ["functions", "math", "abs"]
+    expression: "value.abs()"
+    expected: [0]
+    fixture:
+      value: 0
+
+  - name: "abs() on positive decimal"
+    description: "Test abs() function on positive decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "abs"]
+    expression: "value.abs()"
+    expected: [3.14]
+    fixture:
+      value: 3.14
+
+  - name: "abs() on negative decimal"
+    description: "Test abs() function on negative decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "abs"]
+    expression: "value.abs()"
+    expected: [3.14]
+    fixture:
+      value: -3.14
+
+  - name: "abs() on collection of numbers"
+    description: "Test abs() function on collection of numbers"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "abs"]
+    expression: "values.abs()"
+    expected: [1, 2, 3, 4, 5]
+    fixture:
+      values: [-1, 2, -3, 4, -5]
+
+  # ceiling() function
+  - name: "ceiling() on positive decimal"
+    description: "Test ceiling() function on positive decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "ceiling"]
+    expression: "value.ceiling()"
+    expected: [4]
+    fixture:
+      value: 3.14
+
+  - name: "ceiling() on negative decimal"
+    description: "Test ceiling() function on negative decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "ceiling"]
+    expression: "value.ceiling()"
+    expected: [-3]
+    fixture:
+      value: -3.14
+
+  - name: "ceiling() on integer"
+    description: "Test ceiling() function on integer"
+    difficulty: "basic"
+    categories: ["functions", "math", "ceiling"]
+    expression: "value.ceiling()"
+    expected: [5]
+    fixture:
+      value: 5
+
+  - name: "ceiling() on zero"
+    description: "Test ceiling() function on zero"
+    difficulty: "basic"
+    categories: ["functions", "math", "ceiling"]
+    expression: "value.ceiling()"
+    expected: [0]
+    fixture:
+      value: 0
+
+  - name: "ceiling() on edge cases"
+    description: "Test ceiling() function on edge cases"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "ceiling"]
+    expression: "values.ceiling()"
+    expected: [1, 0, -2, 3]
+    fixture:
+      values: [0.1, -0.1, -2.9, 2.1]
+
+  # floor() function
+  - name: "floor() on positive decimal"
+    description: "Test floor() function on positive decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "floor"]
+    expression: "value.floor()"
+    expected: [3]
+    fixture:
+      value: 3.14
+
+  - name: "floor() on negative decimal"
+    description: "Test floor() function on negative decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "floor"]
+    expression: "value.floor()"
+    expected: [-4]
+    fixture:
+      value: -3.14
+
+  - name: "floor() on integer"
+    description: "Test floor() function on integer"
+    difficulty: "basic"
+    categories: ["functions", "math", "floor"]
+    expression: "value.floor()"
+    expected: [5]
+    fixture:
+      value: 5
+
+  - name: "floor() on zero"
+    description: "Test floor() function on zero"
+    difficulty: "basic"
+    categories: ["functions", "math", "floor"]
+    expression: "value.floor()"
+    expected: [0]
+    fixture:
+      value: 0
+
+  - name: "floor() on edge cases"
+    description: "Test floor() function on edge cases"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "floor"]
+    expression: "values.floor()"
+    expected: [0, -1, -3, 2]
+    fixture:
+      values: [0.9, -0.1, -2.1, 2.9]
+
+  # round() function
+  - name: "round() on decimal - round down"
+    description: "Test round() function on decimal that rounds down"
+    difficulty: "basic"
+    categories: ["functions", "math", "round"]
+    expression: "value.round()"
+    expected: [3]
+    fixture:
+      value: 3.14
+
+  - name: "round() on decimal - round up"
+    description: "Test round() function on decimal that rounds up"
+    difficulty: "basic"
+    categories: ["functions", "math", "round"]
+    expression: "value.round()"
+    expected: [4]
+    fixture:
+      value: 3.67
+
+  - name: "round() on decimal - exact half"
+    description: "Test round() function on exact half (banker's rounding)"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "round"]
+    expression: "value.round()"
+    expected: [4]
+    fixture:
+      value: 3.5
+
+  - name: "round() on negative decimal"
+    description: "Test round() function on negative decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "round"]
+    expression: "value.round()"
+    expected: [-3]
+    fixture:
+      value: -3.14
+
+  - name: "round() on integer"
+    description: "Test round() function on integer"
+    difficulty: "basic"
+    categories: ["functions", "math", "round"]
+    expression: "value.round()"
+    expected: [5]
+    fixture:
+      value: 5
+
+  - name: "round() on zero"
+    description: "Test round() function on zero"
+    difficulty: "basic"
+    categories: ["functions", "math", "round"]
+    expression: "value.round()"
+    expected: [0]
+    fixture:
+      value: 0
+
+  - name: "round() with precision parameter"
+    description: "Test round() function with precision parameter"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "round"]
+    expression: "value.round(2)"
+    expected: [3.14]
+    fixture:
+      value: 3.14159
+
+  # sqrt() function
+  - name: "sqrt() on perfect square"
+    description: "Test sqrt() function on perfect square"
+    difficulty: "basic"
+    categories: ["functions", "math", "sqrt"]
+    expression: "value.sqrt()"
+    expected: [5]
+    fixture:
+      value: 25
+
+  - name: "sqrt() on non-perfect square"
+    description: "Test sqrt() function on non-perfect square"
+    difficulty: "basic"
+    categories: ["functions", "math", "sqrt"]
+    expression: "value.sqrt()"
+    expected: [2.236]
+    fixture:
+      value: 5
+
+  - name: "sqrt() on zero"
+    description: "Test sqrt() function on zero"
+    difficulty: "basic"
+    categories: ["functions", "math", "sqrt"]
+    expression: "value.sqrt()"
+    expected: [0]
+    fixture:
+      value: 0
+
+  - name: "sqrt() on one"
+    description: "Test sqrt() function on one"
+    difficulty: "basic"
+    categories: ["functions", "math", "sqrt"]
+    expression: "value.sqrt()"
+    expected: [1]
+    fixture:
+      value: 1
+
+  - name: "sqrt() on decimal"
+    description: "Test sqrt() function on decimal"
+    difficulty: "basic"
+    categories: ["functions", "math", "sqrt"]
+    expression: "value.sqrt()"
+    expected: [1.414]
+    fixture:
+      value: 2
+
+  - name: "sqrt() on collection"
+    description: "Test sqrt() function on collection of numbers"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "sqrt"]
+    expression: "values.sqrt()"
+    expected: [1, 2, 3, 4, 5]
+    fixture:
+      values: [1, 4, 9, 16, 25]
+
+  # Chained math functions
+  - name: "Chained math functions - abs and round"
+    description: "Test chaining abs() and round() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "chained"]
+    expression: "value.abs().round()"
+    expected: [3]
+    fixture:
+      value: -3.14
+
+  - name: "Chained math functions - sqrt and ceiling"
+    description: "Test chaining sqrt() and ceiling() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "chained"]
+    expression: "value.sqrt().ceiling()"
+    expected: [3]
+    fixture:
+      value: 5
+
+  - name: "Complex math expression"
+    description: "Test complex math expression with multiple operations"
+    difficulty: "advanced"
+    categories: ["functions", "math", "complex"]
+    expression: "values.select(abs().sqrt().round())"
+    expected: [1, 2, 2, 3]
+    fixture:
+      values: [-1, 4, -6, 9]
+
+  # Math functions with filtering
+  - name: "Math functions with where() filter"
+    description: "Test math functions combined with where() filtering"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "filtering"]
+    expression: "values.where(abs() > 5)"
+    expected: [-10, 7, -8]
+    fixture:
+      values: [3, -10, 7, -2, -8, 4]
+
+  - name: "Math aggregation"
+    description: "Test math functions with aggregation"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "aggregation"]
+    expression: "values.abs().sum()"
+    expected: [34]
+    fixture:
+      values: [3, -10, 7, -2, -8, 4]
+
+  # Edge cases and precision
+  - name: "Math functions on very large numbers"
+    description: "Test math functions on very large numbers"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "edge"]
+    expression: "value.sqrt().round()"
+    expected: [31623]
+    fixture:
+      value: 1000000000
+
+  - name: "Math functions on very small decimals"
+    description: "Test math functions on very small decimals"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "edge"]
+    expression: "value.abs().ceiling()"
+    expected: [1]
+    fixture:
+      value: -0.001
+
+  - name: "Precision handling in math operations"
+    description: "Test precision handling in math operations"
+    difficulty: "advanced"
+    categories: ["functions", "math", "precision"]
+    expression: "value.round(3)"
+    expected: [0.333]
+    fixture:
+      value: 0.33333333
+
+  # Error cases
+  - name: "sqrt() on negative number"
+    description: "Test sqrt() function on negative number (should error)"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "error"]
+    expression: "value.sqrt()"
+    error:
+      type: "semantic"
+      message: "Cannot calculate square root of negative number"
+    fixture:
+      value: -4
+
+  - name: "Math function on non-numeric value"
+    description: "Test math function on non-numeric value"
+    difficulty: "intermediate"
+    categories: ["functions", "math", "error"]
+    expression: "value.abs()"
+    error:
+      type: "semantic"
+      message: "Math functions require numeric input"
+    fixture:
+      value: "not a number"
+
+  - name: "Math function on empty collection"
+    description: "Test math function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "math", "empty"]
+    expression: "nonexistent.abs()"
+    expected: []
+    fixture:
+      value: 42
+
+  # Complex real-world scenarios
+  - name: "BMI calculation using math functions"
+    description: "Test BMI calculation using multiple math functions"
+    difficulty: "advanced"
+    categories: ["functions", "math", "realworld"]
+    expression: "(weight / (height * height)).round(1)"
+    expected: [24.2]
+    fixture:
+      weight: 70
+      height: 1.7
+
+  - name: "Age calculation precision"
+    description: "Test age calculation with precision handling"
+    difficulty: "advanced"
+    categories: ["functions", "math", "realworld"]
+    expression: "ageInDays.select(($this / 365.25).floor())"
+    expected: [25, 42, 18]
+    fixture:
+      ageInDays: [9131, 15340, 6935]
+
+  - name: "Statistical calculations"
+    description: "Test statistical calculations using math functions"
+    difficulty: "advanced"
+    categories: ["functions", "math", "statistics"]
+    expression: "measurements.select(abs() - average).abs().sum() / count()"
+    expected: [2.4]
+    fixture:
+      measurements: [12, 8, 15, 5, 10]
+      average: 10

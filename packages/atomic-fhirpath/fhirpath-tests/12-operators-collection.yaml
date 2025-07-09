@@ -1,0 +1,414 @@
+name: "Collection Operators"
+description: "Tests for FHIRPath collection operators including union (|), membership (in), and contains"
+
+tests:
+  # Union operator (|)
+  - name: "Union of two simple collections"
+    description: "Test union operator with two simple collections"
+    difficulty: "basic"
+    categories: ["operators", "collection", "union"]
+    expression: "names1 | names2"
+    expected: ["John", "Jane", "Bob", "Alice"]
+    fixture:
+      names1: ["John", "Jane"]
+      names2: ["Bob", "Alice"]
+
+  - name: "Union with overlapping collections"
+    description: "Test union operator with overlapping collections"
+    difficulty: "basic"
+    categories: ["operators", "collection", "union"]
+    expression: "names1 | names2"
+    expected: ["John", "Jane", "Bob", "John"]
+    fixture:
+      names1: ["John", "Jane"]
+      names2: ["Bob", "John"]
+
+  - name: "Union with empty collection"
+    description: "Test union operator with empty collection"
+    difficulty: "basic"
+    categories: ["operators", "collection", "union"]
+    expression: "names | empty"
+    expected: ["John", "Jane"]
+    fixture:
+      names: ["John", "Jane"]
+      empty: []
+
+  - name: "Union of single values"
+    description: "Test union operator with single values"
+    difficulty: "basic"
+    categories: ["operators", "collection", "union"]
+    expression: "'John' | 'Jane'"
+    expected: ["John", "Jane"]
+    fixture:
+      dummy: true
+
+  - name: "Union with mixed types"
+    description: "Test union operator with mixed data types"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "union"]
+    expression: "numbers | strings"
+    expected: [1, 2, 3, "a", "b", "c"]
+    fixture:
+      numbers: [1, 2, 3]
+      strings: ["a", "b", "c"]
+
+  - name: "Complex collection union"
+    description: "Test union operator with complex collections"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "union"]
+    expression: "patients.name | contacts.name"
+    expected: ["John Doe", "Jane Smith", "Emergency Contact", "Family Member"]
+    fixture:
+      patients:
+        - name: "John Doe"
+          age: 30
+        - name: "Jane Smith"
+          age: 25
+      contacts:
+        - name: "Emergency Contact"
+          type: "emergency"
+        - name: "Family Member"
+          type: "family"
+
+  # Membership operator (in)
+  - name: "Membership test - value in collection"
+    description: "Test membership operator with value in collection"
+    difficulty: "basic"
+    categories: ["operators", "collection", "membership"]
+    expression: "'John' in names"
+    expected: [true]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "Membership test - value not in collection"
+    description: "Test membership operator with value not in collection"
+    difficulty: "basic"
+    categories: ["operators", "collection", "membership"]
+    expression: "'Alice' in names"
+    expected: [false]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "Membership test with numbers"
+    description: "Test membership operator with numeric values"
+    difficulty: "basic"
+    categories: ["operators", "collection", "membership"]
+    expression: "5 in numbers"
+    expected: [true]
+    fixture:
+      numbers: [1, 3, 5, 7, 9]
+
+  - name: "Membership test with empty collection"
+    description: "Test membership operator with empty collection"
+    difficulty: "basic"
+    categories: ["operators", "collection", "membership"]
+    expression: "'John' in empty"
+    expected: [false]
+    fixture:
+      empty: []
+
+  - name: "Membership test with single value"
+    description: "Test membership operator with single value collection"
+    difficulty: "basic"
+    categories: ["operators", "collection", "membership"]
+    expression: "'John' in singleName"
+    expected: [true]
+    fixture:
+      singleName: "John"
+
+  - name: "Multiple membership tests"
+    description: "Test membership operator with multiple values"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "membership"]
+    expression: "testValues in validValues"
+    expected: [true, false, true]
+    fixture:
+      testValues: ["a", "x", "c"]
+      validValues: ["a", "b", "c", "d"]
+
+  # Contains operator
+  - name: "Collection contains value"
+    description: "Test contains operator with collection containing value"
+    difficulty: "basic"
+    categories: ["operators", "collection", "contains"]
+    expression: "names contains 'John'"
+    expected: [true]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "Collection does not contain value"
+    description: "Test contains operator with collection not containing value"
+    difficulty: "basic"
+    categories: ["operators", "collection", "contains"]
+    expression: "names contains 'Alice'"
+    expected: [false]
+    fixture:
+      names: ["John", "Jane", "Bob"]
+
+  - name: "Contains with numbers"
+    description: "Test contains operator with numeric values"
+    difficulty: "basic"
+    categories: ["operators", "collection", "contains"]
+    expression: "numbers contains 5"
+    expected: [true]
+    fixture:
+      numbers: [1, 3, 5, 7, 9]
+
+  - name: "Contains with complex objects"
+    description: "Test contains operator with complex objects"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "contains"]
+    expression: "patients.name contains 'John Doe'"
+    expected: [true]
+    fixture:
+      patients:
+        - name: "John Doe"
+          age: 30
+        - name: "Jane Smith"
+          age: 25
+
+  - name: "Contains with empty collection"
+    description: "Test contains operator with empty collection"
+    difficulty: "basic"
+    categories: ["operators", "collection", "contains"]
+    expression: "empty contains 'anything'"
+    expected: [false]
+    fixture:
+      empty: []
+
+  # Collection operators with filtering
+  - name: "Union with where() filtering"
+    description: "Test union operator combined with where() filtering"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "filtering"]
+    expression: "patients.where(age > 25).name | contacts.where(type = 'emergency').name"
+    expected: ["John Doe", "Emergency Contact"]
+    fixture:
+      patients:
+        - name: "John Doe"
+          age: 30
+        - name: "Jane Smith"
+          age: 20
+      contacts:
+        - name: "Emergency Contact"
+          type: "emergency"
+        - name: "Family Member"
+          type: "family"
+
+  - name: "Membership with select() projection"
+    description: "Test membership operator with select() projection"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "filtering"]
+    expression: "'admin' in users.select(role)"
+    expected: [true]
+    fixture:
+      users:
+        - name: "John"
+          role: "admin"
+        - name: "Jane"
+          role: "user"
+
+  - name: "Contains with distinct values"
+    description: "Test contains operator with distinct values"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "filtering"]
+    expression: "roles.distinct() contains 'manager'"
+    expected: [true]
+    fixture:
+      roles: ["user", "admin", "manager", "user", "admin"]
+
+  # Nested collection operations
+  - name: "Union of nested collections"
+    description: "Test union operator with nested collections"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "nested"]
+    expression: "departments.employees | contractors"
+    expected: ["John", "Jane", "Bob", "Alice", "Charlie"]
+    fixture:
+      departments:
+        employees: ["John", "Jane", "Bob"]
+      contractors: ["Alice", "Charlie"]
+
+  - name: "Membership in nested structure"
+    description: "Test membership operator in nested structure"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "nested"]
+    expression: "'John' in organization.departments.employees"
+    expected: [true]
+    fixture:
+      organization:
+        departments:
+          employees: ["John", "Jane", "Bob"]
+
+  - name: "Contains across multiple levels"
+    description: "Test contains operator across multiple levels"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "nested"]
+    expression: "teams.members.name contains 'John Doe'"
+    expected: [true]
+    fixture:
+      teams:
+        - name: "Development"
+          members:
+            - name: "John Doe"
+              role: "developer"
+            - name: "Jane Smith"
+              role: "tester"
+        - name: "Marketing"
+          members:
+            - name: "Bob Johnson"
+              role: "manager"
+
+  # Collection operators with comparison
+  - name: "Union with comparison results"
+    description: "Test union operator with comparison results"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "comparison"]
+    expression: "ages.where($this > 30) | ages.where($this < 20)"
+    expected: [35, 45, 15]
+    fixture:
+      ages: [25, 35, 15, 45, 28]
+
+  - name: "Membership with boolean results"
+    description: "Test membership operator with boolean results"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "comparison"]
+    expression: "true in statuses.select(active)"
+    expected: [true]
+    fixture:
+      statuses:
+        - name: "User1"
+          active: true
+        - name: "User2"
+          active: false
+
+  # Real-world collection scenarios
+  - name: "Role-based access control"
+    description: "Test role-based access using collection operators"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "realworld"]
+    expression: "requiredRole in userRoles or 'admin' in userRoles"
+    expected: [true]
+    fixture:
+      requiredRole: "editor"
+      userRoles: ["user", "editor", "viewer"]
+
+  - name: "Medical allergy checking"
+    description: "Test allergy checking using collection operators"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "realworld"]
+    expression: "medicationIngredients.exists($this in patientAllergies)"
+    expected: [false]
+    fixture:
+      medicationIngredients: ["acetaminophen", "caffeine"]
+      patientAllergies: ["penicillin", "latex", "shellfish"]
+
+  - name: "Course prerequisite validation"
+    description: "Test course prerequisite validation using collection operators"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "realworld"]
+    expression: "prerequisites.all($this in completedCourses)"
+    expected: [true]
+    fixture:
+      prerequisites: ["MATH101", "PHYS101"]
+      completedCourses: ["MATH101", "PHYS101", "CHEM101", "ENG101"]
+
+  - name: "Shopping cart total calculation"
+    description: "Test shopping cart logic using collection operators"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "realworld"]
+    expression: "items.where(category in allowedCategories).price.sum()"
+    expected: [150]
+    fixture:
+      items:
+        - name: "Book"
+          category: "education"
+          price: 50
+        - name: "Alcohol"
+          category: "restricted"
+          price: 30
+        - name: "Software"
+          category: "technology"
+          price: 100
+      allowedCategories: ["education", "technology", "clothing"]
+
+  # Error cases and edge scenarios
+  - name: "Union with incompatible types"
+    description: "Test union operator with incompatible types"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "error"]
+    expression: "numbers | booleans"
+    expected: [1, 2, 3, true, false]
+    fixture:
+      numbers: [1, 2, 3]
+      booleans: [true, false]
+
+  - name: "Membership with null values"
+    description: "Test membership operator with null values"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "null"]
+    expression: "{} in values"
+    expected: [false]
+    fixture:
+      values: ["a", "b", "c"]
+
+  - name: "Contains with null collection"
+    description: "Test contains operator with null collection"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "null"]
+    expression: "nullCollection contains 'anything'"
+    expected: [false]
+    fixture:
+      dummy: true
+
+  # Performance and optimization scenarios
+  - name: "Large collection union"
+    description: "Test union operator with large collections"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "performance"]
+    expression: "largeSet1 | largeSet2"
+    expected: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    fixture:
+      largeSet1: [1, 2, 3, 4, 5]
+      largeSet2: [6, 7, 8, 9, 10]
+
+  - name: "Membership in large collection"
+    description: "Test membership operator with large collection"
+    difficulty: "intermediate"
+    categories: ["operators", "collection", "performance"]
+    expression: "500 in largeNumbers"
+    expected: [true]
+    fixture:
+      largeNumbers: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+
+  # Collection operators chaining
+  - name: "Chained collection operations"
+    description: "Test chaining multiple collection operators"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "chained"]
+    expression: "(set1 | set2).where($this in validValues)"
+    expected: ["a", "c"]
+    fixture:
+      set1: ["a", "b"]
+      set2: ["c", "d"]
+      validValues: ["a", "c", "e"]
+
+  - name: "Complex collection expression"
+    description: "Test complex expression with multiple collection operators"
+    difficulty: "advanced"
+    categories: ["operators", "collection", "complex"]
+    expression: "users.where(role in adminRoles or department in priorityDepartments).name"
+    expected: ["Admin User", "Manager User"]
+    fixture:
+      users:
+        - name: "Admin User"
+          role: "admin"
+          department: "IT"
+        - name: "Regular User"
+          role: "user"
+          department: "Sales"
+        - name: "Manager User"
+          role: "manager"
+          department: "Finance"
+      adminRoles: ["admin", "superadmin"]
+      priorityDepartments: ["Finance", "Legal"]

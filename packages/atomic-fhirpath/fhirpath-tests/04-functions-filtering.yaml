@@ -1,0 +1,315 @@
+name: "Filtering Functions"
+description: "Tests for FHIRPath filtering functions including where(), select(), and distinct()"
+
+tests:
+  # where() function
+  - name: "where() with simple condition"
+    description: "Test where() function with simple equality condition"
+    difficulty: "basic"
+    categories: ["functions", "where"]
+    expression: "name.where(use = 'official')"
+    expected: [{"given": ["John"], "family": "Doe", "use": "official"}]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Johnny"]
+          family: "Doe"
+          use: "nickname"
+
+  - name: "where() with no matches"
+    description: "Test where() function with condition that matches nothing"
+    difficulty: "basic"
+    categories: ["functions", "where"]
+    expression: "name.where(use = 'maiden')"
+    expected: []
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Johnny"]
+          family: "Doe"
+          use: "nickname"
+
+  - name: "where() with exists condition"
+    description: "Test where() function with exists condition"
+    difficulty: "intermediate"
+    categories: ["functions", "where"]
+    expression: "name.where(prefix.exists())"
+    expected: [{"given": ["Dr. John"], "family": "Doe", "prefix": ["Dr."]}]
+    fixture:
+      name:
+        - given: ["Dr. John"]
+          family: "Doe"
+          prefix: ["Dr."]
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "where() with nested property"
+    description: "Test where() function with nested property condition"
+    difficulty: "intermediate"
+    categories: ["functions", "where"]
+    expression: "contact.where(relationship.coding.code = 'spouse')"
+    expected: [{"name": "Jane Doe", "relationship": {"coding": {"code": "spouse"}}}]
+    fixture:
+      contact:
+        - name: "Jane Doe"
+          relationship:
+            coding:
+              code: "spouse"
+        - name: "Bob Smith"
+          relationship:
+            coding:
+              code: "brother"
+
+  - name: "where() with multiple conditions"
+    description: "Test where() function with multiple conditions using and"
+    difficulty: "intermediate"
+    categories: ["functions", "where"]
+    expression: "telecom.where(system = 'phone' and use = 'home')"
+    expected: [{"system": "phone", "use": "home", "value": "555-1234"}]
+    fixture:
+      telecom:
+        - system: "phone"
+          use: "home"
+          value: "555-1234"
+        - system: "phone"
+          use: "work"
+          value: "555-5678"
+        - system: "email"
+          use: "home"
+          value: "john@example.com"
+
+  - name: "where() with $this reference"
+    description: "Test where() function with $this reference"
+    difficulty: "intermediate"
+    categories: ["functions", "where"]
+    expression: "name.given.where($this.length() > 4)"
+    expected: ["William"]
+    fixture:
+      name:
+        given: ["John", "William", "Bob"]
+        family: "Doe"
+
+  # select() function
+  - name: "select() with simple property"
+    description: "Test select() function with simple property selection"
+    difficulty: "basic"
+    categories: ["functions", "select"]
+    expression: "name.select(family)"
+    expected: ["Doe", "Smith"]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "select() with nested property"
+    description: "Test select() function with nested property selection"
+    difficulty: "intermediate"
+    categories: ["functions", "select"]
+    expression: "name.select(given.first())"
+    expected: ["John", "Jane"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane", "Elizabeth"]
+          family: "Smith"
+
+  - name: "select() with expression"
+    description: "Test select() function with expression"
+    difficulty: "intermediate"
+    categories: ["functions", "select"]
+    expression: "name.select(given.count())"
+    expected: [2, 1]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "select() with conditional expression"
+    description: "Test select() function with conditional expression"
+    difficulty: "intermediate"
+    categories: ["functions", "select"]
+    expression: "name.select(iif(use = 'official', family, given.first()))"
+    expected: ["Doe", "Jane"]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Jane"]
+          family: "Smith"
+          use: "nickname"
+
+  - name: "select() with union operation"
+    description: "Test select() function with union operation"
+    difficulty: "intermediate"
+    categories: ["functions", "select"]
+    expression: "name.select(given | family)"
+    expected: [["John", "William", "Doe"], ["Jane", "Smith"]]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  - name: "select() with $this reference"
+    description: "Test select() function with $this reference"
+    difficulty: "intermediate"
+    categories: ["functions", "select"]
+    expression: "name.given.select($this.upper())"
+    expected: ["JOHN", "WILLIAM", "JANE"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+
+  # distinct() function
+  - name: "distinct() with duplicates"
+    description: "Test distinct() function with duplicate values"
+    difficulty: "basic"
+    categories: ["functions", "distinct"]
+    expression: "name.given.distinct()"
+    expected: ["John", "William", "Jane"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane", "John"]
+          family: "Smith"
+
+  - name: "distinct() with no duplicates"
+    description: "Test distinct() function with no duplicate values"
+    difficulty: "basic"
+    categories: ["functions", "distinct"]
+    expression: "name.family.distinct()"
+    expected: ["Doe", "Smith", "Johnson"]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+        - given: ["Bob"]
+          family: "Johnson"
+
+  - name: "distinct() on empty collection"
+    description: "Test distinct() function on empty collection"
+    difficulty: "basic"
+    categories: ["functions", "distinct"]
+    expression: "nonexistent.distinct()"
+    expected: []
+    fixture:
+      name: "John Doe"
+
+  - name: "distinct() on single element"
+    description: "Test distinct() function on single element"
+    difficulty: "basic"
+    categories: ["functions", "distinct"]
+    expression: "name.distinct()"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "distinct() with mixed types"
+    description: "Test distinct() function with mixed data types"
+    difficulty: "intermediate"
+    categories: ["functions", "distinct"]
+    expression: "values.distinct()"
+    expected: ["text", 42, true]
+    fixture:
+      values: ["text", 42, true, "text", 42]
+
+  # Chained filtering operations
+  - name: "Chained where() and select()"
+    description: "Test chaining where() and select() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "chained"]
+    expression: "name.where(use = 'official').select(family)"
+    expected: ["Doe"]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+          use: "official"
+        - given: ["Johnny"]
+          family: "Doe"
+          use: "nickname"
+
+  - name: "Chained select() and distinct()"
+    description: "Test chaining select() and distinct() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "chained"]
+    expression: "name.select(family).distinct()"
+    expected: ["Doe", "Smith"]
+    fixture:
+      name:
+        - given: ["John"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"
+        - given: ["Bob"]
+          family: "Doe"
+
+  - name: "Chained where(), select(), and distinct()"
+    description: "Test chaining where(), select(), and distinct() functions"
+    difficulty: "advanced"
+    categories: ["functions", "chained"]
+    expression: "telecom.where(system = 'phone').select(use).distinct()"
+    expected: ["home", "work"]
+    fixture:
+      telecom:
+        - system: "phone"
+          use: "home"
+          value: "555-1234"
+        - system: "phone"
+          use: "work"
+          value: "555-5678"
+        - system: "phone"
+          use: "home"
+          value: "555-9999"
+        - system: "email"
+          use: "home"
+          value: "john@example.com"
+
+  # Complex filtering scenarios
+  - name: "Complex where() with nested conditions"
+    description: "Test complex where() function with nested conditions"
+    difficulty: "advanced"
+    categories: ["functions", "complex"]
+    expression: "contact.where(relationship.coding.exists() and name.given.exists())"
+    expected: [{"name": {"given": ["Jane"]}, "relationship": {"coding": {"code": "spouse"}}}]
+    fixture:
+      contact:
+        - name:
+            given: ["Jane"]
+          relationship:
+            coding:
+              code: "spouse"
+        - name:
+            family: "Smith"
+          relationship:
+            text: "brother"
+
+  - name: "Select with complex expression"
+    description: "Test select() with complex expression involving multiple operations"
+    difficulty: "advanced"
+    categories: ["functions", "complex"]
+    expression: "name.select(given.first() + ' ' + family)"
+    expected: ["John Doe", "Jane Smith"]
+    fixture:
+      name:
+        - given: ["John", "William"]
+          family: "Doe"
+        - given: ["Jane"]
+          family: "Smith"

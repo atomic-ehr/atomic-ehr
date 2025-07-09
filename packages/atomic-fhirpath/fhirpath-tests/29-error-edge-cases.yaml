@@ -1,0 +1,256 @@
+name: "Error and Edge Cases"
+description: "Comprehensive tests for error handling, null propagation, and edge cases"
+tests:
+  # Null propagation
+  - name: "Null propagation - simple path"
+    description: "Null propagates through path navigation"
+    difficulty: "basic"
+    categories: ["errors", "null", "edge-cases"]
+    expression: "{}.name.first()"
+    fixture: {}
+    expected: []
+    
+  - name: "Null propagation - function call"
+    expression: "{}.substring(0, 5)"
+    fixture: {}
+    expected: []
+    
+  - name: "Null propagation - arithmetic"
+    expression: "{} + 5"
+    fixture: {}
+    expected: []
+    
+  - name: "Null propagation - comparison"
+    expression: "{} > 5"
+    fixture: {}
+    expected: []
+    
+  - name: "Null propagation - multiple levels"
+    expression: "patient.name.given.first().substring(0, 3)"
+    fixture:
+      patient: {}
+    expected: []
+    
+  # Division by zero
+  - name: "Division by zero - integer"
+    description: "Division by zero error handling"
+    expression: "10 / 0"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Division by zero"
+      
+  - name: "Division by zero - decimal"
+    expression: "10.5 / 0.0"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Division by zero"
+      
+  - name: "Mod by zero"
+    expression: "10 mod 0"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Division by zero"
+    
+  # Type errors
+  - name: "String arithmetic"
+    description: "Invalid type for arithmetic operation"
+    expression: "'hello' + 5"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Cannot add string and integer"
+      
+  - name: "Boolean arithmetic"
+    expression: "true * false"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "Cannot multiply booleans"
+      
+  - name: "Invalid function argument"
+    expression: "substring('test')"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "substring() requires 2 or 3 arguments"
+    
+  # Stack overflow / infinite recursion
+  - name: "Circular reference detection"
+    description: "Detect circular references in navigation"
+    difficulty: "intermediate"
+    expression: "repeat(self).take(1000).count()"
+    fixture:
+      self: {$ref: "#"}
+    expected: [1000]
+    
+  - name: "Deep nesting limit"
+    expression: "descendants().count() < 10000"
+    fixture:
+      a: {b: {c: {d: {e: {f: {g: {h: {i: {j: "deep"}}}}}}}}}
+    expected: [true]
+    
+  # Large collection handling
+  - name: "Large collection creation"
+    description: "Performance with large collections"
+    expression: "(1 to 10000).count()"
+    fixture: {}
+    expected: [10000]
+    
+  - name: "Large collection filtering"
+    expression: "(1 to 10000).where($this mod 100 = 0).count()"
+    fixture: {}
+    expected: [100]
+    
+  - name: "Memory limit - combine"
+    expression: "(1 to 5000).combine(5000 to 10000).count()"
+    fixture: {}
+    expected: [10001]
+    
+  # Invalid path navigation
+  - name: "Property of primitive"
+    expression: "'string'.property"
+    fixture: {}
+    expected: []
+    
+  - name: "Index out of bounds"
+    expression: "(1 | 2 | 3)[10]"
+    fixture: {}
+    expected: []
+    
+  - name: "Negative index"
+    expression: "(1 | 2 | 3)[-1]"
+    fixture: {}
+    expected: []
+    
+  # Function edge cases
+  - name: "Empty aggregate"
+    expression: "{}.aggregate($total + $this, 0)"
+    fixture: {}
+    expected: [0]
+    
+  - name: "Where with error in condition"
+    expression: "items.where(value / 0 > 1)"
+    fixture:
+      items: [{value: 10}, {value: 20}]
+    error:
+      type: "semantic"
+      message: "Division by zero in where clause"
+      
+  - name: "Select with null"
+    expression: "(1 | {} | 3).select($this + 1)"
+    fixture: {}
+    expected: [2, 4]
+    
+  # String function edge cases
+  - name: "Substring beyond length"
+    expression: "'hello'.substring(10, 5)"
+    fixture: {}
+    expected: [""]
+    
+  - name: "Negative substring start"
+    expression: "'hello'.substring(-2, 3)"
+    fixture: {}
+    expected: ["hel"]
+    
+  - name: "Replace with empty"
+    expression: "'hello world'.replace('o', '')"
+    fixture: {}
+    expected: ["hell wrld"]
+    
+  # Date/time edge cases
+  - name: "Invalid date arithmetic"
+    expression: "@2023-01-31 + 1 month"
+    fixture: {}
+    expected: ["@2023-02-28"]
+    
+  - name: "Time without date arithmetic"
+    expression: "@T10:30:00 + 25 hours"
+    fixture: {}
+    expected: ["@T11:30:00"]
+    
+  # Type system edge cases
+  - name: "Type of null"
+    expression: "{}.type()"
+    fixture: {}
+    expected: []
+    
+  - name: "Mixed type collection operations"
+    expression: "(1 | 'two' | true).all($this.toString().exists())"
+    fixture: {}
+    expected: [true]
+    
+  # Complex error scenarios
+  - name: "Nested error propagation"
+    description: "Error in nested expression"
+    difficulty: "advanced"
+    expression: "items.select(value / divisor)"
+    fixture:
+      items: [{value: 10}, {value: 20}, {value: 30}]
+      divisor: 0
+    error:
+      type: "semantic"
+      message: "Division by zero"
+      
+  - name: "Partial success in collection"
+    expression: "(10 | 'twenty' | 30).select($this / 2)"
+    fixture: {}
+    expected: [5, 15]
+    
+  # Syntax errors
+  - name: "Unclosed string"
+    expression: "'unclosed string"
+    fixture: {}
+    error:
+      type: "syntax"
+      message: "Unterminated string literal"
+      
+  - name: "Invalid operator"
+    expression: "1 ** 2"
+    fixture: {}
+    error:
+      type: "syntax"
+      message: "Unknown operator '**'"
+      
+  - name: "Mismatched parentheses"
+    expression: "((1 + 2) * 3"
+    fixture: {}
+    error:
+      type: "syntax"
+      message: "Missing closing parenthesis"
+      
+  # Resource limit tests
+  - name: "Expression complexity limit"
+    expression: "repeat(children()).take(100).flatten().count() < 100000"
+    fixture:
+      children: [{children: [{children: [1, 2, 3]}]}]
+    expected: [true]
+    
+  - name: "String length limit"
+    expression: "'x'.repeat(1000000).length() = 1000000"
+    fixture: {}
+    expected: [true]
+    
+  # Edge case: empty operations
+  - name: "All operations on empty"
+    expression: "{}.exists() or {}.empty() and {}.count() = 0"
+    fixture: {}
+    expected: [true]
+    
+  - name: "Join empty collection"
+    expression: "{}.join(',')"
+    fixture: {}
+    expected: [""]
+    
+  # Comparison edge cases
+  - name: "Compare incompatible types"
+    expression: "1 < 'two'"
+    fixture: {}
+    expected: []
+    
+  - name: "Null in comparison chain"
+    expression: "1 < {} < 3"
+    fixture: {}
+    expected: []

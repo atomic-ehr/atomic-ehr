@@ -1,0 +1,255 @@
+name: "Boolean Aggregate Functions"
+description: "Tests for allTrue(), allFalse(), anyTrue(), anyFalse() functions"
+tests:
+  # allTrue() tests
+  - name: "allTrue with all true values"
+    description: "allTrue() returns true when all items are true"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(true | true | true).allTrue()"
+    expected: [true]
+    
+  - name: "allTrue with mixed values"
+    description: "allTrue() returns false when not all items are true"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(true | false | true).allTrue()"
+    expected: [false]
+    
+  - name: "allTrue with all false values"
+    description: "allTrue() returns false when all items are false"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(false | false | false).allTrue()"
+    expected: [false]
+    
+  - name: "allTrue on empty collection"
+    description: "allTrue() on empty collection returns true (vacuous truth)"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "edge-cases"]
+    expression: "{}.allTrue()"
+    expected: [true]
+    
+  - name: "allTrue with path expression"
+    description: "allTrue() with boolean path evaluation"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "path-navigation"]
+    expression: "vaccinations.status.allTrue()"
+    expected: [false]
+    fixture:
+      resourceType: "Patient"
+      vaccinations:
+        - vaccine: "COVID-19"
+          status: true
+        - vaccine: "Flu"
+          status: false
+        - vaccine: "Hepatitis B"
+          status: true
+          
+  # allFalse() tests
+  - name: "allFalse with all false values"
+    description: "allFalse() returns true when all items are false"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(false | false | false).allFalse()"
+    expected: [true]
+    
+  - name: "allFalse with mixed values"
+    description: "allFalse() returns false when not all items are false"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(false | true | false).allFalse()"
+    expected: [false]
+    
+  - name: "allFalse with all true values"
+    description: "allFalse() returns false when all items are true"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(true | true | true).allFalse()"
+    expected: [false]
+    
+  - name: "allFalse on empty collection"
+    description: "allFalse() on empty collection returns true (vacuous truth)"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "edge-cases"]
+    expression: "{}.allFalse()"
+    expected: [true]
+    
+  # anyTrue() tests
+  - name: "anyTrue with at least one true"
+    description: "anyTrue() returns true when at least one item is true"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(false | true | false).anyTrue()"
+    expected: [true]
+    
+  - name: "anyTrue with all false values"
+    description: "anyTrue() returns false when all items are false"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(false | false | false).anyTrue()"
+    expected: [false]
+    
+  - name: "anyTrue with all true values"
+    description: "anyTrue() returns true when all items are true"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(true | true | true).anyTrue()"
+    expected: [true]
+    
+  - name: "anyTrue on empty collection"
+    description: "anyTrue() on empty collection returns false"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "edge-cases"]
+    expression: "{}.anyTrue()"
+    expected: [false]
+    
+  # anyFalse() tests
+  - name: "anyFalse with at least one false"
+    description: "anyFalse() returns true when at least one item is false"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(true | false | true).anyFalse()"
+    expected: [true]
+    
+  - name: "anyFalse with all true values"
+    description: "anyFalse() returns false when all items are true"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(true | true | true).anyFalse()"
+    expected: [false]
+    
+  - name: "anyFalse with all false values"
+    description: "anyFalse() returns true when all items are false"
+    difficulty: "basic"
+    categories: ["functions", "aggregates", "boolean"]
+    expression: "(false | false | false).anyFalse()"
+    expected: [true]
+    
+  - name: "anyFalse on empty collection"
+    description: "anyFalse() on empty collection returns false"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "edge-cases"]
+    expression: "{}.anyFalse()"
+    expected: [false]
+    
+  # Complex scenarios
+  - name: "Boolean aggregates with conditional logic"
+    description: "Combining boolean aggregates with where() conditions"
+    difficulty: "advanced"
+    categories: ["functions", "aggregates", "boolean", "filtering"]
+    expression: "conditions.where(severity > 5).active.allTrue()"
+    expected: [true]
+    fixture:
+      resourceType: "Patient"
+      conditions:
+        - name: "Hypertension"
+          severity: 7
+          active: true
+        - name: "Diabetes"
+          severity: 8
+          active: true
+        - name: "Headache"
+          severity: 3
+          active: false
+          
+  - name: "Nested boolean aggregate evaluation"
+    description: "Boolean aggregates with nested collections"
+    difficulty: "advanced"
+    categories: ["functions", "aggregates", "boolean", "nested"]
+    expression: "departments.select(employees.active.allTrue()).anyTrue()"
+    expected: [true]
+    fixture:
+      resourceType: "Organization"
+      departments:
+        - name: "Cardiology"
+          employees:
+            - name: "Dr. Smith"
+              active: true
+            - name: "Dr. Jones"
+              active: true
+        - name: "Radiology"
+          employees:
+            - name: "Dr. Brown"
+              active: false
+            - name: "Dr. White"
+              active: true
+              
+  - name: "Boolean aggregates with null handling"
+    description: "How boolean aggregates handle null values"
+    difficulty: "advanced"
+    categories: ["functions", "aggregates", "boolean", "null-handling"]
+    expression: "(true | {} | false).anyTrue()"
+    expected: [true]
+    
+  - name: "Chained boolean aggregates"
+    description: "Multiple boolean aggregates in sequence"
+    difficulty: "advanced"
+    categories: ["functions", "aggregates", "boolean", "chaining"]
+    expression: "((flags.a.anyTrue() | flags.b.allFalse()) | flags.c.allTrue()).allTrue()"
+    expected: [false]
+    fixture:
+      resourceType: "Resource"
+      flags:
+        a: [false, true, false]
+        b: [false, false]
+        c: [true, true, true]
+        
+  # Real-world medical scenarios
+  - name: "All vaccines completed check"
+    description: "Check if all required vaccines are completed"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "real-world"]
+    expression: "immunizations.where(required = true).completed.allTrue()"
+    expected: [false]
+    fixture:
+      resourceType: "Patient"
+      immunizations:
+        - vaccine: "MMR"
+          required: true
+          completed: true
+        - vaccine: "DTP"
+          required: true
+          completed: false
+        - vaccine: "Flu"
+          required: false
+          completed: false
+          
+  - name: "Any critical lab result"
+    description: "Check if any lab results are critical"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "real-world"]
+    expression: "labResults.select(value > referenceRange.high or value < referenceRange.low).anyTrue()"
+    expected: [true]
+    fixture:
+      resourceType: "DiagnosticReport"
+      labResults:
+        - test: "Glucose"
+          value: 250
+          referenceRange:
+            low: 70
+            high: 100
+        - test: "Hemoglobin"
+          value: 14
+          referenceRange:
+            low: 13.5
+            high: 17.5
+            
+  # Error cases
+  - name: "allTrue on non-boolean collection"
+    description: "allTrue() on non-boolean values should error"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregates", "boolean", "errors"]
+    expression: "(1 | 2 | 3).allTrue()"
+    error:
+      type: "semantic"
+      message: "allTrue() requires boolean values"
+      
+  - name: "Boolean aggregate on mixed types"
+    description: "Boolean aggregates with mixed type collection"
+    difficulty: "advanced"
+    categories: ["functions", "aggregates", "boolean", "type-checking"]
+    expression: "(true | 'string' | false).anyTrue()"
+    error:
+      type: "semantic"
+      message: "Boolean aggregate functions require all boolean values"

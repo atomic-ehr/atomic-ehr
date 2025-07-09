@@ -1,0 +1,162 @@
+name: "Aggregate Function Advanced"
+description: "Advanced tests for the aggregate() function with complex expressions"
+tests:
+  # Basic aggregate with $this and $total
+  - name: "aggregate() - simple accumulator"
+    description: "Basic aggregation with $this and $total"
+    difficulty: "intermediate"
+    categories: ["functions", "aggregate"]
+    expression: "(1 | 2 | 3).aggregate($total + $this, 0)"
+    fixture: {}
+    expected: [6]
+    
+  - name: "aggregate() - string concatenation"
+    expression: "('a' | 'b' | 'c').aggregate($total + $this, '')"
+    fixture: {}
+    expected: ["abc"]
+    
+  - name: "aggregate() - with separator"
+    expression: "name.given.aggregate($total + ', ' + $this).substring(2)"
+    fixture:
+      name: {given: ["John", "Michael", "Smith"]}
+    expected: ["John, Michael, Smith"]
+    
+  # Using $index in aggregate
+  - name: "aggregate() - with index"
+    description: "Use $index in aggregation"
+    expression: "(10 | 20 | 30).aggregate($total + ($this * $index), 0)"
+    fixture: {}
+    expected: [80]  # 0 + (10*0) + (20*1) + (30*2) = 0 + 0 + 20 + 60
+    
+  - name: "aggregate() - weighted average"
+    expression: "score.aggregate($total.sum + $this.value * $this.weight, {sum: 0, weights: 0}) / score.weight.sum()"
+    fixture:
+      score: [
+        {value: 90, weight: 3},
+        {value: 80, weight: 2},
+        {value: 70, weight: 1}
+      ]
+    expected: [82.5]  # (90*3 + 80*2 + 70*1) / (3+2+1) = 500/6
+    
+  # Complex object accumulation
+  - name: "aggregate() - building objects"
+    description: "Build complex objects during aggregation"
+    difficulty: "advanced"
+    expression: "items.aggregate({count: $total.count + 1, sum: $total.sum + $this.value, items: $total.items | $this}, {count: 0, sum: 0, items: {}})"
+    fixture:
+      items: [{id: "a", value: 10}, {id: "b", value: 20}, {id: "c", value: 30}]
+    expected: [{
+      count: 3,
+      sum: 60,
+      items: [{id: "a", value: 10}, {id: "b", value: 20}, {id: "c", value: 30}]
+    }]
+    
+  - name: "aggregate() - conditional accumulation"
+    expression: "entry.aggregate(iif($this.value > 50, $total + 1, $total), 0)"
+    fixture:
+      entry: [{value: 30}, {value: 60}, {value: 45}, {value: 75}]
+    expected: [2]
+    
+  # Statistical calculations
+  - name: "aggregate() - running max"
+    expression: "values.aggregate(iif($this > $total, $this, $total), -999999)"
+    fixture:
+      values: [5, 2, 8, 1, 9, 3]
+    expected: [9]
+    
+  - name: "aggregate() - variance calculation"
+    expression: "values.aggregate($total + ($this - avg).power(2), 0) / (values.count() - 1)"
+    fixture:
+      values: [2, 4, 4, 4, 5, 5, 7, 9]
+      avg: 5
+    expected: [4]
+    
+  # Nested aggregations
+  - name: "aggregate() - nested groups"
+    expression: "group.aggregate($total | {name: $this.name, total: $this.items.sum()}, {})"
+    fixture:
+      group: [
+        {name: "A", items: [10, 20, 30]},
+        {name: "B", items: [5, 15]},
+        {name: "C", items: [100]}
+      ]
+    expected: [
+      {name: "A", total: 60},
+      {name: "B", total: 20},
+      {name: "C", total: 100}
+    ]
+    
+  # Real-world medical scenarios
+  - name: "aggregate() - medication dosage total"
+    description: "Calculate total daily medication dosage"
+    expression: "dosageInstruction.aggregate($total + $this.doseQuantity.value * $this.frequency, 0)"
+    fixture:
+      dosageInstruction: [
+        {doseQuantity: {value: 10, unit: "mg"}, frequency: 2},
+        {doseQuantity: {value: 5, unit: "mg"}, frequency: 3}
+      ]
+    expected: [35]  # 10*2 + 5*3
+    
+  - name: "aggregate() - risk score calculation"
+    expression: "riskFactor.aggregate($total * (1 + $this.impact), 1.0).round(2)"
+    fixture:
+      riskFactor: [
+        {name: "smoking", impact: 0.3},
+        {name: "diabetes", impact: 0.25},
+        {name: "hypertension", impact: 0.2}
+      ]
+    expected: [2.11]  # 1.0 * 1.3 * 1.25 * 1.2
+    
+  # Path traversal with aggregate
+  - name: "aggregate() - collect all codes"
+    expression: "repeat(hasMember).aggregate($total | $this.code, {})"
+    fixture:
+      code: "panel"
+      hasMember: [
+        {code: "test1", hasMember: [{code: "subtest1"}, {code: "subtest2"}]},
+        {code: "test2"}
+      ]
+    expected: ["test1", "test2", "subtest1", "subtest2"]
+    
+  # Error handling
+  - name: "aggregate() - type mismatch handling"
+    expression: "(1 | 'two' | 3).aggregate($total + $this.toInteger(), 0)"
+    fixture: {}
+    expected: [4]  # 'two'.toInteger() returns empty
+    
+  - name: "aggregate() - empty collection"
+    expression: "{}.aggregate($total + $this, 100)"
+    fixture: {}
+    expected: [100]
+    
+  # Performance edge cases
+  - name: "aggregate() - early termination"
+    expression: "(1 to 100).aggregate(iif($total > 50, $total, $total + $this), 0)"
+    fixture: {}
+    expected: [55]  # 1+2+3+...+10 = 55, then stops adding
+    
+  # Complex business logic
+  - name: "aggregate() - invoice calculation"
+    expression: "lineItem.aggregate({subtotal: $total.subtotal + ($this.quantity * $this.unitPrice), tax: $total.tax + ($this.quantity * $this.unitPrice * $this.taxRate)}, {subtotal: 0, tax: 0})"
+    fixture:
+      lineItem: [
+        {quantity: 2, unitPrice: 50, taxRate: 0.1},
+        {quantity: 1, unitPrice: 100, taxRate: 0.15},
+        {quantity: 3, unitPrice: 25, taxRate: 0.1}
+      ]
+    expected: [{subtotal: 275, tax: 32.5}]
+    
+  # Error cases
+  - name: "aggregate() - missing initial value"
+    expression: "(1 | 2 | 3).aggregate($total + $this)"
+    fixture: {}
+    error:
+      type: "semantic"
+      message: "aggregate() requires an initial value"
+      
+  - name: "aggregate() - invalid expression"
+    expression: "(1 | 2).aggregate(invalid + expression, 0)"
+    fixture: {}
+    error:
+      type: "syntax"
+      message: "Invalid aggregate expression"

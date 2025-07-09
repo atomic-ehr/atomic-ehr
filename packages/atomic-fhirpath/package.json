@@ -1,21 +1,25 @@
 {
-  "name": "@atomic-ehr/fhirpath",
-  "module": "src/index.ts",
+  "name": "extract-fhirpath-tests",
+  "module": "index.ts",
   "type": "module",
+  "private": true,
   "scripts": {
-    "build:grammar": "antlr4ng -Dlanguage=TypeScript -visitor -listener fhirpath.g4 -o src/generated",
-    "build": "bun run build:grammar && bun build src/index.ts --outdir=dist --target=node",
-    "test": "bun test",
-    "dev": "bun --hot src/index.ts"
-  },
-  "dependencies": {
-    "antlr4ng": "^3.0.4"
+    "clear": "rm -f tests/*.test.ts && echo '✨ Cleared generated test files'",
+    "generate": "bun run generate-tests.ts",
+    "typecheck": "bunx tsc --noEmit",
+    "build-parser": "bunx antlr4ts -visitor -o src/parser fhirpath.g4",
+    "example": "bun run example.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "antlr4ng-cli": "^2.0.0"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/yaml": "^1.9.7",
+    "antlr4ts": "^0.5.0-alpha.4",
+    "antlr4ts-cli": "^0.5.0-alpha.4",
+    "yaml": "^2.8.0"
   }
 }

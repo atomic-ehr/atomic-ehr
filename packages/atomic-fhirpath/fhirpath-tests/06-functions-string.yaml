@@ -1,0 +1,487 @@
+name: "String Functions"
+description: "Tests for FHIRPath string functions including length(), substring(), contains(), startsWith(), endsWith(), upper(), and lower()"
+
+tests:
+  # length() function
+  - name: "length() on simple string"
+    description: "Test length() function on simple string"
+    difficulty: "basic"
+    categories: ["functions", "string", "length"]
+    expression: "name.length()"
+    expected: [8]
+    fixture:
+      name: "John Doe"
+
+  - name: "length() on empty string"
+    description: "Test length() function on empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "length"]
+    expression: "name.length()"
+    expected: [0]
+    fixture:
+      name: ""
+
+  - name: "length() on string with spaces"
+    description: "Test length() function on string with spaces"
+    difficulty: "basic"
+    categories: ["functions", "string", "length"]
+    expression: "name.length()"
+    expected: [13]
+    fixture:
+      name: "John William Doe"
+
+  - name: "length() on string with special characters"
+    description: "Test length() function on string with special characters"
+    difficulty: "basic"
+    categories: ["functions", "string", "length"]
+    expression: "name.length()"
+    expected: [15]
+    fixture:
+      name: "Héllo, Wörld! 123"
+
+  - name: "length() on collection of strings"
+    description: "Test length() function on collection of strings"
+    difficulty: "basic"
+    categories: ["functions", "string", "length"]
+    expression: "names.length()"
+    expected: [4, 8, 3]
+    fixture:
+      names: ["John", "Jane Doe", "Bob"]
+
+  # substring() function
+  - name: "substring() with start position"
+    description: "Test substring() function with start position only"
+    difficulty: "basic"
+    categories: ["functions", "string", "substring"]
+    expression: "name.substring(5)"
+    expected: ["Doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "substring() with start and length"
+    description: "Test substring() function with start position and length"
+    difficulty: "basic"
+    categories: ["functions", "string", "substring"]
+    expression: "name.substring(0, 4)"
+    expected: ["John"]
+    fixture:
+      name: "John Doe"
+
+  - name: "substring() with zero start"
+    description: "Test substring() function with zero start position"
+    difficulty: "basic"
+    categories: ["functions", "string", "substring"]
+    expression: "name.substring(0)"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "substring() beyond string length"
+    description: "Test substring() function beyond string length"
+    difficulty: "basic"
+    categories: ["functions", "string", "substring"]
+    expression: "name.substring(10)"
+    expected: [""]
+    fixture:
+      name: "John Doe"
+
+  - name: "substring() with negative start"
+    description: "Test substring() function with negative start position"
+    difficulty: "basic"
+    categories: ["functions", "string", "substring"]
+    expression: "name.substring(-1)"
+    expected: ["John Doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "substring() with zero length"
+    description: "Test substring() function with zero length"
+    difficulty: "basic"
+    categories: ["functions", "string", "substring"]
+    expression: "name.substring(0, 0)"
+    expected: [""]
+    fixture:
+      name: "John Doe"
+
+  - name: "substring() on empty string"
+    description: "Test substring() function on empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "substring"]
+    expression: "name.substring(0, 5)"
+    expected: [""]
+    fixture:
+      name: ""
+
+  # contains() function
+  - name: "contains() with existing substring"
+    description: "Test contains() function with existing substring"
+    difficulty: "basic"
+    categories: ["functions", "string", "contains"]
+    expression: "name.contains('John')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "contains() with non-existing substring"
+    description: "Test contains() function with non-existing substring"
+    difficulty: "basic"
+    categories: ["functions", "string", "contains"]
+    expression: "name.contains('Jane')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "contains() with empty string"
+    description: "Test contains() function with empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "contains"]
+    expression: "name.contains('')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "contains() case sensitive"
+    description: "Test contains() function is case sensitive"
+    difficulty: "basic"
+    categories: ["functions", "string", "contains"]
+    expression: "name.contains('john')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "contains() with full string"
+    description: "Test contains() function with full string"
+    difficulty: "basic"
+    categories: ["functions", "string", "contains"]
+    expression: "name.contains('John Doe')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "contains() with special characters"
+    description: "Test contains() function with special characters"
+    difficulty: "basic"
+    categories: ["functions", "string", "contains"]
+    expression: "name.contains('ö')"
+    expected: [true]
+    fixture:
+      name: "Jöhn Doe"
+
+  # startsWith() function
+  - name: "startsWith() with matching prefix"
+    description: "Test startsWith() function with matching prefix"
+    difficulty: "basic"
+    categories: ["functions", "string", "startsWith"]
+    expression: "name.startsWith('John')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "startsWith() with non-matching prefix"
+    description: "Test startsWith() function with non-matching prefix"
+    difficulty: "basic"
+    categories: ["functions", "string", "startsWith"]
+    expression: "name.startsWith('Jane')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "startsWith() with empty string"
+    description: "Test startsWith() function with empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "startsWith"]
+    expression: "name.startsWith('')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "startsWith() case sensitive"
+    description: "Test startsWith() function is case sensitive"
+    difficulty: "basic"
+    categories: ["functions", "string", "startsWith"]
+    expression: "name.startsWith('john')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "startsWith() with full string"
+    description: "Test startsWith() function with full string"
+    difficulty: "basic"
+    categories: ["functions", "string", "startsWith"]
+    expression: "name.startsWith('John Doe')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "startsWith() longer than string"
+    description: "Test startsWith() function with prefix longer than string"
+    difficulty: "basic"
+    categories: ["functions", "string", "startsWith"]
+    expression: "name.startsWith('John Doe Smith')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  # endsWith() function
+  - name: "endsWith() with matching suffix"
+    description: "Test endsWith() function with matching suffix"
+    difficulty: "basic"
+    categories: ["functions", "string", "endsWith"]
+    expression: "name.endsWith('Doe')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "endsWith() with non-matching suffix"
+    description: "Test endsWith() function with non-matching suffix"
+    difficulty: "basic"
+    categories: ["functions", "string", "endsWith"]
+    expression: "name.endsWith('Smith')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "endsWith() with empty string"
+    description: "Test endsWith() function with empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "endsWith"]
+    expression: "name.endsWith('')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "endsWith() case sensitive"
+    description: "Test endsWith() function is case sensitive"
+    difficulty: "basic"
+    categories: ["functions", "string", "endsWith"]
+    expression: "name.endsWith('doe')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  - name: "endsWith() with full string"
+    description: "Test endsWith() function with full string"
+    difficulty: "basic"
+    categories: ["functions", "string", "endsWith"]
+    expression: "name.endsWith('John Doe')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "endsWith() longer than string"
+    description: "Test endsWith() function with suffix longer than string"
+    difficulty: "basic"
+    categories: ["functions", "string", "endsWith"]
+    expression: "name.endsWith('William John Doe')"
+    expected: [false]
+    fixture:
+      name: "John Doe"
+
+  # upper() function
+  - name: "upper() on mixed case string"
+    description: "Test upper() function on mixed case string"
+    difficulty: "basic"
+    categories: ["functions", "string", "upper"]
+    expression: "name.upper()"
+    expected: ["JOHN DOE"]
+    fixture:
+      name: "John Doe"
+
+  - name: "upper() on already uppercase string"
+    description: "Test upper() function on already uppercase string"
+    difficulty: "basic"
+    categories: ["functions", "string", "upper"]
+    expression: "name.upper()"
+    expected: ["JOHN DOE"]
+    fixture:
+      name: "JOHN DOE"
+
+  - name: "upper() on lowercase string"
+    description: "Test upper() function on lowercase string"
+    difficulty: "basic"
+    categories: ["functions", "string", "upper"]
+    expression: "name.upper()"
+    expected: ["JOHN DOE"]
+    fixture:
+      name: "john doe"
+
+  - name: "upper() on empty string"
+    description: "Test upper() function on empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "upper"]
+    expression: "name.upper()"
+    expected: [""]
+    fixture:
+      name: ""
+
+  - name: "upper() on string with numbers and symbols"
+    description: "Test upper() function on string with numbers and symbols"
+    difficulty: "basic"
+    categories: ["functions", "string", "upper"]
+    expression: "name.upper()"
+    expected: ["JOHN123!@#"]
+    fixture:
+      name: "John123!@#"
+
+  - name: "upper() on string with accented characters"
+    description: "Test upper() function on string with accented characters"
+    difficulty: "basic"
+    categories: ["functions", "string", "upper"]
+    expression: "name.upper()"
+    expected: ["CAFÉ"]
+    fixture:
+      name: "café"
+
+  # lower() function
+  - name: "lower() on mixed case string"
+    description: "Test lower() function on mixed case string"
+    difficulty: "basic"
+    categories: ["functions", "string", "lower"]
+    expression: "name.lower()"
+    expected: ["john doe"]
+    fixture:
+      name: "John Doe"
+
+  - name: "lower() on already lowercase string"
+    description: "Test lower() function on already lowercase string"
+    difficulty: "basic"
+    categories: ["functions", "string", "lower"]
+    expression: "name.lower()"
+    expected: ["john doe"]
+    fixture:
+      name: "john doe"
+
+  - name: "lower() on uppercase string"
+    description: "Test lower() function on uppercase string"
+    difficulty: "basic"
+    categories: ["functions", "string", "lower"]
+    expression: "name.lower()"
+    expected: ["john doe"]
+    fixture:
+      name: "JOHN DOE"
+
+  - name: "lower() on empty string"
+    description: "Test lower() function on empty string"
+    difficulty: "basic"
+    categories: ["functions", "string", "lower"]
+    expression: "name.lower()"
+    expected: [""]
+    fixture:
+      name: ""
+
+  - name: "lower() on string with numbers and symbols"
+    description: "Test lower() function on string with numbers and symbols"
+    difficulty: "basic"
+    categories: ["functions", "string", "lower"]
+    expression: "name.lower()"
+    expected: ["john123!@#"]
+    fixture:
+      name: "JOHN123!@#"
+
+  - name: "lower() on string with accented characters"
+    description: "Test lower() function on string with accented characters"
+    difficulty: "basic"
+    categories: ["functions", "string", "lower"]
+    expression: "name.lower()"
+    expected: ["café"]
+    fixture:
+      name: "CAFÉ"
+
+  # Chained string functions
+  - name: "Chained string functions - upper and substring"
+    description: "Test chaining upper() and substring() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "chained"]
+    expression: "name.upper().substring(0, 4)"
+    expected: ["JOHN"]
+    fixture:
+      name: "John Doe"
+
+  - name: "Chained string functions - substring and contains"
+    description: "Test chaining substring() and contains() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "chained"]
+    expression: "name.substring(0, 4).contains('John')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  - name: "Chained string functions - lower and startsWith"
+    description: "Test chaining lower() and startsWith() functions"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "chained"]
+    expression: "name.lower().startsWith('john')"
+    expected: [true]
+    fixture:
+      name: "John Doe"
+
+  # String functions on collections
+  - name: "String functions on collection - length"
+    description: "Test length() function on collection of strings"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "collection"]
+    expression: "names.length()"
+    expected: [4, 8, 3]
+    fixture:
+      names: ["John", "Jane Doe", "Bob"]
+
+  - name: "String functions on collection - upper"
+    description: "Test upper() function on collection of strings"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "collection"]
+    expression: "names.upper()"
+    expected: ["JOHN", "JANE DOE", "BOB"]
+    fixture:
+      names: ["John", "Jane Doe", "Bob"]
+
+  - name: "String functions on collection - contains"
+    description: "Test contains() function on collection of strings"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "collection"]
+    expression: "names.contains('John')"
+    expected: [true, false, false]
+    fixture:
+      names: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  # Complex string operations
+  - name: "Complex string filtering with where"
+    description: "Test complex string filtering using where() with string functions"
+    difficulty: "advanced"
+    categories: ["functions", "string", "complex"]
+    expression: "names.where(length() > 5)"
+    expected: ["John Doe", "Jane Smith"]
+    fixture:
+      names: ["John Doe", "Jane Smith", "Bob"]
+
+  - name: "String transformation with select"
+    description: "Test string transformation using select() with string functions"
+    difficulty: "advanced"
+    categories: ["functions", "string", "complex"]
+    expression: "names.select(substring(0, 4).upper())"
+    expected: ["JOHN", "JANE", "BOB"]
+    fixture:
+      names: ["John Doe", "Jane Smith", "Bob Johnson"]
+
+  # Error cases
+  - name: "substring() with invalid parameters"
+    description: "Test substring() function with invalid parameters"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "error"]
+    expression: "name.substring('invalid')"
+    error:
+      type: "semantic"
+      message: "substring() requires numeric parameters"
+    fixture:
+      name: "John Doe"
+
+  - name: "String function on non-string value"
+    description: "Test string function on non-string value"
+    difficulty: "intermediate"
+    categories: ["functions", "string", "error"]
+    expression: "age.upper()"
+    error:
+      type: "semantic"
+      message: "upper() function requires string input"
+    fixture:
+      name: "John Doe"
+      age: 30

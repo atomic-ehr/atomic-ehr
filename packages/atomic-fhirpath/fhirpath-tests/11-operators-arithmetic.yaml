@@ -1,0 +1,542 @@
+name: "Arithmetic Operators"
+description: "Tests for FHIRPath arithmetic operators including +, -, *, /, div, and mod"
+
+tests:
+  # Addition operator (+)
+  - name: "Addition with integers"
+    description: "Test addition operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "addition"]
+    expression: "5 + 3"
+    expected: [8]
+    fixture:
+      dummy: true
+
+  - name: "Addition with decimals"
+    description: "Test addition operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "addition"]
+    expression: "5.5 + 3.2"
+    expected: [8.7]
+    fixture:
+      dummy: true
+
+  - name: "Addition with negative numbers"
+    description: "Test addition operator with negative numbers"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "addition"]
+    expression: "-5 + 3"
+    expected: [-2]
+    fixture:
+      dummy: true
+
+  - name: "Addition with zero"
+    description: "Test addition operator with zero"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "addition"]
+    expression: "5 + 0"
+    expected: [5]
+    fixture:
+      dummy: true
+
+  - name: "Addition with variables"
+    description: "Test addition operator with variables"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "addition"]
+    expression: "age + yearsToAdd"
+    expected: [35]
+    fixture:
+      age: 30
+      yearsToAdd: 5
+
+  # Subtraction operator (-)
+  - name: "Subtraction with integers"
+    description: "Test subtraction operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "subtraction"]
+    expression: "10 - 3"
+    expected: [7]
+    fixture:
+      dummy: true
+
+  - name: "Subtraction with decimals"
+    description: "Test subtraction operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "subtraction"]
+    expression: "10.5 - 3.2"
+    expected: [7.3]
+    fixture:
+      dummy: true
+
+  - name: "Subtraction resulting in negative"
+    description: "Test subtraction operator resulting in negative number"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "subtraction"]
+    expression: "3 - 5"
+    expected: [-2]
+    fixture:
+      dummy: true
+
+  - name: "Subtraction with zero"
+    description: "Test subtraction operator with zero"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "subtraction"]
+    expression: "5 - 0"
+    expected: [5]
+    fixture:
+      dummy: true
+
+  - name: "Subtraction from zero"
+    description: "Test subtraction from zero"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "subtraction"]
+    expression: "0 - 5"
+    expected: [-5]
+    fixture:
+      dummy: true
+
+  # Multiplication operator (*)
+  - name: "Multiplication with integers"
+    description: "Test multiplication operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "multiplication"]
+    expression: "4 * 3"
+    expected: [12]
+    fixture:
+      dummy: true
+
+  - name: "Multiplication with decimals"
+    description: "Test multiplication operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "multiplication"]
+    expression: "4.5 * 2.0"
+    expected: [9.0]
+    fixture:
+      dummy: true
+
+  - name: "Multiplication with negative numbers"
+    description: "Test multiplication operator with negative numbers"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "multiplication"]
+    expression: "-4 * 3"
+    expected: [-12]
+    fixture:
+      dummy: true
+
+  - name: "Multiplication with zero"
+    description: "Test multiplication operator with zero"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "multiplication"]
+    expression: "5 * 0"
+    expected: [0]
+    fixture:
+      dummy: true
+
+  - name: "Multiplication with one"
+    description: "Test multiplication operator with one"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "multiplication"]
+    expression: "5 * 1"
+    expected: [5]
+    fixture:
+      dummy: true
+
+  # Division operator (/)
+  - name: "Division with integers"
+    description: "Test division operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "division"]
+    expression: "12 / 3"
+    expected: [4]
+    fixture:
+      dummy: true
+
+  - name: "Division with decimals"
+    description: "Test division operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "division"]
+    expression: "10.0 / 2.5"
+    expected: [4.0]
+    fixture:
+      dummy: true
+
+  - name: "Division resulting in decimal"
+    description: "Test division operator resulting in decimal"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "division"]
+    expression: "10 / 3"
+    expected: [3.333333]
+    fixture:
+      dummy: true
+
+  - name: "Division with negative numbers"
+    description: "Test division operator with negative numbers"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "division"]
+    expression: "-12 / 3"
+    expected: [-4]
+    fixture:
+      dummy: true
+
+  - name: "Division by one"
+    description: "Test division operator by one"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "division"]
+    expression: "5 / 1"
+    expected: [5]
+    fixture:
+      dummy: true
+
+  # Integer division operator (div)
+  - name: "Integer division with integers"
+    description: "Test integer division operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "div"]
+    expression: "10 div 3"
+    expected: [3]
+    fixture:
+      dummy: true
+
+  - name: "Integer division with decimals"
+    description: "Test integer division operator with decimal values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "div"]
+    expression: "10.7 div 3"
+    expected: [3]
+    fixture:
+      dummy: true
+
+  - name: "Integer division with negative numbers"
+    description: "Test integer division operator with negative numbers"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "div"]
+    expression: "-10 div 3"
+    expected: [-3]
+    fixture:
+      dummy: true
+
+  - name: "Integer division by one"
+    description: "Test integer division operator by one"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "div"]
+    expression: "5 div 1"
+    expected: [5]
+    fixture:
+      dummy: true
+
+  # Modulo operator (mod)
+  - name: "Modulo with integers"
+    description: "Test modulo operator with integer values"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "modulo"]
+    expression: "10 mod 3"
+    expected: [1]
+    fixture:
+      dummy: true
+
+  - name: "Modulo with no remainder"
+    description: "Test modulo operator with no remainder"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "modulo"]
+    expression: "12 mod 3"
+    expected: [0]
+    fixture:
+      dummy: true
+
+  - name: "Modulo with negative numbers"
+    description: "Test modulo operator with negative numbers"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "modulo"]
+    expression: "-10 mod 3"
+    expected: [-1]
+    fixture:
+      dummy: true
+
+  - name: "Modulo with decimal"
+    description: "Test modulo operator with decimal values"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "modulo"]
+    expression: "10.5 mod 3"
+    expected: [1.5]
+    fixture:
+      dummy: true
+
+  # Arithmetic operators with collections
+  - name: "Addition with collections"
+    description: "Test addition operator applied to collections"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "collection"]
+    expression: "values + 10"
+    expected: [15, 25, 35]
+    fixture:
+      values: [5, 15, 25]
+
+  - name: "Multiplication with collections"
+    description: "Test multiplication operator applied to collections"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "collection"]
+    expression: "values * 2"
+    expected: [10, 30, 50]
+    fixture:
+      values: [5, 15, 25]
+
+  - name: "Collection arithmetic operations"
+    description: "Test arithmetic operations between collections"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "collection"]
+    expression: "prices + taxes"
+    expected: [11, 22, 33]
+    fixture:
+      prices: [10, 20, 30]
+      taxes: [1, 2, 3]
+
+  # Operator precedence
+  - name: "Multiplication before addition"
+    description: "Test operator precedence - multiplication before addition"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "precedence"]
+    expression: "2 + 3 * 4"
+    expected: [14]
+    fixture:
+      dummy: true
+
+  - name: "Division before subtraction"
+    description: "Test operator precedence - division before subtraction"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "precedence"]
+    expression: "10 - 6 / 2"
+    expected: [7]
+    fixture:
+      dummy: true
+
+  - name: "Parentheses override precedence"
+    description: "Test parentheses overriding operator precedence"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "precedence"]
+    expression: "(2 + 3) * 4"
+    expected: [20]
+    fixture:
+      dummy: true
+
+  - name: "Complex precedence expression"
+    description: "Test complex expression with multiple operators"
+    difficulty: "advanced"
+    categories: ["operators", "arithmetic", "precedence"]
+    expression: "2 * 3 + 4 * 5 - 6 / 2"
+    expected: [23]
+    fixture:
+      dummy: true
+
+  # Unary operators
+  - name: "Unary plus operator"
+    description: "Test unary plus operator"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "unary"]
+    expression: "+5"
+    expected: [5]
+    fixture:
+      dummy: true
+
+  - name: "Unary minus operator"
+    description: "Test unary minus operator"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "unary"]
+    expression: "-5"
+    expected: [-5]
+    fixture:
+      dummy: true
+
+  - name: "Unary minus with expression"
+    description: "Test unary minus with expression"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "unary"]
+    expression: "-(3 + 2)"
+    expected: [-5]
+    fixture:
+      dummy: true
+
+  - name: "Double unary minus"
+    description: "Test double unary minus"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "unary"]
+    expression: "--5"
+    expected: [5]
+    fixture:
+      dummy: true
+
+  # Real-world arithmetic scenarios
+  - name: "BMI calculation"
+    description: "Test BMI calculation using arithmetic operators"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "realworld"]
+    expression: "weight / (height * height)"
+    expected: [24.22]
+    fixture:
+      weight: 70
+      height: 1.7
+
+  - name: "Age calculation in years"
+    description: "Test age calculation using arithmetic operators"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "realworld"]
+    expression: "ageInDays / 365"
+    expected: [25.01]
+    fixture:
+      ageInDays: 9129
+
+  - name: "Total cost calculation"
+    description: "Test total cost calculation with tax"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "realworld"]
+    expression: "basePrice + (basePrice * taxRate)"
+    expected: [110]
+    fixture:
+      basePrice: 100
+      taxRate: 0.10
+
+  - name: "Medication dosage calculation"
+    description: "Test medication dosage calculation"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "realworld"]
+    expression: "weight * dosagePerKg"
+    expected: [140]
+    fixture:
+      weight: 70
+      dosagePerKg: 2
+
+  - name: "Percentage calculation"
+    description: "Test percentage calculation"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "realworld"]
+    expression: "(completedTasks / totalTasks) * 100"
+    expected: [75]
+    fixture:
+      completedTasks: 15
+      totalTasks: 20
+
+  # Arithmetic with quantities
+  - name: "Addition with quantities"
+    description: "Test addition with quantity values"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "quantity"]
+    expression: "weight + additionalWeight"
+    expected: ["75 'kg'"]
+    fixture:
+      weight: "70 'kg'"
+      additionalWeight: "5 'kg'"
+
+  - name: "Multiplication with quantities"
+    description: "Test multiplication with quantity values"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "quantity"]
+    expression: "distance * rate"
+    expected: ["50 'km'""]
+    fixture:
+      distance: "10 'km'"
+      rate: 5
+
+  # Edge cases and precision
+  - name: "Very large number arithmetic"
+    description: "Test arithmetic with very large numbers"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "edge"]
+    expression: "1000000 * 1000000"
+    expected: [1000000000000]
+    fixture:
+      dummy: true
+
+  - name: "Very small decimal arithmetic"
+    description: "Test arithmetic with very small decimals"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "edge"]
+    expression: "0.0001 + 0.0002"
+    expected: [0.0003]
+    fixture:
+      dummy: true
+
+  - name: "Precision in decimal division"
+    description: "Test precision in decimal division"
+    difficulty: "advanced"
+    categories: ["operators", "arithmetic", "precision"]
+    expression: "1 / 3"
+    expected: [0.333333]
+    fixture:
+      dummy: true
+
+  # Error cases
+  - name: "Division by zero"
+    description: "Test division by zero error"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "error"]
+    expression: "5 / 0"
+    error:
+      type: "semantic"
+      message: "Division by zero"
+    fixture:
+      dummy: true
+
+  - name: "Modulo by zero"
+    description: "Test modulo by zero error"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "error"]
+    expression: "5 mod 0"
+    error:
+      type: "semantic"
+      message: "Modulo by zero"
+    fixture:
+      dummy: true
+
+  - name: "Arithmetic with non-numeric types"
+    description: "Test arithmetic operators with non-numeric types"
+    difficulty: "intermediate"
+    categories: ["operators", "arithmetic", "error"]
+    expression: "name + 5"
+    error:
+      type: "semantic"
+      message: "Arithmetic operators require numeric operands"
+    fixture:
+      name: "John Doe"
+
+  - name: "Arithmetic on empty collection"
+    description: "Test arithmetic operators on empty collection"
+    difficulty: "basic"
+    categories: ["operators", "arithmetic", "empty"]
+    expression: "nonexistent + 5"
+    expected: []
+    fixture:
+      values: [1, 2, 3]
+
+  # Complex arithmetic expressions
+  - name: "Multi-step calculation"
+    description: "Test multi-step arithmetic calculation"
+    difficulty: "advanced"
+    categories: ["operators", "arithmetic", "complex"]
+    expression: "((income - deductions) * taxRate) + fixedTax"
+    expected: [2500]
+    fixture:
+      income: 50000
+      deductions: 10000
+      taxRate: 0.2
+      fixedTax: 1500
+
+  - name: "Compound interest calculation"
+    description: "Test compound interest calculation"
+    difficulty: "advanced"
+    categories: ["operators", "arithmetic", "complex"]
+    expression: "principal * (1 + rate) * (1 + rate) * (1 + rate)"
+    expected: [1331]
+    fixture:
+      principal: 1000
+      rate: 0.1
+
+  - name: "Statistical variance calculation"
+    description: "Test statistical variance calculation"
+    difficulty: "advanced"
+    categories: ["operators", "arithmetic", "complex"]
+    expression: "((value1 - mean) * (value1 - mean) + (value2 - mean) * (value2 - mean) + (value3 - mean) * (value3 - mean)) / 3"
+    expected: [14]
+    fixture:
+      value1: 10
+      value2: 15
+      value3: 8
+      mean: 11

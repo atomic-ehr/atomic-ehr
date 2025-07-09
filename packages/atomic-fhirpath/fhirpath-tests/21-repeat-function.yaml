@@ -1,0 +1,234 @@
+name: "Repeat Function"
+description: "Tests for the repeat() function for iterative tree traversal"
+tests:
+  # Basic repeat function
+  - name: "repeat() - simple property access"
+    description: "Basic repeat iteration"
+    difficulty: "basic"
+    categories: ["functions", "navigation"]
+    expression: "repeat(item)"
+    fixture:
+      item:
+        item:
+          item:
+            value: "nested"
+    expected: [
+      {item: {item: {value: "nested"}}},
+      {item: {value: "nested"}},
+      {value: "nested"}
+    ]
+    
+  - name: "repeat() - stop at empty"
+    expression: "repeat(next)"
+    fixture:
+      value: 1
+      next:
+        value: 2
+        next:
+          value: 3
+    expected: [
+      {value: 2, next: {value: 3}},
+      {value: 3}
+    ]
+    
+  - name: "repeat() - with collections"
+    expression: "repeat(children)"
+    fixture:
+      id: "root"
+      children: [
+        {id: "a", children: [{id: "a1"}, {id: "a2"}]},
+        {id: "b", children: [{id: "b1"}]}
+      ]
+    expected: [
+      {id: "a", children: [{id: "a1"}, {id: "a2"}]},
+      {id: "b", children: [{id: "b1"}]},
+      {id: "a1"},
+      {id: "a2"},
+      {id: "b1"}
+    ]
+    
+  # Complex tree traversal
+  - name: "repeat() - organization hierarchy"
+    description: "Navigate organizational structure"
+    difficulty: "intermediate"
+    expression: "repeat(partOf).name"
+    fixture:
+      name: "Unit A"
+      partOf:
+        name: "Department X"
+        partOf:
+          name: "Division 1"
+          partOf:
+            name: "Company"
+    expected: ["Department X", "Division 1", "Company"]
+    
+  - name: "repeat() - reference chain"
+    expression: "repeat(basedOn.resolve())"
+    fixture:
+      resourceType: "ServiceRequest"
+      id: "sr1"
+      basedOn: {reference: "#sr2"}
+      contained: [
+        {
+          resourceType: "ServiceRequest",
+          id: "sr2",
+          basedOn: {reference: "#sr3"}
+        },
+        {
+          resourceType: "ServiceRequest",
+          id: "sr3",
+          code: "final"
+        }
+      ]
+    expected: [
+      {resourceType: "ServiceRequest", id: "sr2", basedOn: {reference: "#sr3"}},
+      {resourceType: "ServiceRequest", id: "sr3", code: "final"}
+    ]
+    
+  # With filtering
+  - name: "repeat() with where clause"
+    description: "Filter during traversal"
+    expression: "repeat(children).where(active = true)"
+    fixture:
+      children: [
+        {
+          id: "1",
+          active: true,
+          children: [{id: "1.1", active: false}, {id: "1.2", active: true}]
+        },
+        {
+          id: "2",
+          active: false,
+          children: [{id: "2.1", active: true}]
+        }
+      ]
+    expected: [
+      {id: "1", active: true, children: [{id: "1.1", active: false}, {id: "1.2", active: true}]},
+      {id: "1.2", active: true},
+      {id: "2.1", active: true}
+    ]
+    
+  # Circular reference handling
+  - name: "repeat() - detect circular reference"
+    description: "Stop on circular references"
+    difficulty: "advanced"
+    expression: "repeat(related).take(10).count()"
+    fixture:
+      id: "a"
+      related: {id: "b", related: {id: "c", related: {id: "a"}}}
+    expected: [10]
+    
+  # Multiple paths
+  - name: "repeat() - union of paths"
+    expression: "repeat(link | next)"
+    fixture:
+      id: "1"
+      link: {id: "2", next: {id: "3"}}
+      next: {id: "4", link: {id: "5"}}
+    expected: [
+      {id: "2", next: {id: "3"}},
+      {id: "4", link: {id: "5"}},
+      {id: "3"},
+      {id: "5"}
+    ]
+    
+  # Real-world scenarios
+  - name: "Condition problem list hierarchy"
+    description: "Navigate condition relationships"
+    expression: "repeat(dueTo.resolve()).code.text"
+    fixture:
+      resourceType: "Condition"
+      code: {text: "Heart Failure"}
+      dueTo: {reference: "#condition2"}
+      contained: [
+        {
+          resourceType: "Condition",
+          id: "condition2",
+          code: {text: "Hypertension"},
+          dueTo: {reference: "#condition3"}
+        },
+        {
+          resourceType: "Condition",
+          id: "condition3",
+          code: {text: "Obesity"}
+        }
+      ]
+    expected: ["Hypertension", "Obesity"]
+    
+  - name: "Goal target hierarchy"
+    expression: "repeat(addresses.resolve()).where(resourceType = 'Goal').target.measure.text"
+    fixture:
+      resourceType: "Goal"
+      target: {measure: {text: "Weight loss"}}
+      addresses: [{reference: "#goal2"}]
+      contained: [
+        {
+          resourceType: "Goal",
+          id: "goal2",
+          target: {measure: {text: "Exercise regularly"}},
+          addresses: [{reference: "#goal3"}]
+        },
+        {
+          resourceType: "Goal",
+          id: "goal3",
+          target: {measure: {text: "Healthy diet"}}
+        }
+      ]
+    expected: ["Exercise regularly", "Healthy diet"]
+    
+  # Edge cases
+  - name: "repeat() - empty starting point"
+    expression: "{}.repeat(item)"
+    fixture: {}
+    expected: []
+    
+  - name: "repeat() - null in path"
+    expression: "repeat(nullableNext)"
+    fixture:
+      nullableNext: {value: 1, nullableNext: null}
+    expected: [{value: 1, nullableNext: null}]
+    
+  - name: "repeat() - mixed types"
+    expression: "repeat(various)"
+    fixture:
+      various: [
+        {type: "a", various: {type: "b"}},
+        "string",
+        42,
+        {type: "c"}
+      ]
+    expected: [
+      {type: "a", various: {type: "b"}},
+      "string",
+      42,
+      {type: "c"},
+      {type: "b"}
+    ]
+    
+  # Complex expressions
+  - name: "repeat() with aggregate"
+    expression: "repeat(children).aggregate($total + 1, 0)"
+    fixture:
+      children: [
+        {children: [{}, {}]},
+        {children: [{}]}
+      ]
+    expected: [5]
+    
+  - name: "repeat() distinct values"
+    expression: "repeat(alias).distinct()"
+    fixture:
+      name: "A"
+      alias: {name: "B", alias: {name: "C", alias: {name: "B"}}}
+    expected: [
+      {name: "B", alias: {name: "C", alias: {name: "B"}}},
+      {name: "C", alias: {name: "B"}}
+    ]
+    
+  # Error cases
+  - name: "repeat() - invalid expression"
+    expression: "repeat()"
+    fixture: {value: 1}
+    error:
+      type: "syntax"
+      message: "repeat() requires an expression argument"
