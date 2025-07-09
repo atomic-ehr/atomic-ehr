@@ -243,7 +243,7 @@ export interface FHIRReferenceResolver {
 
 // Context that provides all external dependencies for FHIRPath evaluation
 export interface FHIRPathContext {
-  modelProvider: FHIRModelProvider;
+  modelProvider?: FHIRModelProvider;
   terminologyProvider?: FHIRTerminologyProvider;
   referenceResolver?: FHIRReferenceResolver;
 }

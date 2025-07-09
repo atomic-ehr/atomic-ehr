@@ -20,9 +20,32 @@ export interface NPMKnowledgeRepositoryConfig extends AtomicKnowledgeRepositoryC
     databasePath?: string; // Optional path for persistent database
 }
 
+export function isMemory(dbPath: string): boolean {
+    return dbPath === ":memory:";
+}
+
+interface CanonicalReference {
+    url: string;
+    version?: string;
+}
+
+function parseCanonical(canonical: string): CanonicalReference {
+    let url = canonical;
+    let version: string | undefined;
+
+    if (canonical.includes('|')) {
+        const parts = canonical.split('|');
+        url = parts[0]!;
+        version = parts[1];
+    }
+
+    return { url, version };
+}
+
 export class NPMKnowledgeRepository extends AtomicMinimalKnowledgeRepository {
     db!: Database;
     config: NPMKnowledgeRepositoryConfig;
+    private resourceCache: Map<string, any> = new Map();
 
     constructor(context: AtomicContext, config: AtomicKnowledgeRepositoryConfig) {
         super(context, config);
@@ -76,7 +99,7 @@ export class NPMKnowledgeRepository extends AtomicMinimalKnowledgeRepository {
         
         // Check if database file exists (only relevant for persistent databases)
         let dbExists = false;
-        if (dbPath !== ":memory:") {
+        if (!isMemory(dbPath)) {
             const dbFile = Bun.file(dbPath);
             dbExists = await dbFile.exists();
         }
@@ -84,7 +107,7 @@ export class NPMKnowledgeRepository extends AtomicMinimalKnowledgeRepository {
         this.db = new Database(dbPath);
         
         // Only initialize database if it's in-memory or the file doesn't exist
-        if (dbPath === ":memory:" || !dbExists) {
+        if (isMemory(dbPath) || !dbExists) {
             this.initDb();
         }
 
@@ -210,6 +233,29 @@ export class NPMKnowledgeRepository extends AtomicMinimalKnowledgeRepository {
         }
     }
 
+    private async getResourceByFilepath(filepath: string): Promise<any> {
+        // Check cache first
+        if (this.resourceCache.has(filepath)) {
+            return this.resourceCache.get(filepath);
+        }
+
+        let resource = null;
+        if (filepath) {
+            const file = Bun.file(filepath);
+            if (await file.exists()) {
+                resource = await file.json();
+                // Cache the resource
+                this.resourceCache.set(filepath, resource);
+            } else {
+                console.warn(`File does not exist: ${filepath}`);
+            }
+        } else {
+            console.warn(`File does not exist: ${filepath}`);
+        }
+
+        return resource;
+    }
+
     override getPackages(): Promise<AtomicPackage[]> {
         const result = this.db.query(` SELECT name, package_json FROM packages `).all() as any;
         return Promise.resolve(result.map((row: any) => {
@@ -249,16 +295,9 @@ export class NPMKnowledgeRepository extends AtomicMinimalKnowledgeRepository {
         }
     }
 
-    override resolve(canonical: string): Promise<AtomicCanonicalResource[]> {
-        // Check if canonical contains version separator
-        let url = canonical;
-        let version: string | undefined;
-
-        if (canonical.includes('|')) {
-            const parts = canonical.split('|');
-            url = parts[0]!;
-            version = parts[1];
-        }
+    override async resolve(canonical: string): Promise<AtomicCanonicalResource[]> {
+        // Parse canonical to extract URL and version
+        const { url, version } = parseCanonical(canonical);
         
         // Build query based on whether version is specified
         let query: string;
@@ -273,19 +312,26 @@ export class NPMKnowledgeRepository extends AtomicMinimalKnowledgeRepository {
         }
         
         const result = this.db.query(query).all(...params) as any[];
-        
+
         // Transform database results to AtomicCanonicalResource objects
-        const canonicalResources: AtomicCanonicalResource[] = result.map(row => ({
-            resourceType: row.resource_type,
-            url: row.url,
-            version: row.version,
-            id: row.filename?.replace(/\.[^/.]+$/, ''), // Remove file extension for ID
-            // Add custom properties that might be useful
-            kind: row.kind,
-            base: row.base,
-            filepath: row.filepath,
-            packageName: row.package_name
-        }));
+        const canonicalResources: AtomicCanonicalResource[] = await Promise.all(
+            result.map(async (row) => {
+                const resource = await this.getResourceByFilepath(row.filepath);
+                
+                return {
+                    resourceType: row.resource_type,
+                    url: row.url,
+                    version: row.version,
+                    id: row.filename?.replace(/\.[^/.]+$/, ''), // Remove file extension for ID
+                    // Add custom properties that might be useful
+                    kind: row.kind,
+                    base: row.base,
+                    filepath: row.filepath,
+                    resource: resource,
+                    packageName: row.package_name
+                };
+            })
+        );
         
         return Promise.resolve(canonicalResources);
     }

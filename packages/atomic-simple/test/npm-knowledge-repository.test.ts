@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "bun:test";
-import { AtomicSystem, type AtomicConfig } from "@atomic-ehr/core/src/index";
+import { AtomicSystem, type AtomicConfig, type AtomicFhirTerminologyConfig } from "@atomic-ehr/core/src/index";
 import { NPMKnowledgeRepository, type NPMKnowledgeRepositoryConfig } from "../src/npm-knowledge-repository";
 import { $ } from "bun";
 
@@ -10,7 +10,7 @@ describe("NPM Knowledge Registry", async () => {
     beforeAll(async () => {
         // Clean up any existing test directory
 
-        await $`rm -rf .tmp/dev`;
+        //await $`rm -rf .tmp/dev`;
         system = new AtomicSystem({
             knowledgeRepo: {
                 engine: NPMKnowledgeRepository,
@@ -25,7 +25,7 @@ describe("NPM Knowledge Registry", async () => {
         await system.init();
         const endTime = performance.now();
         expect(endTime - startTime).toBeGreaterThan(0);
-        registry = system.knowledgeRepo! as unknown as NPMKnowledgeRepository;
+        registry = system.knowledgeRepo! as NPMKnowledgeRepository;
     });
 
     it("should be defined", () => {
@@ -37,6 +37,7 @@ describe("NPM Knowledge Registry", async () => {
         const packages = await registry.getPackages();
         expect(packages).toBeDefined();
         expect(Array.isArray(packages)).toBe(true);
+        console.log('packages', packages);
         expect(packages.length).toBeGreaterThan(0);
     });
 
@@ -59,6 +60,9 @@ describe("NPM Knowledge Registry", async () => {
         //console.log('canonicals', canonicals);
         expect(canonicals).toBeDefined();
         expect(canonicals[0]?.filepath).toBeTruthy();
+        expect(canonicals[0]?.resource).toBeDefined();
+        expect(canonicals[0]?.resource.resourceType).toBe("StructureDefinition");
+        expect(canonicals[0]?.resource.url).toBe("http://hl7.org/fhir/StructureDefinition/Patient");
     });
 
     it("should retrieve canonicals", async () => {
@@ -72,5 +76,15 @@ describe("NPM Knowledge Registry", async () => {
     it("should retrieve canonicals", async () => {
         const canonicals = await registry.resolve("http://hl7.org/fhir/StructureDefinition/Patient|6.0.0");
         expect(canonicals).toBeEmpty();
+    });
+
+    it("should provide search parameters", async () => {
+        const searchParameters = await registry.getSearchParameters("Patient");
+        expect(searchParameters).toBeDefined();
+        expect(searchParameters.length).toBeGreaterThan(0);
+    });
+
+    it("should provide profiles", async () => {
+        const profiles = await registry.getProfiles("Patient");
     });
 }); 
